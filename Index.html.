@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MOUSSE imagine des outils simples et modernes pour les commerçants indépendants.">
+  <title>MOUSSE — Le commerce, autrement</title>
+
+  <style>
+    :root {
+      --fond: #f7f5f0;
+      --texte: #252721;
+      --secondaire: #77796f;
+      --accent: #596653;
+      --trait: #e5e1d8;
+      --blanc: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--fond);
+      color: var(--texte);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .conteneur {
+      width: min(1120px, 90%);
+      margin: auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--trait);
+      background: var(--fond);
+    }
+
+    nav {
+      min-height: 86px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: 5px;
+    }
+
+    .navigation {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .navigation a:hover {
+      color: var(--accent);
+    }
+
+    .bouton {
+      display: inline-block;
+      padding: 13px 21px;
+      border: 1px solid var(--texte);
+      border-radius: 3px;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .bouton:hover {
+      background: var(--texte);
+      color: var(--blanc);
+    }
+
+    .accueil {
+      padding: 115px 0 105px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      align-items: center;
+      gap: 65px;
+    }
+
+    .surtitre {
+      color: var(--secondaire);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      max-width: 700px;
+      font-size: clamp(42px, 6vw, 76px);
+      font-weight: 500;
+      letter-spacing: -3px;
+      line-height: 1.08;
+      margin-bottom: 28px;
+    }
+
+    .introduction {
+      max-width: 490px;
+      color: var(--secondaire);
+      font-size: 17px;
+      margin-bottom: 32px;
+    }
+
+    .signature {
+      min-height: 330px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eae8df;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signature::before,
+    .signature::after {
+      content: "";
+      position: absolute;
+      border: 1px solid #c8c9bb;
+      border-radius: 50%;
+      width: 220px;
+      height: 220px;
+    }
+
+    .signature::after {
+      width: 155px;
+      height: 155px;
+    }
+
+    .signature span {
+      position: relative;
+      z-index: 1;
+      font-size: 22px;
+      letter-spacing: 7px;
+      font-weight: 800;
+    }
+
+    .separation {
+      border-top: 1px solid var(--trait);
+    }
+
+    .section {
+      padding: 85px 0;
+    }
+
+    .titre-section {
+      font-size: clamp(30px, 4vw, 43px);
+      line-height: 1.2;
+      font-weight: 500;
+      max-width: 650px;
+      margin-bottom: 20px;
+    }
+
+    .texte-section {
+      color: var(--secondaire);
+      max-width: 570px;
+      margin-bottom: 40px;
+    }
+
+    .cartes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .carte {
+      background: var(--blanc);
+      border: 1px solid var(--trait);
+      padding: 30px;
+      min-height: 210px;
+    }
+
+    .numero {
+      color: var(--secondaire);
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    .carte h3 {
+      font-size: 21px;
+      font-weight: 500;
+      margin: 30px 0 12px;
+    }
+
+    .carte p {
+      color: var(--secondaire);
+      font-size: 14px;
+    }
+
+    .contact {
+      background: #eae8df;
+      padding: 75px 30px;
+      text-align: center;
+    }
+
+    .contact h2 {
+      font-size: clamp(30px, 4vw, 44px);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .contact p {
+      color: var(--secondaire);
+      margin-bottom: 28px;
+    }
+
+    footer {
+      padding: 28px 0;
+      color: var(--secondaire);
+      font-size: 12px;
+    }
+
+    .pied {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 700px) {
+      nav {
+        padding: 20px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .navigation {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .accueil {
+        grid-template-columns: 1fr;
+        padding: 75px 0;
+        gap: 35px;
+      }
+
+      .signature {
+        min-height: 230px;
+      }
+
+      .cartes {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 60px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="conteneur">
+      <nav aria-label="Navigation principale">
+        <a class="logo" href="#accueil">MOUSSE</a>
+
+        <div class="navigation">
+          <a href="#concept">Le concept</a>
+          <a href="#solutions">Nos solutions</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="accueil conteneur" id="accueil">
+      <div>
+        <p class="surtitre">Une autre façon de commercer</p>
+
+        <h1>Moins de contraintes.<br>Plus de liberté.</h1>
+
+        <p class="introduction">
+          Le commerce a déjà assez de choses à gérer.
+          MOUSSE imagine des outils qui rapprochent
+          la technologie du quotidien des commerçants,
+          sans lui compliquer la vie.
+        </p>
+
+        <a class="bouton" href="#solutions">
+          Découvrir MOUSSE →
+        </a>
+      </div>
+
+      <div class="signature" aria-label="Identité MOUSSE">
+        <span>MOUSSE</span>
+      </div>
+    </section>
+
+    <section class="section separation" id="concept">
+      <div class="conteneur">
+        <p class="surtitre">Notre idée</p>
+
+        <h2 class="titre-section">
+          La technologie doit s'adapter aux gens.
+          Pas l'inverse.
+        </h2>
+
+        <p class="texte-section">
+          Nous partons d'un principe simple :
+          les bons outils sont ceux qu'on utilise
+          naturellement, sans perdre son temps à
+          comprendre comment ils fonctionnent.
+        </p>
+      </div>
+    </section>
+
+    <section class="section separation" id="solutions">
+      <div class="conteneur">
+        <p class="surtitre">Un même esprit, plusieurs outils</p>
+
+        <h2 class="titre-section">
+          Tout ce qu'il faut. Rien de superflu.
+        </h2>
+
+        <p class="texte-section">
+          Des solutions pensées pour les commerçants
+          indépendants, leurs clients et leur quotidien.
+        </p>
+
+        <div class="cartes">
+          <article class="carte">
+            <span class="numero">01 / GESTION</span>
+            <h3>La caisse</h3>
+            <p>
+              Simplifier les ventes, le suivi des stocks
+              et la gestion quotidienne.
+            </p>
+          </article>
+
+          <article class="carte">
+            <span class="numero">02 / VISIBILITÉ</span>
+            <h3>Le site internet</h3>
+            <p>
+              Présenter son commerce, ses produits
+              et son univers en ligne.
+            </p>
+          </article>
+
+          <article class="carte">
+            <span class="numero">03 / COMMERCE</span>
+            <h3>Le click and collect</h3>
+            <p>
+              Permettre aux clients de préparer
+              leurs commandes simplement.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="conteneur">
+        <p class="surtitre">Parlons de votre commerce</p>
+        <h2>Et si on faisait plus simple ?</h2>
+        <p>
+          Un projet, une idée ou une question ?
+          Faisons connaissance.
+        </p>
+        <a class="bouton" href="mailto:contact@mousse.fr">
+          Nous contacter
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="conteneur pied">
+      <span>MOUSSE — Le commerce, autrement.</span>
+      <span>© 2026 MOUSSE</span>
+    </div>
+  </footer>
+</body>
+</html>
