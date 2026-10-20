@@ -1,3 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOUSSE — L'affluence maîtrisée & Click & Collect</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-badge {
+      background: #dbeafe;
+      color: var(--primary);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      border: 1px solid #c7d2fe;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      color: #1e1b4b;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #3730a3;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #f1f5f9;
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      font-weight: 700;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .bg-calme { background-color: var(--accent); }
+    .bg-moyen { background-color: var(--warning); }
+    .bg-rush { background-color: var(--danger); }
+    .bg-travaux { background-color: #8b5cf6; }
+
+    .hours-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 1rem;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .hour-item {
+      flex: 1;
+      min-width: 45px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+
+    .bar {
+      height: 60px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      width: 100%;
+      border-radius: 6px;
+      transition: height 0.3s ease;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .merchant-controls {
+      background: #fffbe3;
+      border: 1px solid #fde047;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      🫧 MOUSSE
+      <span class="logo-badge">Commerces Indépendants</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <section class="hero">
+      <h1>Ne faites plus la queue pour rien</h1>
+      <p>Consultez l'affluence en temps réel de vos commerçants locaux ou optez pour le Click & Collect pour gagner du temps !</p>
+    </section>
+
+    <!-- MODULE CLIENT : AFFLUENCE EN TEMPS RÉEL -->
+    <div class="card">
+      <div class="card-title">
+        📍 Boulangerie du Centre — Statut Actuel
+      </div>
+      
+      <div class="status-box">
+        <div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">Affluence actuelle</div>
+          <strong id="status-text" style="font-size: 1.2rem;">Calme (~2 min d'attente)</strong>
+        </div>
+        <div id="status-badge" class="status-badge bg-calme">CALME</div>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;" id="merchant-note">
+        💬 <em>"Aujourd'hui : Vente de pâtisseries du jour & préparation Click & Collect."</em>
+      </p>
+
+      <div style="font-weight: 600; font-size: 0.9rem; margin-top: 1.5rem;">Prévisions d'affluence aujourd'hui :</div>
+      <div class="hours-bar">
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 40%;"></div></div>8h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 90%;"></div></div>9h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 50%;"></div></div>10h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 20%;"></div></div>11h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 85%;"></div></div>12h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 15%;"></div></div>14h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 25%;"></div></div>15h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 60%;"></div></div>17h</div>
+        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 95%;"></div></div>18h</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- MODULE CLICK & COLLECT -->
+      <div class="card">
+        <div class="card-title">🛍️ Click & Collect Express</div>
+        <p style="font-size: 0.9rem; margin-bottom: 1rem;">Commandez à l'avance et retirez vos produits sans faire la queue pendant les heures creuses.</p>
+        
+        <label style="font-size: 0.85rem; font-weight: 600;">Choisissez un créneau recommandé :</label>
+        <select id="time-slot">
+          <option>11h15 (Créneau recommandé — Calme 🟢)</option>
+          <option>14h30 (Créneau recommandé — Calme 🟢)</option>
+          <option>15h45 (Créneau recommandé — Calme 🟢)</option>
+          <option>17h30 (Affluence modérée 🟡)</option>
+        </select>
+
+        <button class="btn" onclick="alert('Commande validée ! Créneau réservé.')">Commander en Click & Collect</button>
+      </div>
+
+      <!-- MODULE COMMERÇANT (ESPACE DE GESTION) -->
+      <div class="card merchant-controls">
+        <div class="card-title">⚙️ Espace Commerçant (Démo)</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Modifiez votre affluence instantanément en cas d'imprévu (travaux, marché, forte affluence).
+        </p>
+
+        <label style="font-size: 0.85rem; font-weight: 600;">Changer l'état d'affluence :</label>
+        <select id="status-select" onchange="updateStatus()">
+          <option value="calme">🟢 Calme (Peu d'attente)</option>
+          <option value="moyen">🟡 Affluence moyenne</option>
+          <option value="rush">🔴 Rush en cours (Forte attente)</option>
+          <option value="travaux">🟣 Événement / Travaux / Jour de Marché</option>
+        </select>
+
+        <label style="font-size: 0.85rem; font-weight: 600;">Message aux clients :</label>
+        <input type="text" id="note-input" value="Travaux rue de la gare : privilégiez le Click & Collect !" oninput="updateNote()">
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 MOUSSE — La solution intelligente pour les commerçants indépendants.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    function updateStatus() {
+      const val = document.getElementById('status-select').value;
+      const text = document.getElementById('status-text');
+      const badge = document.getElementById('status-badge');
+
+      if (val === 'calme') {
+        text.innerText = "Calme (~2 min d'attente)";
+        badge.innerText = "CALME";
+        badge.className = "status-badge bg-calme";
+      } else if (val === 'moyen') {
+        text.innerText = "Modéré (~5-10 min d'attente)";
+        badge.innerText = "MOYEN";
+        badge.className = "status-badge bg-moyen";
+      } else if (val === 'rush') {
+        text.innerText = "Rush en cours (+15 min d'attente)";
+        badge.innerText = "RUSH";
+        badge.className = "status-badge bg-rush";
+      } else if (val === 'travaux') {
+        text.innerText = "Événement / Travaux / Jour de Marché";
+        badge.innerText = "INFO SPÉCIALE";
+        badge.className = "status-badge bg-travaux";
+      }
+    }
+
+    function updateNote() {
+      const val = document.getElementById('note-input').value;
+      document.getElementById('merchant-note').innerHTML = "💬 <em>\"" + val + "\"</em>";
+    }
+  </script>
+
+</body>
+</html>
 
 <!DOCTYPE html>
 <html lang="fr">
