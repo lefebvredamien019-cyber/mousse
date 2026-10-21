@@ -28,13 +28,39 @@
 @media(max-width:850px){.side{grid-template-columns:1fr;gap:12px;position:sticky;padding:12px 16px}.brand{font-size:20px}.nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.nav button{font-size:12px;flex:none}.nav button .ico{display:inline}.content{padding:22px 16px}.hero{grid-template-columns:1fr!important}}
 @media(max-width:560px){.side{display:block}.brand{margin-bottom:10px}.nav{margin:0 -4px}.nav button{min-width:auto;padding:9px 11px;font-size:12px;display:flex;align-items:center;gap:6px}.nav button .ico{display:none}.top{height:48px}.user{font-size:12px}#view-accueil .hero{min-height:0;padding:25px}#view-accueil .hero h2{font-size:36px}.heroart{min-height:130px}.grid,.grid.two,.formgrid{grid-template-columns:1fr}}
 
+
+/* Nouvelle direction de marque : plateforme de commerce local, pas de référence au lavage */
+:root{--forest:#102e29;--forest2:#1d5145;--cream:#f4f3ec;--paper:#fffefa;--sage:#e0e9e2;--gold:#d7b96f;--ink:#172d29;--muted:#65736d;--line:#dce3dc}
+body{background:#f4f3ec}
+.side{background:#fffefa;color:var(--ink);box-shadow:0 3px 18px #102e2908;border-bottom:1px solid #e1e6df}
+.brand{color:var(--forest);font-size:24px;letter-spacing:2.5px;font-weight:900}
+.bubble{position:relative;border-radius:12px 12px 12px 4px;background:var(--forest);color:#fff;width:40px;height:40px;font-size:20px;font-weight:900}
+.nav button{color:#52645b;border-radius:9px;font-weight:650}
+.nav button.active{background:#e3ece5;color:#102e29}
+.nav button:hover{background:#f0f3ed;color:#102e29}
+.top{background:#f4f3ec}
+#view-accueil .hero{background:#102e29;border-radius:8px;position:relative}
+#view-accueil .hero:before{content:"";position:absolute;inset:0 0 0 auto;width:38%;background:linear-gradient(145deg,transparent 0 35%,#21483e 35% 56%,transparent 56%),linear-gradient(35deg,transparent 0 48%,#1a4037 48% 70%,transparent 70%);opacity:.6;pointer-events:none}
+#view-accueil .hero>div{position:relative;z-index:1}
+#view-accueil .hero h2{font-weight:650;letter-spacing:-2px}
+.heroart{border-radius:8px;background:#dfe9e0}
+.orb{box-shadow:0 0 0 18px #d5e1d7,0 0 0 36px #e8eee8;border:1px solid #9eb4a3}
+.card{border-radius:12px;box-shadow:0 2px 12px #173f3205}
+.card .symbol{border-radius:10px;background:#e4ece5;color:#173f32}
+.btn{border-radius:8px}
+.btn.pale{background:#d7b96f;color:#102e29;border-color:#d7b96f}
+.btn.light{border-color:#8ea79a}
+#view-accueil .grid .card:hover{border-color:#bdcfc1}
+.eyebrow{letter-spacing:1.8px}
+@media(max-width:560px){.brand{font-size:21px}.bubble{width:36px;height:36px}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <aside class="side">
-  <a class="brand" href="#" onclick="showView('accueil');return false"><span class="bubble">◌</span>MOUSSE</a>
-  <div class="tagline">Le commerce, autrement</div>
+  <a class="brand" href="#" onclick="showView('accueil');return false"><span class="bubble">M<span style="font-size:11px;position:absolute;right:-3px;bottom:-3px;background:#d6b76a;color:#173f32;border-radius:50%;width:16px;height:16px;display:grid;place-items:center;letter-spacing:0">+</span></span>MOUSSE</a>
+  <div class="tagline">Le lien entre commerces et clients</div>
   <nav class="nav" aria-label="Navigation">
     <button class="active" data-view="accueil" onclick="showView('accueil')"><span class="ico">⌂</span>Accueil</button>
     <button data-view="affluence" onclick="showView('affluence')"><span class="ico">◉</span>Affluence</button>
@@ -49,17 +75,17 @@
 <header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Aperçu commerçant</span></div></div></header>
 <div class="content">
 <section class="view active" id="view-accueil">
-  <div class="hero"><div><div class="eyebrow" style="color:#c5d8c7">MOUSSE POUR LES COMMERÇANTS</div><h2>Moins d’attente.<br>Plus de liberté.</h2><p>Informez vos clients, proposez le Click & Collect et simplifiez le retrait des commandes depuis un seul espace.</p><div class="actions"><button class="btn pale" onclick="showView('commerce')">Personnaliser ma boutique ↗</button><button class="btn light" style="color:#fff;border-color:#a7bead" onclick="showView('collect')">Voir le Click & Collect</button></div></div><div class="heroart"><div class="orb">MOUSSE</div></div></div>
+  <div class="hero"><div><div class="eyebrow" style="color:#d6b76a">LE COMMERCE, CONNECTÉ</div><h2>Votre commerce.<br>Plus visible.<br>Plus accessible.</h2><p>MOUSSE rapproche les commerces de leurs clients : informations utiles, disponibilité, commande en ligne et retrait simplifié. Le tout pensé pour les indépendants.</p><div class="actions"><button class="btn pale" onclick="showView('commerce')">Personnaliser ma boutique ↗</button><button class="btn light" style="color:#fff;border-color:#a7bead" onclick="showView('collect')">Voir le Click & Collect</button></div></div><div class="heroart"><div class="orb" style="font-size:20px;letter-spacing:1px">LOCAL<br><span style="font-size:13px;font-weight:600">CONNECTÉ</span></div></div></div>
   <div class="grid">
     <article class="card"><div class="cardhead"><span class="symbol">◉</span><span class="pill amber">Démo</span></div><p>Affluence déclarée</p><div class="stat" id="dashstatus">Modérée</div><p>Statut renseigné par le commerçant</p><button class="btn light" onclick="showView('affluence')">Mettre à jour</button></article>
     <article class="card"><div class="cardhead"><span class="symbol">▣</span><span class="pill">Exemple</span></div><p>Commandes à préparer</p><div class="stat">3</div><p>Commandes fictives pour la présentation</p><button class="btn light" onclick="showView('collect')">Voir les commandes</button></article>
     <article class="card"><div class="cardhead"><span class="symbol">⌖</span><span class="pill amber">À configurer</span></div><p>Consignes sécurisées</p><div class="stat">Projet</div><p>Retrait par code, après intégration du matériel</p><button class="btn light" onclick="showView('consignes')">Découvrir</button></article>
   </div>
-  <div class="sectiontitle"><div><h2>Les outils MOUSSE</h2><p>Des services simples, au même endroit.</p></div></div>
+  <div class="sectiontitle"><div><div class="eyebrow">UNE SEULE PLATEFORME</div><h2>Le bon service, au bon moment.</h2><p>Des outils concrets pour aider les commerces de proximité à mieux servir leurs clients.</p></div></div>
   <div class="grid">
-    <article class="card"><div class="symbol">◷</div><h3>Affluence</h3><p>Indiquez les périodes calmes, les heures de pointe et les perturbations pour mieux informer vos clients.</p></article>
-    <article class="card"><div class="symbol">▣</div><h3>Click & Collect</h3><p>Créez une vitrine de commande en ligne sans devoir posséder votre propre site.</p></article>
-    <article class="card"><div class="symbol">▤</div><h3>Retrait simplifié</h3><p>Préparez un parcours de retrait au comptoir ou, plus tard, dans une consigne compatible.</p></article>
+    <article class="card"><div class="symbol">◷</div><h3>Informer</h3><p>Prévenez vos clients des périodes chargées, des horaires particuliers et des perturbations autour de votre commerce.</p></article>
+    <article class="card"><div class="symbol">▣</div><h3>Vendre</h3><p>Présentez vos produits et préparez les commandes à retirer, sans devoir créer un site de vente de zéro.</p></article>
+    <article class="card"><div class="symbol">▤</div><h3>Faciliter le retrait</h3><p>Préparez une expérience de retrait pratique au comptoir, avec la possibilité d’ajouter des consignes compatibles plus tard.</p></article>
   </div>
 </section>
 <section class="view" id="view-affluence">
