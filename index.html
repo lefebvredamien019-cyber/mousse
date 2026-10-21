@@ -1,745 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MOUSSE — L'affluence maîtrisée & Click & Collect</title>
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --accent: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      padding-bottom: 60px;
-    }
-
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 1rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--primary);
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .logo-badge {
-      background: #dbeafe;
-      color: var(--primary);
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 1.5rem;
-    }
-
-    .hero {
-      text-align: center;
-      padding: 2.5rem 1rem;
-      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
-      border-radius: var(--radius);
-      margin-bottom: 2rem;
-      border: 1px solid #c7d2fe;
-    }
-
-    .hero h1 {
-      font-size: 2.2rem;
-      color: #1e1b4b;
-      margin-bottom: 0.75rem;
-    }
-
-    .hero p {
-      font-size: 1.1rem;
-      color: #3730a3;
-      max-width: 650px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border);
-      margin-bottom: 1.5rem;
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .status-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.25rem;
-      border-radius: 12px;
-      background: #f1f5f9;
-      margin-bottom: 1rem;
-    }
-
-    .status-badge {
-      padding: 0.5rem 1rem;
-      border-radius: 30px;
-      font-weight: 700;
-      color: white;
-      font-size: 0.95rem;
-    }
-
-    .bg-calme { background-color: var(--accent); }
-    .bg-moyen { background-color: var(--warning); }
-    .bg-rush { background-color: var(--danger); }
-    .bg-travaux { background-color: #8b5cf6; }
-
-    .hours-bar {
-      display: flex;
-      gap: 6px;
-      margin-top: 1rem;
-      overflow-x: auto;
-      padding-bottom: 8px;
-    }
-
-    .hour-item {
-      flex: 1;
-      min-width: 45px;
-      text-align: center;
-      font-size: 0.75rem;
-    }
-
-    .bar {
-      height: 60px;
-      background: #e2e8f0;
-      border-radius: 6px;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: flex-end;
-      overflow: hidden;
-    }
-
-    .bar-fill {
-      width: 100%;
-      border-radius: 6px;
-      transition: height 0.3s ease;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      border-radius: 10px;
-      border: none;
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      text-align: center;
-      width: 100%;
-      transition: background 0.2s;
-    }
-
-    .btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary);
-      color: var(--primary);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (min-width: 768px) {
-      .grid-2 {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .merchant-controls {
-      background: #fffbe3;
-      border: 1px solid #fde047;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      margin-bottom: 1rem;
-      font-size: 1rem;
-    }
-
-    footer {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-top: 2rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOUSSE aide les commerçants indépendants à informer leurs clients, gérer leur affluence et proposer le Click & Collect.">
+<title>MOUSSE — Le commerce, autrement</title>
+<style>
+:root{--forest:#173f32;--forest2:#245642;--cream:#f5f2e8;--paper:#fffdf8;--ink:#202b24;--muted:#69776d;--line:#e0e4d9;--sage:#dfe8dc;--gold:#d6b76a;--red:#a94c43;--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button,a{cursor:pointer}a{color:inherit;text-decoration:none}.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}.side{background:var(--forest);color:#fff;padding:26px 18px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh}.brand{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:850;letter-spacing:3px;padding:0 8px}.bubble{width:38px;height:38px;border-radius:13px;background:#e8eddf;color:var(--forest);display:grid;place-items:center;font-size:22px}.tagline{font-size:11px;letter-spacing:1.6px;color:#c4d4c7;margin:-22px 0 0 58px;text-transform:uppercase}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:#dce7dc;text-align:left;padding:12px 13px;border-radius:11px;display:flex;align-items:center;gap:12px}.nav button:hover,.nav button.active{background:#e8eddf;color:var(--forest);font-weight:700}.nav .ico{width:22px;text-align:center;font-size:18px}.sidebottom{margin-top:auto;border-top:1px solid #426554;padding:18px 8px 0;color:#c4d4c7;font-size:12px}.sidebottom strong{display:block;color:white;font-size:14px;margin-bottom:4px}.main{min-width:0}.top{height:76px;padding:0 clamp(18px,4vw,48px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:rgba(255,253,248,.8)}.crumb{color:var(--muted);font-size:13px}.user{display:flex;align-items:center;gap:10px;font-size:13px}.avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);display:grid;place-items:center;color:var(--forest);font-weight:800}.content{max-width:1300px;margin:auto;padding:clamp(20px,4vw,46px)}.view{display:none}.view.active{display:block}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--forest2);font-weight:800}.headline{font-size:clamp(30px,4vw,44px);letter-spacing:-1.5px;line-height:1.12;margin:8px 0 12px;font-weight:650}.sub{color:var(--muted);max-width:680px;margin:0 0 28px}.hero{background:var(--forest);color:white;border-radius:24px;padding:clamp(24px,4vw,44px);display:grid;grid-template-columns:1.35fr .65fr;gap:22px;align-items:center;overflow:hidden}.hero h2{font-size:clamp(28px,4vw,43px);line-height:1.12;margin:8px 0 14px;letter-spacing:-1px}.hero p{color:#d9e5d8;max-width:580px}.heroart{background:#dfe8dc;border-radius:22px;min-height:180px;display:grid;place-items:center;color:var(--forest);position:relative;overflow:hidden}.orb{width:135px;height:135px;border:1px solid #9bb09b;border-radius:50%;display:grid;place-items:center;font-size:28px;letter-spacing:4px;font-weight:850;box-shadow:0 0 0 22px #d5e1d2,0 0 0 44px #e8eee2}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{border:1px solid var(--forest);border-radius:10px;padding:11px 16px;background:var(--forest);color:white;font-weight:700;display:inline-flex;justify-content:center;align-items:center;gap:8px}.btn:hover{background:var(--forest2)}.btn.light{background:transparent;color:var(--forest);border-color:#789080}.btn.pale{background:var(--sage);color:var(--forest);border-color:var(--sage)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:22px;min-width:0}.card h3{margin:8px 0;font-size:19px}.card p{color:var(--muted);font-size:14px;margin:7px 0}.cardhead{display:flex;justify-content:space-between;align-items:center;gap:12px}.symbol{width:43px;height:43px;border-radius:13px;background:var(--sage);display:grid;place-items:center;font-size:21px}.pill{display:inline-flex;align-items:center;border-radius:99px;padding:5px 10px;font-size:12px;font-weight:750;background:var(--sage);color:var(--forest)}.pill.amber{background:#f7edcf;color:#795b16}.pill.red{background:#f4e0dc;color:#8e3932}.stat{font-size:29px;font-weight:750;letter-spacing:-1px;margin:9px 0 0}.muted{color:var(--muted)}.sectiontitle{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:30px 0 14px}.sectiontitle h2{margin:0;font-size:22px}.sectiontitle p{margin:4px 0 0;color:var(--muted);font-size:13px}.chart{display:flex;align-items:end;gap:9px;height:130px;padding:14px 0 0}.barwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:end;font-size:11px;color:var(--muted)}.bar{width:100%;max-width:36px;border-radius:7px 7px 3px 3px;background:#9db89e;min-height:8px}.bar.hot{background:#d9b96c}.bar.peak{background:var(--forest2)}.field{display:grid;gap:6px;margin:13px 0}.field label{font-size:13px;font-weight:750}.field input,.field select,.field textarea{width:100%;border:1px solid #d8ded3;border-radius:10px;background:#fff;padding:11px 12px;color:var(--ink)}.field textarea{min-height:90px;resize:vertical}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 14px}.product{display:flex;gap:14px;align-items:center}.productart{width:74px;height:74px;flex:none;border-radius:13px;background:#e5e8dc;display:grid;place-items:center;font-size:29px}.productinfo{flex:1;min-width:0}.productinfo strong{display:block}.productinfo small{color:var(--muted)}.productprice{font-weight:800;white-space:nowrap}.notice{padding:14px 16px;background:#f8efd7;border:1px solid #eddfb5;border-radius:12px;color:#68521c;font-size:13px;margin:16px 0}.success{padding:12px 14px;background:#e3eddf;color:#244d35;border-radius:10px;font-size:13px;margin-top:12px}.previewshop{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.previewhead{background:var(--forest);color:#fff;padding:22px}.previewhead h3{margin:0 0 5px}.previewbody{padding:18px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.row+.row{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.hidden{display:none!important}.foot{padding:24px 0;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:36px}.mobilemenu{display:none}.demo-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:800;color:var(--muted)}@media(max-width:850px){.shell{grid-template-columns:76px minmax(0,1fr)}.side{padding:22px 10px;align-items:center}.brand{padding:0;font-size:0;letter-spacing:0}.brand .bubble{flex:none}.tagline{display:none}.nav button{justify-content:center;padding:13px 8px;font-size:0}.nav .ico{font-size:19px}.sidebottom{font-size:0;text-align:center;padding:12px 0}.sidebottom strong{font-size:11px}.hero{grid-template-columns:1fr}.heroart{min-height:140px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.shell{grid-template-columns:1fr}.side{height:auto;position:relative;padding:13px;display:block}.brand{font-size:20px;letter-spacing:2px}.tagline{display:block;margin:4px 0 12px 49px;font-size:9px}.nav{display:flex;overflow:auto;gap:5px}.nav button{flex:none;display:grid;gap:4px;font-size:10px;text-align:center;padding:8px;min-width:66px}.nav .ico{font-size:17px;width:auto}.sidebottom{display:none}.top{height:58px;padding:0 18px}.content{padding:22px 16px}.grid,.grid.two,.formgrid{grid-template-columns:1fr}.hero{padding:24px}.headline{font-size:32px}.card{padding:18px}.sectiontitle{align-items:start;flex-direction:column}.user .usertext{display:none}}
+</style>
 </head>
 <body>
-
-  <header>
-    <div class="logo">
-      🫧 MOUSSE
-      <span class="logo-badge">Commerces Indépendants</span>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <section class="hero">
-      <h1>Ne faites plus la queue pour rien</h1>
-      <p>Consultez l'affluence en temps réel de vos commerçants locaux ou optez pour le Click & Collect pour gagner du temps !</p>
-    </section>
-
-    <!-- MODULE CLIENT : AFFLUENCE EN TEMPS RÉEL -->
-    <div class="card">
-      <div class="card-title">
-        📍 Boulangerie du Centre — Statut Actuel
-      </div>
-      
-      <div class="status-box">
-        <div>
-          <div style="font-size: 0.85rem; color: var(--text-muted);">Affluence actuelle</div>
-          <strong id="status-text" style="font-size: 1.2rem;">Calme (~2 min d'attente)</strong>
-        </div>
-        <div id="status-badge" class="status-badge bg-calme">CALME</div>
-      </div>
-
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;" id="merchant-note">
-        💬 <em>"Aujourd'hui : Vente de pâtisseries du jour & préparation Click & Collect."</em>
-      </p>
-
-      <div style="font-weight: 600; font-size: 0.9rem; margin-top: 1.5rem;">Prévisions d'affluence aujourd'hui :</div>
-      <div class="hours-bar">
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 40%;"></div></div>8h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 90%;"></div></div>9h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 50%;"></div></div>10h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 20%;"></div></div>11h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 85%;"></div></div>12h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 15%;"></div></div>14h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-calme" style="height: 25%;"></div></div>15h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-moyen" style="height: 60%;"></div></div>17h</div>
-        <div class="hour-item"><div class="bar"><div class="bar-fill bg-rush" style="height: 95%;"></div></div>18h</div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <!-- MODULE CLICK & COLLECT -->
-      <div class="card">
-        <div class="card-title">🛍️ Click & Collect Express</div>
-        <p style="font-size: 0.9rem; margin-bottom: 1rem;">Commandez à l'avance et retirez vos produits sans faire la queue pendant les heures creuses.</p>
-        
-        <label style="font-size: 0.85rem; font-weight: 600;">Choisissez un créneau recommandé :</label>
-        <select id="time-slot">
-          <option>11h15 (Créneau recommandé — Calme 🟢)</option>
-          <option>14h30 (Créneau recommandé — Calme 🟢)</option>
-          <option>15h45 (Créneau recommandé — Calme 🟢)</option>
-          <option>17h30 (Affluence modérée 🟡)</option>
-        </select>
-
-        <button class="btn" onclick="alert('Commande validée ! Créneau réservé.')">Commander en Click & Collect</button>
-      </div>
-
-      <!-- MODULE COMMERÇANT (ESPACE DE GESTION) -->
-      <div class="card merchant-controls">
-        <div class="card-title">⚙️ Espace Commerçant (Démo)</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Modifiez votre affluence instantanément en cas d'imprévu (travaux, marché, forte affluence).
-        </p>
-
-        <label style="font-size: 0.85rem; font-weight: 600;">Changer l'état d'affluence :</label>
-        <select id="status-select" onchange="updateStatus()">
-          <option value="calme">🟢 Calme (Peu d'attente)</option>
-          <option value="moyen">🟡 Affluence moyenne</option>
-          <option value="rush">🔴 Rush en cours (Forte attente)</option>
-          <option value="travaux">🟣 Événement / Travaux / Jour de Marché</option>
-        </select>
-
-        <label style="font-size: 0.85rem; font-weight: 600;">Message aux clients :</label>
-        <input type="text" id="note-input" value="Travaux rue de la gare : privilégiez le Click & Collect !" oninput="updateNote()">
-      </div>
-    </div>
-
-    <footer>
-      <p>© 2026 MOUSSE — La solution intelligente pour les commerçants indépendants.</p>
-    </footer>
-
+<div class="shell">
+<aside class="side">
+  <a class="brand" href="#" onclick="showView('accueil');return false"><span class="bubble">◌</span>MOUSSE</a>
+  <div class="tagline">Le commerce, autrement</div>
+  <nav class="nav" aria-label="Navigation">
+    <button class="active" data-view="accueil" onclick="showView('accueil')"><span class="ico">⌂</span>Accueil</button>
+    <button data-view="affluence" onclick="showView('affluence')"><span class="ico">◉</span>Affluence</button>
+    <button data-view="collect" onclick="showView('collect')"><span class="ico">▣</span>Click & Collect</button>
+    <button data-view="consignes" onclick="showView('consignes')"><span class="ico">▤</span>Consignes</button>
+    <button data-view="commerce" onclick="showView('commerce')"><span class="ico">⌂</span>Mon commerce</button>
+    <button data-view="reglages" onclick="showView('reglages')"><span class="ico">⚙</span>Paramètres</button>
+  </nav>
+  <div class="sidebottom"><strong>MOUSSE · DÉMO</strong>Une plateforme pensée pour les commerces indépendants.</div>
+</aside>
+<main class="main">
+<header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Aperçu commerçant</span></div></div></header>
+<div class="content">
+<section class="view active" id="view-accueil">
+  <div class="hero"><div><div class="eyebrow" style="color:#c5d8c7">MOUSSE POUR LES COMMERÇANTS</div><h2>Moins d’attente.<br>Plus de liberté.</h2><p>Informez vos clients, proposez le Click & Collect et simplifiez le retrait des commandes depuis un seul espace.</p><div class="actions"><button class="btn pale" onclick="showView('commerce')">Personnaliser ma boutique ↗</button><button class="btn light" style="color:#fff;border-color:#a7bead" onclick="showView('collect')">Voir le Click & Collect</button></div></div><div class="heroart"><div class="orb">MOUSSE</div></div></div>
+  <div class="grid">
+    <article class="card"><div class="cardhead"><span class="symbol">◉</span><span class="pill amber">Démo</span></div><p>Affluence déclarée</p><div class="stat" id="dashstatus">Modérée</div><p>Statut renseigné par le commerçant</p><button class="btn light" onclick="showView('affluence')">Mettre à jour</button></article>
+    <article class="card"><div class="cardhead"><span class="symbol">▣</span><span class="pill">Exemple</span></div><p>Commandes à préparer</p><div class="stat">3</div><p>Commandes fictives pour la présentation</p><button class="btn light" onclick="showView('collect')">Voir les commandes</button></article>
+    <article class="card"><div class="cardhead"><span class="symbol">⌖</span><span class="pill amber">À configurer</span></div><p>Consignes sécurisées</p><div class="stat">Projet</div><p>Retrait par code, après intégration du matériel</p><button class="btn light" onclick="showView('consignes')">Découvrir</button></article>
   </div>
-
-  <script>
-    function updateStatus() {
-      const val = document.getElementById('status-select').value;
-      const text = document.getElementById('status-text');
-      const badge = document.getElementById('status-badge');
-
-      if (val === 'calme') {
-        text.innerText = "Calme (~2 min d'attente)";
-        badge.innerText = "CALME";
-        badge.className = "status-badge bg-calme";
-      } else if (val === 'moyen') {
-        text.innerText = "Modéré (~5-10 min d'attente)";
-        badge.innerText = "MOYEN";
-        badge.className = "status-badge bg-moyen";
-      } else if (val === 'rush') {
-        text.innerText = "Rush en cours (+15 min d'attente)";
-        badge.innerText = "RUSH";
-        badge.className = "status-badge bg-rush";
-      } else if (val === 'travaux') {
-        text.innerText = "Événement / Travaux / Jour de Marché";
-        badge.innerText = "INFO SPÉCIALE";
-        badge.className = "status-badge bg-travaux";
-      }
-    }
-
-    function updateNote() {
-      const val = document.getElementById('note-input').value;
-      document.getElementById('merchant-note').innerHTML = "💬 <em>\"" + val + "\"</em>";
-    }
-  </script>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="MOUSSE imagine des outils simples et modernes pour les commerçants indépendants.">
-  <title>MOUSSE — Le commerce, autrement</title>
-
-  <style>
-    :root {
-      --fond: #f7f5f0;
-      --texte: #252721;
-      --secondaire: #77796f;
-      --accent: #596653;
-      --trait: #e5e1d8;
-      --blanc: #ffffff;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background: var(--fond);
-      color: var(--texte);
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.6;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .conteneur {
-      width: min(1120px, 90%);
-      margin: auto;
-    }
-
-    header {
-      border-bottom: 1px solid var(--trait);
-      background: var(--fond);
-    }
-
-    nav {
-      min-height: 86px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .logo {
-      font-size: 27px;
-      font-weight: 800;
-      letter-spacing: 5px;
-    }
-
-    .navigation {
-      display: flex;
-      gap: 28px;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .navigation a:hover {
-      color: var(--accent);
-    }
-
-    .bouton {
-      display: inline-block;
-      padding: 13px 21px;
-      border: 1px solid var(--texte);
-      border-radius: 3px;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-
-    .bouton:hover {
-      background: var(--texte);
-      color: var(--blanc);
-    }
-
-    .accueil {
-      padding: 115px 0 105px;
-      display: grid;
-      grid-template-columns: 1.3fr 0.7fr;
-      align-items: center;
-      gap: 65px;
-    }
-
-    .surtitre {
-      color: var(--secondaire);
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 25px;
-    }
-
-    h1 {
-      max-width: 700px;
-      font-size: clamp(42px, 6vw, 76px);
-      font-weight: 500;
-      letter-spacing: -3px;
-      line-height: 1.08;
-      margin-bottom: 28px;
-    }
-
-    .introduction {
-      max-width: 490px;
-      color: var(--secondaire);
-      font-size: 17px;
-      margin-bottom: 32px;
-    }
-
-    .signature {
-      min-height: 330px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #eae8df;
-      border-radius: 2px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .signature::before,
-    .signature::after {
-      content: "";
-      position: absolute;
-      border: 1px solid #c8c9bb;
-      border-radius: 50%;
-      width: 220px;
-      height: 220px;
-    }
-
-    .signature::after {
-      width: 155px;
-      height: 155px;
-    }
-
-    .signature span {
-      position: relative;
-      z-index: 1;
-      font-size: 22px;
-      letter-spacing: 7px;
-      font-weight: 800;
-    }
-
-    .separation {
-      border-top: 1px solid var(--trait);
-    }
-
-    .section {
-      padding: 85px 0;
-    }
-
-    .titre-section {
-      font-size: clamp(30px, 4vw, 43px);
-      line-height: 1.2;
-      font-weight: 500;
-      max-width: 650px;
-      margin-bottom: 20px;
-    }
-
-    .texte-section {
-      color: var(--secondaire);
-      max-width: 570px;
-      margin-bottom: 40px;
-    }
-
-    .cartes {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .carte {
-      background: var(--blanc);
-      border: 1px solid var(--trait);
-      padding: 30px;
-      min-height: 210px;
-    }
-
-    .numero {
-      color: var(--secondaire);
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    .carte h3 {
-      font-size: 21px;
-      font-weight: 500;
-      margin: 30px 0 12px;
-    }
-
-    .carte p {
-      color: var(--secondaire);
-      font-size: 14px;
-    }
-
-    .contact {
-      background: #eae8df;
-      padding: 75px 30px;
-      text-align: center;
-    }
-
-    .contact h2 {
-      font-size: clamp(30px, 4vw, 44px);
-      font-weight: 500;
-      margin-bottom: 16px;
-    }
-
-    .contact p {
-      color: var(--secondaire);
-      margin-bottom: 28px;
-    }
-
-    footer {
-      padding: 28px 0;
-      color: var(--secondaire);
-      font-size: 12px;
-    }
-
-    .pied {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 700px) {
-      nav {
-        padding: 20px 0;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .navigation {
-        flex-wrap: wrap;
-        gap: 15px;
-      }
-
-      .accueil {
-        grid-template-columns: 1fr;
-        padding: 75px 0;
-        gap: 35px;
-      }
-
-      .signature {
-        min-height: 230px;
-      }
-
-      .cartes {
-        grid-template-columns: 1fr;
-      }
-
-      .section {
-        padding: 60px 0;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <div class="conteneur">
-      <nav aria-label="Navigation principale">
-        <a class="logo" href="#accueil">MOUSSE</a>
-
-        <div class="navigation">
-          <a href="#concept">Le concept</a>
-          <a href="#solutions">Nos solutions</a>
-          <a href="#contact">Contact</a>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <section class="accueil conteneur" id="accueil">
-      <div>
-        <p class="surtitre">Une autre façon de commercer</p>
-
-        <h1>Moins de contraintes.<br>Plus de liberté.</h1>
-
-        <p class="introduction">
-          Le commerce a déjà assez de choses à gérer.
-          MOUSSE imagine des outils qui rapprochent
-          la technologie du quotidien des commerçants,
-          sans lui compliquer la vie.
-        </p>
-
-        <a class="bouton" href="#solutions">
-          Découvrir MOUSSE →
-        </a>
-      </div>
-
-      <div class="signature" aria-label="Identité MOUSSE">
-        <span>MOUSSE</span>
-      </div>
-    </section>
-
-    <section class="section separation" id="concept">
-      <div class="conteneur">
-        <p class="surtitre">Notre idée</p>
-
-        <h2 class="titre-section">
-          La technologie doit s'adapter aux gens.
-          Pas l'inverse.
-        </h2>
-
-        <p class="texte-section">
-          Nous partons d'un principe simple :
-          les bons outils sont ceux qu'on utilise
-          naturellement, sans perdre son temps à
-          comprendre comment ils fonctionnent.
-        </p>
-      </div>
-    </section>
-
-    <section class="section separation" id="solutions">
-      <div class="conteneur">
-        <p class="surtitre">Un même esprit, plusieurs outils</p>
-
-        <h2 class="titre-section">
-          Tout ce qu'il faut. Rien de superflu.
-        </h2>
-
-        <p class="texte-section">
-          Des solutions pensées pour les commerçants
-          indépendants, leurs clients et leur quotidien.
-        </p>
-
-        <div class="cartes">
-          <article class="carte">
-            <span class="numero">01 / GESTION</span>
-            <h3>La caisse</h3>
-            <p>
-              Simplifier les ventes, le suivi des stocks
-              et la gestion quotidienne.
-            </p>
-          </article>
-
-          <article class="carte">
-            <span class="numero">02 / VISIBILITÉ</span>
-            <h3>Le site internet</h3>
-            <p>
-              Présenter son commerce, ses produits
-              et son univers en ligne.
-            </p>
-          </article>
-
-          <article class="carte">
-            <span class="numero">03 / COMMERCE</span>
-            <h3>Le click and collect</h3>
-            <p>
-              Permettre aux clients de préparer
-              leurs commandes simplement.
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact" id="contact">
-      <div class="conteneur">
-        <p class="surtitre">Parlons de votre commerce</p>
-        <h2>Et si on faisait plus simple ?</h2>
-        <p>
-          Un projet, une idée ou une question ?
-          Faisons connaissance.
-        </p>
-        <a class="bouton" href="mailto:contact@mousse.fr">
-          Nous contacter
-        </a>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="conteneur pied">
-      <span>MOUSSE — Le commerce, autrement.</span>
-      <span>© 2026 MOUSSE</span>
-    </div>
-  </footer>
+  <div class="sectiontitle"><div><h2>Les outils MOUSSE</h2><p>Des services simples, au même endroit.</p></div></div>
+  <div class="grid">
+    <article class="card"><div class="symbol">◷</div><h3>Affluence</h3><p>Indiquez les périodes calmes, les heures de pointe et les perturbations pour mieux informer vos clients.</p></article>
+    <article class="card"><div class="symbol">▣</div><h3>Click & Collect</h3><p>Créez une vitrine de commande en ligne sans devoir posséder votre propre site.</p></article>
+    <article class="card"><div class="symbol">▤</div><h3>Retrait simplifié</h3><p>Préparez un parcours de retrait au comptoir ou, plus tard, dans une consigne compatible.</p></article>
+  </div>
+</section>
+<section class="view" id="view-affluence">
+  <div class="eyebrow">Informer les clients</div><h1 class="headline">Affluence de votre commerce</h1><p class="sub">Renseignez l’état actuel et les périodes habituelles. Les visiteurs verront une estimation déclarée, pas une mesure automatique de fréquentation.</p>
+  <div class="grid two">
+    <article class="card"><h3>État actuel</h3><div class="field"><label>Affluence</label><select id="status" onchange="updateStatus()"><option value="Calme">🟢 Calme</option><option value="Modérée" selected>🟡 Modérée</option><option value="Forte">🔴 Forte affluence</option><option value="Fermé">⚫ Fermé</option></select></div><div class="field"><label>Temps d’attente estimé</label><select id="wait"><option>Pas d’attente</option><option selected>5 à 10 minutes</option><option>10 à 20 minutes</option><option>Plus de 20 minutes</option></select></div><div class="field"><label>Message aux clients</label><textarea id="noticeText">Bienvenue ! Consultez nos disponibilités avant de vous déplacer.</textarea></div><button class="btn" onclick="saveAffluence()">Enregistrer l’affluence</button><div id="affluenceSaved" class="success hidden">Modifications visibles dans cet aperçu uniquement.</div></article>
+    <article class="card"><h3>Votre journée type</h3><p>Exemple d’horaires à personnaliser selon votre activité.</p><div class="chart"><div class="barwrap"><div class="bar" style="height:36%"></div>9 h</div><div class="barwrap"><div class="bar hot" style="height:80%"></div>11 h</div><div class="barwrap"><div class="bar peak" style="height:94%"></div>12 h</div><div class="barwrap"><div class="bar" style="height:24%"></div>14 h</div><div class="barwrap"><div class="bar" style="height:32%"></div>15 h</div><div class="barwrap"><div class="bar hot" style="height:66%"></div>17 h</div><div class="barwrap"><div class="bar peak" style="height:88%"></div>18 h</div></div><div class="notice">Ces barres sont illustratives. Un futur espace commerçant permettra d’enregistrer vos propres horaires.</div></article>
+  </div>
+</section>
+<section class="view" id="view-collect">
+  <div class="eyebrow">Votre vitrine en ligne</div><h1 class="headline">Click & Collect</h1><p class="sub">Proposez une page de commande simple, personnalisée aux couleurs de votre commerce, même sans site internet indépendant.</p>
+  <div class="grid two">
+    <article class="card"><h3>Exemple de catalogue</h3><p>Les produits ci-dessous sont fictifs pour la démonstration.</p><div class="row product"><div class="productart">🥐</div><div class="productinfo"><strong>Panier découverte</strong><small>Disponible · Retrait en boutique</small></div><div class="productprice">15,00 €</div></div><div class="row product"><div class="productart">🛍️</div><div class="productinfo"><strong>Sélection du commerçant</strong><small>Disponibilité à confirmer</small></div><div class="productprice">9,50 €</div></div><div class="notice">Les commandes et paiements ne sont pas encore connectés : aucun achat réel n’est effectué.</div></article>
+    <article class="card"><h3>Personnaliser ma vitrine</h3><div class="field"><label>Nom affiché</label><input id="shopInput" value="Ma boutique" oninput="previewShop()"></div><div class="field"><label>Phrase d’accueil</label><input id="introInput" value="Vos produits, prêts à retirer" oninput="previewShop()"></div><div class="field"><label>Couleur principale</label><select id="themeInput" onchange="previewShop()"><option value="#173f32">Vert forêt</option><option value="#a45139">Terracotta</option><option value="#263f63">Bleu nuit</option></select></div><div class="field"><label>Mode de retrait</label><select id="pickupInput"><option>Retrait en boutique</option><option>Retrait en consigne avec code (à intégrer)</option><option>Au comptoir ou en consigne (à intégrer)</option></select></div><button class="btn" onclick="showView('commerce')">Continuer la personnalisation</button></article>
+  </div>
+  <div class="sectiontitle"><div><h2>Aperçu de la page client</h2><p>La vitrine s’adapte au nom et aux couleurs choisis.</p></div></div>
+  <div class="previewshop"><div class="previewhead" id="previewHead"><div class="demo-label" style="color:#d5e1d2">BOUTIQUE SUR MOUSSE</div><h3 id="previewName">Ma boutique</h3><span id="previewIntro">Vos produits, prêts à retirer</span></div><div class="previewbody"><div class="row"><div><strong>Panier découverte</strong><div class="muted" style="font-size:13px">À retirer selon les horaires du commerce</div></div><strong>15,00 €</strong></div><button class="btn" style="width:100%;margin-top:16px" onclick="alert('Démo uniquement : les commandes ne sont pas encore activées.')">Voir les produits (démo)</button></div></div>
+</section>
+<section class="view" id="view-consignes">
+  <div class="eyebrow">Retrait sans attente</div><h1 class="headline">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
+  <div class="grid two"><article class="card"><div class="symbol">▤</div><h3>Le parcours envisagé</h3><p>1. Le client passe commande.</p><p>2. Le commerçant prépare le colis.</p><p>3. Un code unique est généré par un système sécurisé.</p><p>4. Le client récupère son colis dans une consigne compatible.</p></article><article class="card"><span class="pill amber">Prototype — pas opérationnel</span><h3>Ce qu’il faudra intégrer</h3><p>Un fournisseur de consignes compatibles, une génération de codes sécurisée, une gestion des ouvertures et un suivi des retraits.</p><div class="notice">Aucun code de retrait réel n’est généré par cette démonstration.</div></article></div>
+</section>
+<section class="view" id="view-commerce">
+  <div class="eyebrow">Votre identité</div><h1 class="headline">Mon commerce</h1><p class="sub">Préparez les informations qui personnaliseront votre future vitrine MOUSSE.</p>
+  <div class="grid two"><article class="card"><h3>Informations du commerce</h3><div class="field"><label>Nom de l’établissement</label><input id="profileName" value="Ma boutique" oninput="syncProfile()"></div><div class="field"><label>Activité</label><select><option>Commerce indépendant</option><option>CBD</option><option>Alimentation</option><option>Vêtements</option><option>Boissons / café</option><option>Autre</option></select></div><div class="field"><label>Message de présentation</label><textarea>Bienvenue dans notre boutique !</textarea></div><button class="btn" onclick="saveProfile()">Enregistrer l’aperçu</button><div id="profileSaved" class="success hidden">Nom actualisé dans l’aperçu.</div></article><article class="card"><h3>Identité visuelle</h3><p>À prévoir dans l’espace commerçant final :</p><p>✓ Ajouter un logo</p><p>✓ Choisir les couleurs</p><p>✓ Modifier les textes et les produits</p><p>✓ Partager un lien de boutique</p><div class="notice">Les données de ce prototype ne sont pas sauvegardées dans un compte. La connexion et la base de données seront une étape distincte.</div></article></div>
+</section>
+<section class="view" id="view-reglages">
+  <div class="eyebrow">Configuration</div><h1 class="headline">Paramètres</h1><p class="sub">La première version est un prototype de présentation. Les accès sécurisés et la sauvegarde en ligne seront nécessaires avant une utilisation réelle par plusieurs commerçants.</p>
+  <div class="grid two"><article class="card"><h3>Comptes commerçants</h3><p>Chaque commerce devra avoir son propre compte et ne pourra consulter que ses informations, produits et commandes.</p><span class="pill amber">À développer</span></article><article class="card"><h3>Données & confidentialité</h3><p>Avant la mise en production, il faudra choisir un service d’authentification et de base de données et définir les règles de protection des données.</p><span class="pill amber">À configurer</span></article></div>
+</section>
+<div class="foot">MOUSSE — Le commerce, autrement. <span style="float:right">Première interface de démonstration · 2026</span></div>
+</div>
+</main>
+</div>
+<script>
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));document.getElementById('view-'+id).classList.add('active');const names={accueil:'Accueil',affluence:'Affluence',collect:'Click & Collect',consignes:'Consignes',commerce:'Mon commerce',reglages:'Paramètres'};document.getElementById('breadcrumb').textContent='Votre espace · '+names[id];window.scrollTo({top:0,behavior:'smooth'})}
+function updateStatus(){document.getElementById('dashstatus').textContent=document.getElementById('status').value}
+function saveAffluence(){updateStatus();document.getElementById('affluenceSaved').classList.remove('hidden')}
+function previewShop(){const n=document.getElementById('shopInput').value||'Ma boutique';document.getElementById('previewName').textContent=n;document.getElementById('previewIntro').textContent=document.getElementById('introInput').value;document.getElementById('previewHead').style.background=document.getElementById('themeInput').value;document.getElementById('topshop').textContent=n;document.getElementById('profileName').value=n}
+function syncProfile(){document.getElementById('topshop').textContent=document.getElementById('profileName').value||'Ma boutique';document.getElementById('shopInput').value=document.getElementById('profileName').value;previewShop()}
+function saveProfile(){syncProfile();document.getElementById('profileSaved').classList.remove('hidden')}
+</script>
 </body>
 </html>
