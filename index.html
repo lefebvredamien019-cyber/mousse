@@ -192,6 +192,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 .notice-error{background:#f8e5e1!important;border-color:#dfaaa0!important;color:#702d25!important}
 button:disabled{opacity:.6;cursor:not-allowed}
 #liveShopPicker{margin-top:16px}
+.choice-group{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:18px;flex-wrap:wrap}.choice-group legend{font-weight:750;font-size:13px;padding:0 4px}.choice-group label{display:inline-flex;align-items:center;gap:8px}.choice-group input{width:auto}
 @media(max-width:700px){.side{align-items:flex-start}.nav{scroll-snap-type:x proximity;overscroll-behavior-inline:contain}.nav button{scroll-snap-align:start}.nav::-webkit-scrollbar{height:4px}.nav::-webkit-scrollbar-thumb{background:#8eaa99;border-radius:4px}.foot{padding:22px 18px;gap:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 
@@ -271,14 +272,16 @@ button:disabled{opacity:.6;cursor:not-allowed}
     </article>
     <article class="card"><h3>Finaliser la commande</h3>
       <div class="field"><label for="customerName">Votre nom</label><input id="customerName" placeholder="Nom et prénom"></div>
-      <div class="field"><label for="customerEmail">E-mail (facultatif)</label><input id="customerEmail" type="email" placeholder="vous@exemple.fr"></div>
+      <fieldset class="field choice-group"><legend>Recevoir le suivi de commande par</legend><label><input type="radio" name="customerNotification" value="email" checked> E-mail</label><label><input type="radio" name="customerNotification" value="sms"> SMS</label></fieldset>
+      <div class="field" id="customerEmailField"><label for="customerEmail">Adresse e-mail</label><input id="customerEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr"></div>
+      <div class="field hidden" id="customerPhoneField"><label for="customerPhone">Téléphone au format international</label><input id="customerPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+33 6 12 34 56 78"><small class="muted">Ton numéro sert uniquement aux alertes de cette commande.</small></div>
       <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Click & Collect — retrait en boutique</option><option value="delivery">Livraison à domicile</option></select></div>
       <div id="deliveryFields" class="hidden"><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" placeholder="N°, rue, code postal, ville"></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
       <div class="field"><label for="customerNote">Note pour le commerçant</label><textarea id="customerNote" placeholder="Précisions sur la commande…"></textarea></div>
       <input id="orderWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" style="width:100%" onclick="placeDemoOrder()">Confirmer la commande</button><div id="orderMessage" class="success hidden"></div>
     </article>
   </div>
-  <div class="sectiontitle"><div><h2>Commandes reçues (démo locale)</h2><p>Seules les commandes du mode présentation apparaissent ici.</p></div><button class="btn light" onclick="renderOrders()">Actualiser</button></div><div id="ordersList" class="grid two"></div>
+
 </section>
 <section class="view" id="view-consignes">
   <div class="eyebrow">Retrait sans attente</div><h1 class="headline" id="consignes-title">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
@@ -322,6 +325,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <div class="field"><label for="productEmoji">Icône produit (facultatif)</label><input id="productEmoji" maxlength="8" placeholder="🛍️"></div>
     <button class="btn" onclick="addMerchantProduct()">Ajouter au catalogue</button><div id="productSaved" class="success hidden"></div>
   </article><article class="card"><h3>Mon catalogue</h3><div id="merchantProducts"><p class="muted">Aucun article ajouté. Crée ton premier produit.</p></div></article></div>
+    <div class="sectiontitle"><div><h2>3. Commandes reçues</h2><p>Modifie le statut pour prévenir le client par e-mail ou SMS.</p></div><button class="btn light" onclick="renderOrders()">Actualiser</button></div><div id="ordersList" class="grid two"></div>
   </div>
 </section>
 <section class="view" id="view-contact" aria-labelledby="contact-title">
