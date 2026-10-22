@@ -165,6 +165,21 @@ body{color:var(--ink)}
 input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid #d7b875;outline-offset:2px}
 @media(max-width:850px){.side{background:#151d19}.nav button.active{background:#d7b875;color:#17211b}}
 
+
+/* Éditeur de couleurs MOUSSE */
+#appearanceToggle{border:1px solid #b99c5e!important;color:#e4cf94!important}
+#appearancePanel{position:fixed;z-index:1000;right:20px;top:88px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 110px);overflow:auto;background:#19211d;color:#f0eee5;border:1px solid #5a6a5d;border-radius:16px;padding:20px;box-shadow:0 18px 60px #0008}
+#appearancePanel h2{font-size:20px;margin:0 0 6px;color:#f5f0df}
+#appearancePanel p{font-size:13px;color:#b1b9b0;margin:0 0 14px}
+#appearancePanel .theme-field{display:grid;grid-template-columns:1fr 58px;align-items:center;gap:12px;margin:12px 0;font-size:13px}
+#appearancePanel input[type=color]{width:58px;height:38px;padding:3px;border:1px solid #46574b;border-radius:8px;background:#111a15}
+#appearancePanel .theme-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+#appearancePanel .theme-actions button{border-radius:8px;padding:9px 12px;border:1px solid #687b6d;background:#26382e;color:#f0eee5}
+#appearancePanel .theme-actions button.primary{background:#d7b875;color:#17211b;border-color:#d7b875}
+#appearancePanel .theme-status{min-height:18px;margin-top:10px;color:#e3c982}
+@media(max-width:560px){#appearancePanel{top:130px;right:10px}}
+
+.mousse-app-logo{display:block;max-width:56px;max-height:42px;object-fit:contain}.brand .bubble{display:none}@media(max-width:850px){.mousse-app-logo{max-width:40px;height:32px}}
 </style>
 </head>
 <body>
@@ -179,7 +194,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
     <button data-view="consignes" onclick="showView('consignes')"><span class="ico">▤</span>Consignes</button>
     <button data-view="commerce" onclick="showView('commerce')"><span class="ico">⌂</span>Espace commerçant</button>
     <button data-view="reglages" onclick="showView('reglages')"><span class="ico">⚙</span>Paramètres</button>
-  </nav>
+  <button id="appearanceToggle" type="button" onclick="toggleAppearancePanel()" aria-expanded="false"><span class="ico">⚙</span> Personnaliser</button></nav>
   <div class="sidebottom"><strong>MOUSSE · DÉMO</strong>Une plateforme pensée pour les commerces indépendants.</div>
 </aside>
 <main class="main">
@@ -327,6 +342,52 @@ function placeDemoOrder(){const name=document.getElementById('customerName').val
 function renderOrders(){const el=document.getElementById('ordersList');if(!el)return;const orders=readOrders();el.innerHTML=orders.length?orders.map(o=>'<article class="card"><div class="cardhead"><h3>Commande '+o.id+'</h3><span class="pill">'+o.status+'</span></div><p><strong>'+o.name+'</strong> · '+(o.mode==='pickup'?'Click & Collect':'Livraison à domicile (démo)')+'</p><p>'+(o.address||'Retrait en boutique')+'</p><p>'+o.items.map(i=>i.name+' × '+i.qty).join(', ')+'</p><div class="row"><strong>'+euro(o.total)+'</strong><select aria-label="Statut de commande" onchange="setOrderStatus(\''+o.id+'\',this.value)"><option '+(o.status==='Reçue'?'selected':'')+'>Reçue</option><option '+(o.status==='Acceptée'?'selected':'')+'>Acceptée</option><option '+(o.status==='Prête'?'selected':'')+'>Prête</option><option '+(o.status==='Terminée'?'selected':'')+'>Terminée</option><option '+(o.status==='Annulée'?'selected':'')+'>Annulée</option></select></div><small class="muted">'+o.created+'</small></article>').join(''):'<article class="card"><p>Aucune commande pour le moment. Crée une commande de test ci-dessus.</p></article>'}
 function setOrderStatus(id,status){const orders=readOrders().map(o=>o.id===id?{...o,status}:o);localStorage.setItem('mousse-demo-orders',JSON.stringify(orders));renderOrders()}
 document.addEventListener('DOMContentLoaded',()=>{renderCart();renderOrders();const m=readMerchant();['merchantName','merchantActivity','merchantEmail','merchantAddress','merchantIntro','merchantColor'].forEach((id,i)=>{const el=document.getElementById(id);const keys=['name','activity','email','address','intro','color'];if(el&&m[keys[i]])el.value=m[keys[i]]});document.getElementById('merchantDeliveryEnabled').checked=!!m.delivery;if(m.logo){document.getElementById('merchantLogoPreview').src=m.logo;document.getElementById('merchantLogoPreview').classList.remove('hidden')}renderMerchantPreview();renderMerchantProducts();renderClientCatalog();toggleDelivery();renderDiscoverResults([])})
+</script>
+
+<section id="appearancePanel" class="hidden" aria-label="Personnaliser les couleurs du site">
+ <h2>Personnaliser l’apparence</h2>
+ <p>Choisis les couleurs de MOUSSE. Elles sont enregistrées dans ce navigateur uniquement pour le moment.</p>
+ <label class="theme-field">Fond principal <input id="themeBg" type="color" value="#111613"></label>
+ <label class="theme-field">Fond des cartes <input id="themeCard" type="color" value="#19211d"></label>
+ <label class="theme-field">Vert profond <input id="themeGreen" type="color" value="#1c3b31"></label>
+ <label class="theme-field">Or / accent <input id="themeGold" type="color" value="#d7b875"></label>
+ <label class="theme-field">Texte principal <input id="themeText" type="color" value="#f0eee5"></label>
+ <div class="theme-actions"><button class="primary" type="button" onclick="saveAppearance()">Enregistrer</button><button type="button" onclick="resetAppearance()">Réinitialiser</button><button type="button" onclick="toggleAppearancePanel(false)">Fermer</button></div>
+ <div id="themeStatus" class="theme-status" role="status"></div>
+</section>
+<script>
+(function(){
+ const defaults={bg:'#111613',card:'#19211d',green:'#1c3b31',gold:'#d7b875',text:'#f0eee5'};
+ window.applyAppearance=function(t){
+  const root=document.documentElement;
+  root.style.setProperty('--cream',t.bg);root.style.setProperty('--paper',t.card);
+  root.style.setProperty('--forest',t.green);root.style.setProperty('--forest2',t.green);
+  root.style.setProperty('--gold',t.gold);root.style.setProperty('--ink',t.text);
+  document.body.style.background=t.bg;document.body.style.color=t.text;
+  document.querySelectorAll('.side,.top').forEach(el=>el.style.background=t.card);
+  document.querySelectorAll('.card,.previewshop').forEach(el=>{el.style.background=t.card;el.style.color=t.text});
+  document.querySelectorAll('.hero,#view-accueil .hero,.previewhead').forEach(el=>el.style.background=t.green);
+  document.querySelectorAll('.btn').forEach(el=>{el.style.background=t.gold;el.style.borderColor=t.gold;el.style.color=t.bg});
+ };
+ window.toggleAppearancePanel=function(force){
+  const p=document.getElementById('appearancePanel'),b=document.getElementById('appearanceToggle');
+  const show=typeof force==='boolean'?force:p.classList.contains('hidden');
+  p.classList.toggle('hidden',!show);b.setAttribute('aria-expanded',String(show));
+ };
+ window.saveAppearance=function(){
+  const t={bg:themeBg.value,card:themeCard.value,green:themeGreen.value,gold:themeGold.value,text:themeText.value};
+  localStorage.setItem('mousse-site-theme',JSON.stringify(t));applyAppearance(t);
+  document.getElementById('themeStatus').textContent='Couleurs enregistrées sur cet appareil.';
+ };
+ window.resetAppearance=function(){
+  localStorage.removeItem('mousse-site-theme');
+  Object.entries({themeBg:defaults.bg,themeCard:defaults.card,themeGreen:defaults.green,themeGold:defaults.gold,themeText:defaults.text}).forEach(([id,v])=>document.getElementById(id).value=v);
+  applyAppearance(defaults);document.getElementById('themeStatus').textContent='Palette par défaut rétablie.';
+ };
+ document.addEventListener('DOMContentLoaded',function(){
+  try{const t=JSON.parse(localStorage.getItem('mousse-site-theme')||'null');if(t)applyAppearance(t)}catch(e){}
+ });
+})();
 </script>
 </body>
 </html>
