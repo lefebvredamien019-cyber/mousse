@@ -118,6 +118,53 @@ body{background:radial-gradient(ellipse at 82% 18%,rgba(151,213,179,.45),transpa
 .mousse-pos{margin:42px 0 18px;padding:clamp(22px,4vw,44px);border-radius:28px;background:linear-gradient(145deg,#f1f8ed,#e1f0e3 60%,#d5e8da);border:1px solid #ffffff;box-shadow:0 18px 46px #174d3810;color:var(--forest)}
 .pos-intro{max-width:900px;margin:0 auto 28px;text-align:center}.pos-kicker,.plan-tag{display:inline-flex;padding:7px 12px;border-radius:99px;background:#ffffffb8;color:#176b59;font-size:11px;font-weight:850;letter-spacing:1px;text-transform:uppercase}.pos-intro h2{font-size:clamp(28px,4vw,46px);line-height:1.12;letter-spacing:-1.5px;margin:14px 0}.pos-intro>p{max-width:720px;margin:0 auto;color:#42665b;line-height:1.7}.pos-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:26px;text-align:left}.pos-steps>div{display:grid;gap:6px;padding:16px;border-radius:17px;background:#ffffffa8;border:1px solid #ffffff}.pos-steps b{font-size:12px;color:#39856a}.pos-steps strong{font-size:14px}.pos-steps span{font-size:12px;color:#5d756a;line-height:1.5}.pos-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:920px;margin:0 auto}.pos-plan{padding:clamp(20px,3vw,30px);background:#fffefa;border:1px solid #ffffff;border-radius:22px;box-shadow:0 10px 28px #174d380b}.pos-plan h3{font-size:23px;margin:14px 0 2px}.plan-price{font-size:26px;font-weight:850;letter-spacing:-.7px;margin:8px 0}.plan-price small{font-size:12px;font-weight:500;letter-spacing:0;color:#65736d}.pos-plan>p{font-size:13px;color:#65736d;min-height:40px}.pos-plan ul{list-style:none;padding:0;margin:18px 0 24px;display:grid;gap:11px;font-size:13px}.pos-plan li:before{content:"✓";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e1f0df;color:#176b59;font-weight:900;margin-right:8px}.pos-plan li.plan-muted{color:#87948b}.pos-plan li.plan-muted:before{content:"–";background:#f0f0e9;color:#87948b}.pos-plan .btn{width:100%;font-size:13px}.pos-premium{background:linear-gradient(150deg,#fffefa,#f4f6e6);border-color:#c8ddbe}.pos-premium .plan-tag{background:#e3edcf;color:#345b38}.pos-disclaimer{max-width:920px;margin:18px auto 0;padding:13px 15px;border-radius:13px;background:#ffffffa8;color:#5e7064;font-size:11px;line-height:1.6}.pos-disclaimer strong{color:#345b38}
 @media(max-width:700px){.mousse-pos{padding:22px 16px;border-radius:22px;margin-top:30px}.pos-steps,.pos-plans{grid-template-columns:1fr}.pos-intro{text-align:left}.pos-intro>p{margin:0}.pos-plan>p{min-height:0}.pos-steps{gap:8px}}
+
+/* MOUSSE — thème sombre chic, vert profond et champagne */
+:root{
+ --forest:#101b18;--forest2:#1c3b31;--cream:#111613;--paper:#19211d;
+ --ink:#f0eee5;--muted:#b1b9b0;--line:#35443b;--sage:#26382e;--gold:#d7b875;
+ --red:#e58e83;
+}
+html,body{background:#111613;color:#f0eee5}
+body{color:var(--ink)}
+.side{background:#151d19;color:var(--ink);border-bottom:1px solid #344139;box-shadow:0 5px 24px #0005}
+.brand{color:#f5f0df}
+.bubble{background:#d7b875;color:#142019}
+.nav button{color:#c5cec4}
+.nav button.active{background:#d7b875;color:#17211b}
+.nav button:hover{background:#293b31;color:#f5f0df}
+.top{background:#151d19;border-bottom:1px solid #344139;color:var(--ink)}
+.crumb,.muted,.sub,.card p,.sectiontitle p,.foot,.demo-label{color:#b1b9b0}
+.eyebrow{color:#d7b875}
+.headline{color:#f5f0df}
+.hero,#view-accueil .hero{background:linear-gradient(135deg,#14231d,#1d3b30);border:1px solid #3d5948;color:#f5f0df}
+.hero p{color:#d1dbd0}
+.heroart{background:#26392e;color:#e3c982}
+.orb{border-color:#d7b875;box-shadow:0 0 0 18px #26392e,0 0 0 36px #1c2b23;color:#e3c982}
+.card,.previewshop{background:#19211d;border-color:#35443b;color:#f0eee5;box-shadow:0 5px 20px #0002}
+.card h3,.sectiontitle h2{color:#f5f0df}
+.symbol,.productart,.avatar{background:#2a3c31;color:#e3c982}
+.pill{background:#2a3c31;color:#e3d2a0}
+.pill.amber{background:#493d22;color:#f0d58c}
+.pill.red{background:#482c29;color:#f0aaa0}
+.btn{background:#d7b875;border-color:#d7b875;color:#17211b}
+.btn:hover{background:#e6cb8c;border-color:#e6cb8c}
+.btn.light{background:transparent;color:#e4d09a;border-color:#687b6d}
+.btn.pale{background:#2a3c31;color:#f0d58c;border-color:#435849}
+.field input,.field select,.field textarea{background:#111a15;border-color:#46574b;color:#f0eee5}
+.field input::placeholder,.field textarea::placeholder{color:#9ca99d}
+.notice{background:#40371f;border-color:#65552c;color:#f0d994}
+.success{background:#203a2c;color:#bde0c2}
+.previewhead{background:#203b30;color:#f5f0df}
+.previewbody{background:#19211d}
+.row+.row{border-color:#35443b}
+.foot{border-color:#35443b}
+#view-accueil .hero:before{background:linear-gradient(145deg,transparent 0 35%,#2b4a3a 35% 56%,transparent 56%),linear-gradient(35deg,transparent 0 48%,#234235 48% 70%,transparent 70%)}
+#view-accueil .grid .card:hover{border-color:#b89b59;box-shadow:0 12px 28px #0005}
+.bar{background:#536f59}.bar.hot{background:#d7b875}.bar.peak{background:#2d5b45}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid #d7b875;outline-offset:2px}
+@media(max-width:850px){.side{background:#151d19}.nav button.active{background:#d7b875;color:#17211b}}
+
 </style>
 </head>
 <body>
