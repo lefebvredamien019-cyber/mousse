@@ -1,4 +1,4 @@
-const allowedOrigins = (Deno.env.get("APP_ORIGINS") ?? "")
+const allowedOrigins = (Deno.env.get("APP_ORIGINS") ?? "https://www.mousse-market.fr,https://lefebvredamien019-cyber.github.io")
   .split(",").map((value) => value.trim()).filter(Boolean);
 
 const cors = (origin) => ({
