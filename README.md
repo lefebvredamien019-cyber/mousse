@@ -10,7 +10,7 @@ La page publique est une interface de présentation interactive. Elle ne constit
 - Les parcours d’affluence, de Click & Collect, de gestion d’un commerce et de demande de gestion d’une fiche sont des démonstrations. Les profils, produits, commandes, demandes et préférences de présentation sont conservés dans le stockage local du navigateur utilisé.
 - Ces données ne sont pas partagées entre visiteurs ou appareils. Il n’y a pas encore d’authentification, de base de données MOUSSE, de traitement de commande, de paiement, ni d’envoi de demande ou de notification par e-mail.
 - Le site ne doit donc pas être présenté comme un service de commande ou un espace commerçant prêt pour une utilisation réelle.
-- La page Contact indique que l’adresse de support reste à confirmer. Remplacer ce texte par l’adresse approuvée dans `index.html` quand elle sera disponible ; aucune adresse n’est configurée pour l’instant.
+- La page Contact fournit l’adresse de support `dklm.services@gmail.com` sous forme de lien e-mail.
 
 ## Avant de publier sous www.mousse-market.fr
 
