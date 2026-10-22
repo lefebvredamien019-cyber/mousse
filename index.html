@@ -186,7 +186,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 <body>
 <div class="shell">
 <aside class="side">
-  <a class="brand" href="#" onclick="showView('accueil');return false"><img src="https://raw.githubusercontent.com/lefebvredamien019-cyber/mousse-market-mate/main/src/assets/mousse-mark.png" alt="Logo de l’application MOUSSE" class="mousse-app-logo" onerror="this.style.display='none'"><span>MOUSSE</span></a>
+  <a class="brand" href="#" onclick="showView('accueil');return false"><img src="assets/mousse-mark.svg" alt="Logo de l’application MOUSSE" class="mousse-app-logo" onerror="this.style.display='none'"><span>MOUSSE</span></a>
   <div class="tagline">Le lien entre commerces et clients</div>
   <nav class="nav" aria-label="Navigation">
     <button class="active" data-view="accueil" onclick="showView('accueil')"><span class="ico">⌂</span>Accueil</button>
@@ -266,10 +266,10 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
   <div class="grid two"><article class="card"><div class="symbol">▤</div><h3>Le parcours envisagé</h3><p>1. Le client passe commande.</p><p>2. Le commerçant prépare le colis.</p><p>3. Un code unique est généré par un système sécurisé.</p><p>4. Le client récupère son colis dans une consigne compatible.</p></article><article class="card"><span class="pill amber">Prototype — pas opérationnel</span><h3>Ce qu’il faudra intégrer</h3><p>Un fournisseur de consignes compatibles, une génération de codes sécurisée, une gestion des ouvertures et un suivi des retraits.</p><div class="notice">Aucun code de retrait réel n’est généré par cette démonstration.</div></article></div>
 </section>
 <section class="view" id="view-commerce">
-  <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline">Créer mon espace commerçant</h1><p class="sub">Crée un profil de démonstration, personnalise ta boutique et ajoute des articles à ton catalogue.</p>
+  <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline">Ma boutique, en quelques clics</h1><p class="sub">Renseigne les informations essentielles, choisis une couleur, ajoute ton logo : l’aperçu se met à jour simplement.</p>
   <div class="notice"><strong>À savoir :</strong> cette version de présentation sauvegarde les données sur cet ordinateur uniquement. La création de vrais comptes sécurisés et la synchronisation entre appareils nécessitent encore Supabase.</div>
   <div class="grid two">
-    <article class="card"><h3>1. Mon profil commerçant</h3>
+    <article class="card"><h3>Étape 1 · Mes informations</h3>
       <div class="field"><label for="merchantName">Nom de l’établissement</label><input id="merchantName" placeholder="Ex. La Boutique du Centre"></div>
       <div class="field"><label for="merchantActivity">Activité</label><select id="merchantActivity"><option>Commerce indépendant</option><option>CBD</option><option>Alimentation</option><option>Vêtements</option><option>Boissons / café</option><option>Pièces automobiles</option><option>Autre</option></select></div>
       <div class="field"><label for="merchantEmail">E-mail de contact</label><input id="merchantEmail" type="email" placeholder="contact@ma-boutique.fr"></div>
@@ -280,7 +280,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
       <div class="field"><label><input id="merchantDeliveryEnabled" type="checkbox" style="width:auto"> Je propose la livraison à domicile</label></div>
       <button class="btn" onclick="saveMerchantDemo()">Enregistrer mon espace (démo)</button><div id="merchantSaved" class="success hidden"></div>
     </article>
-    <article class="card"><h3>Aperçu de ma boutique</h3><div class="previewshop"><div class="previewhead" id="merchantPreviewHead"><img id="merchantPreviewLogo" class="hidden" alt="Logo" style="max-width:64px;max-height:55px;object-fit:contain;margin-bottom:8px"><h3 id="merchantPreviewName">Ma boutique</h3><p id="merchantPreviewIntro">Bienvenue dans notre boutique.</p></div><div class="previewbody"><p id="merchantPreviewAddress">Adresse du commerce à renseigner</p><span class="pill" id="merchantPreviewDelivery">Click & Collect</span></div></div>
+    <article class="card"><h3>Étape 2 · Je vérifie le résultat</h3><div class="previewshop"><div class="previewhead" id="merchantPreviewHead"><img id="merchantPreviewLogo" class="hidden" alt="Logo" style="max-width:64px;max-height:55px;object-fit:contain;margin-bottom:8px"><h3 id="merchantPreviewName">Ma boutique</h3><p id="merchantPreviewIntro">Bienvenue dans notre boutique.</p></div><div class="previewbody"><p id="merchantPreviewAddress">Adresse du commerce à renseigner</p><span class="pill" id="merchantPreviewDelivery">Click & Collect</span></div></div>
       <div class="notice">Ce profil et le catalogue de démonstration sont stockés dans le navigateur de cet ordinateur, pas dans un compte en ligne.</div>
       <button class="btn light" onclick="showView('collect')">Voir le parcours client →</button>
     </article>
