@@ -94,6 +94,7 @@ Deno.serve(async (request) => {
     return { response, result };
   };
 
+  let createdOrderId = null;
   try {
     const rate = await callSupabase("rpc/consume_order_rate_limit", {
       p_bucket: bucket, p_limit: 5, p_window_seconds: 900,
@@ -120,6 +121,7 @@ Deno.serve(async (request) => {
     }
 
     const data = order.result;
+    createdOrderId = data.order_id;
     const lineText = (data.items ?? []).map((item) =>
       escapeHtml(item.quantity) + " × " + escapeHtml(item.name) + " — " +
       (Number(item.unit_price_cents * item.quantity) / 100).toFixed(2) + " €"
@@ -158,6 +160,16 @@ Deno.serve(async (request) => {
     }, origin);
   } catch (error) {
     console.error("Order service failed:", error instanceof Error ? error.message : "unknown error");
+    if (createdOrderId) {
+      try {
+        await callSupabase("orders?id=eq." + encodeURIComponent(createdOrderId), {
+          notification_status: "failed",
+        }, "PATCH");
+      } catch {
+        console.error("Order notification status could not be updated.");
+      }
+      return json(200, { order_id: createdOrderId, order_created: true, email_sent: false }, origin);
+    }
     return json(503, { error: "Order service is temporarily unavailable" }, origin);
   }
 });
