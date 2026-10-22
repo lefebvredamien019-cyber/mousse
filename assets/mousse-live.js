@@ -31,6 +31,9 @@
   document.getElementById("liveShopPicker")?.classList.remove("hidden");
   window.demoCart = demoCart;
   const client = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
+  const publicClient = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
   let currentUser = null;
   let currentMerchant = null;
   let currentShop = null;
@@ -87,7 +90,7 @@
     const picker = document.getElementById("liveShopSelect");
     const catalog = document.getElementById("clientCatalog");
     if (!picker || !catalog) return;
-    const { data, error } = await client.from("shops")
+    const { data, error } = await publicClient.from("shops")
       .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents")
       .eq("is_published", true).order("name");
     if (error) {
@@ -162,7 +165,7 @@
       is_published: document.getElementById("merchantPublished").checked,
       updated_at: new Date().toISOString()
     };
-    if (values.name.length < 2 || !values.email) return status("merchantSaved", "Le nom et l’adresse e-mail du commerce sont obligatoires.", true);
+    if (values.name.length < 2 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(values.email)) return status("merchantSaved", "Renseigne un nom et une adresse e-mail valide pour le commerce.", true);
     const { data, error } = await client.from("shops").update(values)
       .eq("id", currentMerchant.id).select("*").single();
     if (error) return status("merchantSaved", "Enregistrement impossible. Vérifie les règles de sécurité du commerce.", true);
@@ -240,7 +243,7 @@
       return;
     }
     const generation = ++loadGeneration;
-    const { data, error } = await client.from("products")
+    const { data, error } = await publicClient.from("products")
       .select("id,name,description,price_cents,stock,active")
       .eq("shop_id", currentShop.id).eq("active", true).order("name");
     if (generation !== loadGeneration) return;
@@ -280,6 +283,7 @@
     if (deliveryOption) deliveryOption.disabled = !currentShop?.delivery_enabled;
     if (deliveryOption?.disabled && select.value === "delivery") select.value = "pickup";
     addressFields?.classList.toggle("hidden", select?.value !== "delivery");
+    window.renderCart();
     const fee = document.getElementById("deliveryFeeHint");
     if (fee) fee.textContent = currentShop?.delivery_enabled
       ? "Frais de livraison : " + euroCents(currentShop.delivery_fee_cents) +
@@ -325,7 +329,7 @@
     const button = document.querySelector('#view-collect button[onclick="placeDemoOrder()"]');
     if (button) button.disabled = true;
     try {
-      const { data, error } = await client.functions.invoke("create-order", { body });
+      const { data, error } = await publicClient.functions.invoke("create-order", { body });
       if (error) throw error;
       if (data?.email_sent) {
         status("orderMessage", "Commande " + data.order_id + " enregistrée. Un e-mail vient d’être envoyé à " + currentShop.name + ".");
@@ -356,7 +360,7 @@
     currentShop = null;
     window.demoCart.length = 0;
     window.renderCart();
-    const { data } = await client.from("shops").select(
+    const { data } = await publicClient.from("shops").select(
       "id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents"
     ).eq("id", event.target.value).eq("is_published", true).maybeSingle();
     currentShop = data || null;
