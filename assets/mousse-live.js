@@ -11,13 +11,14 @@
     element.classList.toggle("notice-error", isError);
   };
 
-  const escape = (value) => window.escapeDemo(String(value ?? ""));
+  const escape = (value) => String(value ?? "").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":'&#39;' })[character]);
   const euroCents = (cents) => (Number(cents || 0) / 100).toLocaleString("fr-FR", {
     style: "currency", currency: "EUR"
   });
 
   if (!isConfigured) {
     window.MOUSSE_LIVE_STATUS = "not-configured";
+    document.getElementById("merchantWorkspace")?.classList.remove("hidden");
     status("merchantAuthStatus", "Mode présentation : aucun compte ou e-mail de commande ne sera créé tant que le backend n’est pas configuré.");
     return;
   }
@@ -27,6 +28,8 @@
     return;
   }
 
+  document.getElementById("liveShopPicker")?.classList.remove("hidden");
+  window.demoCart = demoCart;
   const client = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
   let currentUser = null;
   let currentMerchant = null;
@@ -284,10 +287,28 @@
       : "Cette boutique propose le retrait en boutique.";
   };
 
+  const renderBaseCart = window.renderCart.bind(window);
+  window.renderCart = () => {
+    renderBaseCart();
+    const total = document.getElementById("cartTotal");
+    const fulfillment = document.getElementById("fulfilment")?.value;
+    if (!total || !currentShop || !window.demoCart.length) return;
+    const subtotal = window.demoCart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    if (fulfillment === "delivery") {
+      total.textContent = euroCents(Math.round((subtotal + Number(currentShop.delivery_fee_cents || 0) / 100) * 100));
+      const minimum = Number(currentShop.delivery_min_cents || 0) / 100;
+      if (minimum && subtotal < minimum) status("orderMessage", "Minimum de commande pour la livraison : " + euroCents(currentShop.delivery_min_cents) + ".", true);
+    }
+  };
+
   window.placeDemoOrder = async () => {
     const name = document.getElementById("customerName").value.trim();
     const email = document.getElementById("customerEmail").value.trim();
     const fulfillment = document.getElementById("fulfilment").value;
+    const subtotalCents = window.demoCart.reduce((sum, item) => sum + Math.round(item.price * 100) * item.qty, 0);
+    if (fulfillment === "delivery" && subtotalCents < Number(currentShop?.delivery_min_cents || 0)) {
+      return status("orderMessage", "Le panier n’atteint pas le minimum requis pour la livraison.", true);
+    }
     if (!currentShop) return status("orderMessage", "Choisis une boutique avant de commander.", true);
     if (!name || !window.demoCart?.length) return status("orderMessage", "Renseigne ton nom et ajoute au moins un article.", true);
     const body = {
