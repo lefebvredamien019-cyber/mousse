@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="description" content="MOUSSE aide les commerçants indépendants à informer leurs clients, gérer leur affluence et proposer le Click & Collect.">
+<meta name="description" content="Découvrez MOUSSE, une vitrine de présentation pour les commerces de proximité. Les fonctions interactives sont encore en démonstration.">
 <title>MOUSSE — Le commerce, autrement</title>
 <style>
 :root{--forest:#173f32;--forest2:#245642;--cream:#f5f2e8;--paper:#fffdf8;--ink:#202b24;--muted:#69776d;--line:#e0e4d9;--sage:#dfe8dc;--gold:#d6b76a;--red:#a94c43;--radius:18px}
@@ -182,29 +182,42 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 
 .mousse-app-logo{display:block;max-width:56px;max-height:42px;object-fit:contain}.brand .bubble{display:none}@media(max-width:850px){.mousse-app-logo{max-width:40px;height:32px}}
 </style>
+/* Accessibilité, navigation et finition mobile */
+.skip-link{position:fixed;left:12px;top:12px;z-index:1000;padding:11px 16px;border-radius:12px;background:var(--forest);color:#fff;transform:translateY(-160%);transition:transform .15s}
+.skip-link:focus{transform:translateY(0)}
+:focus-visible{outline:3px solid #b67a1c;outline-offset:3px}
+.nav button{min-height:44px}
+.view[aria-labelledby]{scroll-margin-top:110px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.foot a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:700px){.side{align-items:flex-start}.nav{scroll-snap-type:x proximity;overscroll-behavior-inline:contain}.nav button{scroll-snap-align:start}.nav::-webkit-scrollbar{height:4px}.nav::-webkit-scrollbar-thumb{background:#8eaa99;border-radius:4px}.foot{padding:22px 18px;gap:10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
 </head>
 <body>
+<a class="skip-link" href="#main-content">Aller au contenu</a>
 <div class="shell">
 <aside class="side">
   <a class="brand" href="#" onclick="showView('accueil');return false"><img src="assets/mousse-mark.svg" alt="Logo de l’application MOUSSE" class="mousse-app-logo" onerror="this.style.display='none'"><span>MOUSSE</span></a>
   <div class="tagline">Le lien entre commerces et clients</div>
-  <nav class="nav" aria-label="Navigation">
-    <button class="active" data-view="accueil" onclick="showView('accueil')"><span class="ico">⌂</span>Accueil</button>
-    <button data-view="affluence" onclick="showView('affluence')"><span class="ico">◉</span>Affluence</button>
-    <button data-view="collect" onclick="showView('collect')"><span class="ico">▣</span>Click & Collect</button>
-    <button data-view="consignes" onclick="showView('consignes')"><span class="ico">▤</span>Consignes</button>
-    <button data-view="commerce" onclick="showView('commerce')"><span class="ico">⌂</span>Espace commerçant</button>
-    <button data-view="reglages" onclick="showView('reglages')"><span class="ico">⚙</span>Paramètres</button>
+  <nav class="nav" aria-label="Navigation principale">
+    <button class="active" aria-current="page" data-view="accueil" aria-controls="view-accueil" onclick="showView('accueil')"><span class="ico" aria-hidden="true">⌂</span>Accueil</button>
+    <button data-view="affluence" aria-controls="view-affluence" onclick="showView('affluence')"><span class="ico" aria-hidden="true">◉</span>Affluence</button>
+    <button data-view="collect" aria-controls="view-collect" onclick="showView('collect')"><span class="ico" aria-hidden="true">▣</span>Click & Collect</button>
+    <button data-view="consignes" aria-controls="view-consignes" onclick="showView('consignes')"><span class="ico" aria-hidden="true">▤</span>Consignes</button>
+    <button data-view="commerce" aria-controls="view-commerce" onclick="showView('commerce')"><span class="ico" aria-hidden="true">⌂</span>Espace commerçant</button>
+    <button data-view="reglages" aria-controls="view-reglages" onclick="showView('reglages')"><span class="ico" aria-hidden="true">⚙</span>Paramètres</button>
+  <button data-view="contact" aria-controls="view-contact" onclick="showView('contact')"><span class="ico" aria-hidden="true">✉</span>Contact</button>
   <button id="appearanceToggle" type="button" onclick="toggleAppearancePanel()" aria-expanded="false"><span class="ico">⚙</span> Personnaliser</button></nav>
   <div class="sidebottom"><strong>MOUSSE · DÉMO</strong>Une plateforme pensée pour les commerces indépendants.</div>
 </aside>
-<main class="main">
-<header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Aperçu commerçant</span></div></div></header>
+<main class="main" id="main-content">
+<header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Mode présentation</span></div></div></header>
 <div class="content">
-<section class="view active" id="view-accueil">
+<section class="view active" id="view-accueil" aria-labelledby="home-title">
   
   <section class="discovery" aria-label="Trouver un commerce">
-    <div class="sectiontitle"><div><div class="eyebrow">À deux pas de vous</div><h2>Quel commerçant recherchez-vous ?</h2><p>Recherche des établissements partout en France grâce aux données publiques officielles. Les commerçants pourront ensuite demander à gérer leur fiche.</p></div></div>
+    <div class="sectiontitle"><div><div class="eyebrow">À deux pas de vous</div><h2><span id="home-title">Quel commerçant recherchez-vous ?</span></h2><p>Recherche des établissements partout en France grâce aux données publiques officielles. Les commerçants pourront ensuite demander à gérer leur fiche.</p></div></div>
     <div class="search-panel"><label class="searchbox"><span>⌕</span><input id="merchantSearch" type="search" placeholder="Nom du commerce, ville, adresse ou SIRET…" oninput="filterDiscoverShops()"></label><button class="btn" onclick="filterDiscoverShops()">Rechercher ↗</button></div>
     <div class="discover-layout"><div class="map-demo" aria-label="Carte des commerces"><div class="map-label">🇫🇷 Recherche nationale · données publiques officielles</div><div style="padding:24px;text-align:center"><div style="font-size:48px">📍</div><strong>Les commerces recherchés apparaîtront ici</strong><p>La carte interactive sera activée lors de la prochaine étape.</p></div></div><div class="shop-results" id="discoverResults"></div></div>
     <div class="shop-detail" id="discoverDetail">
@@ -234,14 +247,14 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
   </section>
 </section>
 <section class="view" id="view-affluence">
-  <div class="eyebrow">Informer les clients</div><h1 class="headline">Affluence de votre commerce</h1><p class="sub">Renseignez l’état actuel et les périodes habituelles. Les visiteurs verront une estimation déclarée, pas une mesure automatique de fréquentation.</p>
+  <div class="eyebrow">Informer les clients</div><h1 class="headline" id="affluence-title">Affluence de votre commerce</h1><p class="sub">Renseignez l’état actuel et les périodes habituelles. Les visiteurs verront une estimation déclarée, pas une mesure automatique de fréquentation.</p>
   <div class="grid two">
     <article class="card"><h3>État actuel</h3><div class="field"><label>Affluence</label><select id="status" onchange="updateStatus()"><option value="Calme">🟢 Calme</option><option value="Modérée" selected>🟡 Modérée</option><option value="Forte">🔴 Forte affluence</option><option value="Fermé">⚫ Fermé</option></select></div><div class="field"><label>Temps d’attente estimé</label><select id="wait"><option>Pas d’attente</option><option selected>5 à 10 minutes</option><option>10 à 20 minutes</option><option>Plus de 20 minutes</option></select></div><div class="field"><label>Message aux clients</label><textarea id="noticeText">Bienvenue ! Consultez nos disponibilités avant de vous déplacer.</textarea></div><button class="btn" onclick="saveAffluence()">Enregistrer l’affluence</button><div id="affluenceSaved" class="success hidden">Modifications visibles dans cet aperçu uniquement.</div></article>
     <article class="card"><h3>Votre journée type</h3><p>Exemple d’horaires à personnaliser selon votre activité.</p><div class="chart"><div class="barwrap"><div class="bar" style="height:36%"></div>9 h</div><div class="barwrap"><div class="bar hot" style="height:80%"></div>11 h</div><div class="barwrap"><div class="bar peak" style="height:94%"></div>12 h</div><div class="barwrap"><div class="bar" style="height:24%"></div>14 h</div><div class="barwrap"><div class="bar" style="height:32%"></div>15 h</div><div class="barwrap"><div class="bar hot" style="height:66%"></div>17 h</div><div class="barwrap"><div class="bar peak" style="height:88%"></div>18 h</div></div><div class="notice">Ces barres sont illustratives. Un futur espace commerçant permettra d’enregistrer vos propres horaires.</div></article>
   </div>
 </section>
 <section class="view" id="view-collect">
-  <div class="eyebrow">Vitrine client · démonstration interactive</div><h1 class="headline">Commander chez un commerçant</h1><p class="sub">Ajoutez des produits au panier, puis choisissez le retrait en boutique ou la livraison si le commerçant la propose.</p>
+  <div class="eyebrow">Vitrine client · démonstration interactive</div><h1 class="headline" id="collect-title">Commander chez un commerçant</h1><p class="sub">Ajoutez des produits au panier, puis choisissez le retrait en boutique ou la livraison si le commerçant la propose.</p>
   <div class="notice"><strong>Mode présentation :</strong> les commandes sont enregistrées uniquement dans ce navigateur. Aucun paiement, e-mail ou livraison réelle n'est déclenché.</div>
   <div class="grid two">
     <article class="card"><h3>Catalogue de démonstration</h3><p>Les articles ajoutés dans l’espace commerçant apparaissent ici sur ce navigateur.</p><div id="clientCatalog"></div>
@@ -262,11 +275,11 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
   <div class="sectiontitle"><div><h2>Commandes reçues (démo)</h2><p>Les commandes créées sur ce navigateur apparaissent ici.</p></div><button class="btn light" onclick="renderOrders()">Actualiser</button></div><div id="ordersList" class="grid two"></div>
 </section>
 <section class="view" id="view-consignes">
-  <div class="eyebrow">Retrait sans attente</div><h1 class="headline">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
+  <div class="eyebrow">Retrait sans attente</div><h1 class="headline" id="consignes-title">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
   <div class="grid two"><article class="card"><div class="symbol">▤</div><h3>Le parcours envisagé</h3><p>1. Le client passe commande.</p><p>2. Le commerçant prépare le colis.</p><p>3. Un code unique est généré par un système sécurisé.</p><p>4. Le client récupère son colis dans une consigne compatible.</p></article><article class="card"><span class="pill amber">Prototype — pas opérationnel</span><h3>Ce qu’il faudra intégrer</h3><p>Un fournisseur de consignes compatibles, une génération de codes sécurisée, une gestion des ouvertures et un suivi des retraits.</p><div class="notice">Aucun code de retrait réel n’est généré par cette démonstration.</div></article></div>
 </section>
 <section class="view" id="view-commerce">
-  <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline">Ma boutique, en quelques clics</h1><p class="sub">Renseigne les informations essentielles, choisis une couleur, ajoute ton logo : l’aperçu se met à jour simplement.</p>
+  <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline" id="commerce-title">Ma boutique, en quelques clics</h1><p class="sub">Renseigne les informations essentielles, choisis une couleur, ajoute ton logo : l’aperçu se met à jour simplement.</p>
   <div class="notice"><strong>À savoir :</strong> cette version de présentation sauvegarde les données sur cet ordinateur uniquement. La création de vrais comptes sécurisés et la synchronisation entre appareils nécessitent encore Supabase.</div>
   <div class="grid two">
     <article class="card"><h3>Étape 1 · Mes informations</h3>
@@ -294,11 +307,19 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
     <button class="btn" onclick="addMerchantProduct()">Ajouter au catalogue</button><div id="productSaved" class="success hidden"></div>
   </article><article class="card"><h3>Mon catalogue</h3><div id="merchantProducts"><p class="muted">Aucun article ajouté. Crée ton premier produit.</p></div></article></div>
 </section>
+<section class="view" id="view-contact" aria-labelledby="contact-title">
+  <div class="eyebrow">À votre écoute</div><h1 class="headline" id="contact-title">Questions ou besoin d’aide ?</h1>
+  <p class="sub">Pour toute question sur MOUSSE, un problème technique ou une demande concernant une fiche commerce, contactez l’équipe à l’adresse de support indiquée ci-dessous.</p>
+  <div class="grid two">
+    <article class="card"><div class="symbol" aria-hidden="true">✉</div><h2>Contacter MOUSSE</h2><p>L’adresse e-mail de support reste à confirmer par l’équipe. Elle sera publiée ici dès qu’elle sera définie. Aucune adresse provisoire n’est utilisée afin de ne pas vous orienter vers une boîte qui n’existe pas.</p><span class="pill amber">Adresse à configurer</span></article>
+    <article class="card"><div class="symbol" aria-hidden="true">ℹ</div><h2>À propos de cette version</h2><p>Ce site présente MOUSSE et ses parcours interactifs. Les commandes, profils et demandes de gestion de fiche restent enregistrés localement dans le navigateur de démonstration. Ils ne sont pas transmis à l’équipe.</p></article>
+  </div>
+</section>
 <section class="view" id="view-reglages">
-  <div class="eyebrow">Configuration</div><h1 class="headline">Paramètres</h1><p class="sub">La première version est un prototype de présentation. Les accès sécurisés et la sauvegarde en ligne seront nécessaires avant une utilisation réelle par plusieurs commerçants.</p>
+  <div class="eyebrow">Configuration</div><h1 class="headline" id="settings-title">Paramètres</h1><p class="sub">La première version est un prototype de présentation. Les accès sécurisés et la sauvegarde en ligne seront nécessaires avant une utilisation réelle par plusieurs commerçants.</p>
   <div class="grid two"><article class="card"><h3>Comptes commerçants</h3><p>Chaque commerce devra avoir son propre compte et ne pourra consulter que ses informations, produits et commandes.</p><span class="pill amber">À développer</span></article><article class="card"><h3>Données & confidentialité</h3><p>Avant la mise en production, il faudra choisir un service d’authentification et de base de données et définir les règles de protection des données.</p><span class="pill amber">À configurer</span></article></div>
 </section>
-<div class="foot">MOUSSE — Le commerce, autrement. <span style="float:right">Première interface de démonstration · 2026</span></div>
+<footer class="foot"><span>MOUSSE — Le commerce, autrement.</span><a href="#" onclick="showView('contact');return false">Questions et assistance</a><span>Prototype interactif · Certaines fonctions restent à configurer</span></footer>
 </div>
 </main>
 </div>
@@ -315,7 +336,7 @@ function changeAd(step){const shop=discoverShops.find(s=>s.id===selectedDiscover
 function goToAd(index){const shop=discoverShops.find(s=>s.id===selectedDiscoverId);if(!shop)return;activeAd=index;renderAd(shop)}
 function requestClaim(id){const shop=discoverShops.find(s=>s.id===id);if(!shop)return;const name=prompt('Pour demander la gestion de cette fiche, indique ton nom et ton rôle dans le commerce :');if(!name||!name.trim())return;const email=prompt('Adresse e-mail professionnelle de contact :');if(!email||!email.trim())return;const request={establishmentId:shop.id,name:shop.name,siren:shop.siren,siret:shop.siret,claimant:name.trim(),email:email.trim(),createdAt:new Date().toISOString(),status:'À vérifier'};try{const requests=JSON.parse(localStorage.getItem('mousse-claim-requests')||'[]');requests.push(request);localStorage.setItem('mousse-claim-requests',JSON.stringify(requests));alert('Demande enregistrée sur cet appareil. Attention : ce prototype ne transmet pas encore la demande à MOUSSE. Une vérification sécurisée côté serveur doit être mise en place avant ouverture au public.')}catch(e){alert('Impossible d’enregistrer la demande sur cet appareil.')} }
 
-function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));document.getElementById('view-'+id).classList.add('active');const names={accueil:'Magasins',affluence:'Affluence',collect:'Click & Collect',consignes:'Consignes',commerce:'Mon commerce',reglages:'Paramètres'};document.getElementById('breadcrumb').textContent='Votre espace · '+names[id];window.scrollTo({top:0,behavior:'smooth'})}
+function showView(id){const next=document.getElementById('view-'+id);if(!next)return;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav [data-view]').forEach(b=>{const active=b.dataset.view===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});next.classList.add('active');const names={accueil:'Magasins',affluence:'Affluence',collect:'Click & Collect',consignes:'Consignes',commerce:'Mon commerce',reglages:'Paramètres',contact:'Contact et assistance'};document.getElementById('breadcrumb').textContent='MOUSSE · '+(names[id]||'');window.scrollTo({top:0,behavior:'smooth'})}
 function updateStatus(){document.getElementById('dashstatus').textContent=document.getElementById('status').value}
 function saveAffluence(){updateStatus();document.getElementById('affluenceSaved').classList.remove('hidden')}
 function previewShop(){const n=document.getElementById('shopInput').value||'Ma boutique';document.getElementById('previewName').textContent=n;document.getElementById('previewIntro').textContent=document.getElementById('introInput').value;document.getElementById('previewHead').style.background=document.getElementById('themeInput').value;document.getElementById('topshop').textContent=n;document.getElementById('profileName').value=n}
