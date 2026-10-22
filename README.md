@@ -9,7 +9,7 @@ La page contient un mode de présentation local et un parcours de test Supabase 
 - La recherche interroge l’API publique Recherche d’Entreprises lorsqu’un visiteur lance une recherche. Les résultats décrivent des établissements déclarés et ne garantissent pas qu’ils accueillent du public.
 - Sans configuration Supabase, le parcours d’inscription, le catalogue partagé, les commandes serveur et les e-mails restent désactivés ; la page fonctionne en démonstration locale.
 - Avec Supabase et Resend configurés, un compte propriétaire par commerce peut gérer sa boutique et ses produits ; les clients peuvent voir les boutiques publiées et passer une commande sans paiement. Une notification est envoyée au commerçant, pas au client.
-- Ce code est un parcours de test, pas une mise en production complète : aucun paiement, statut/annulation de commande, restauration de stock, confirmation e-mail client, règle géographique de livraison ni rôle personnel/admin n’est fourni. Prévoir protections anti-robot, règles d’exploitation et informations légales avant ouverture publique.
+- Ce code est un parcours de test, pas une mise en production complète : aucun paiement, statut/annulation de commande, restauration de stock, confirmation e-mail client, envoi du logo en ligne, règle géographique de livraison ni rôle personnel/admin n’est fourni. Prévoir protections anti-robot, règles d’exploitation et informations légales avant ouverture publique.
 - La page Contact fournit l’adresse de support `dklm.services@gmail.com` sous forme de lien e-mail.
 
 ## Avant de publier sous www.mousse-market.fr
