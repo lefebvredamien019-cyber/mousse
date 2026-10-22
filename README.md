@@ -4,12 +4,12 @@ Site de présentation de MOUSSE pour les commerces de proximité.
 
 ## État actuel
 
-La page publique est une interface de présentation interactive. Elle ne constitue pas encore un service de production pour les commerçants.
+La page contient un mode de présentation local et un parcours de test Supabase optionnel pour comptes commerçants, catalogue public, commandes Click & Collect/livraison et notification e-mail au commerce. Le parcours réel reste inactif tant que les réglages décrits ci-dessous ne sont pas faits et que cette branche n’est pas publiée.
 
 - La recherche interroge l’API publique Recherche d’Entreprises lorsqu’un visiteur lance une recherche. Les résultats décrivent des établissements déclarés et ne garantissent pas qu’ils accueillent du public.
-- Les parcours d’affluence, de Click & Collect, de gestion d’un commerce et de demande de gestion d’une fiche sont des démonstrations. Les profils, produits, commandes, demandes et préférences de présentation sont conservés dans le stockage local du navigateur utilisé.
-- Ces données ne sont pas partagées entre visiteurs ou appareils. Il n’y a pas encore d’authentification, de base de données MOUSSE, de traitement de commande, de paiement, ni d’envoi de demande ou de notification par e-mail.
-- Le site ne doit donc pas être présenté comme un service de commande ou un espace commerçant prêt pour une utilisation réelle.
+- Sans configuration Supabase, le parcours d’inscription, le catalogue partagé, les commandes serveur et les e-mails restent désactivés ; la page fonctionne en démonstration locale.
+- Avec Supabase et Resend configurés, un compte propriétaire par commerce peut gérer sa boutique et ses produits ; les clients peuvent voir les boutiques publiées et passer une commande sans paiement. Une notification est envoyée au commerçant, pas au client.
+- Ce code est un parcours de test, pas une mise en production complète : aucun paiement, statut/annulation de commande, restauration de stock, confirmation e-mail client, envoi du logo en ligne, règle géographique de livraison ni rôle personnel/admin n’est fourni. Prévoir protections anti-robot, règles d’exploitation et informations légales avant ouverture publique.
 - La page Contact fournit l’adresse de support `dklm.services@gmail.com` sous forme de lien e-mail.
 
 ## Avant de publier sous www.mousse-market.fr
@@ -43,7 +43,20 @@ Les commandes nécessitent aussi un traitement serveur fiable, la gestion des st
 
 ### Contact et informations de service
 
-Confirmer l’adresse de support, puis remplacer le message « Adresse à configurer » dans la page Contact et faire vérifier son fonctionnement. Préparer également les informations de confidentialité et les conditions nécessaires avant de collecter ou traiter les données personnelles en production.
+L’adresse de support affichée est `dklm.services@gmail.com`. Vérifier que cette boîte reçoit bien les messages. Préparer également les informations de confidentialité et les conditions nécessaires avant de collecter ou traiter les données personnelles en production.
+
+## Configuration du parcours de test Dklm
+
+Cette procédure doit être faite par le propriétaire des comptes concernés. Ne jamais publier de clé `service_role` ou de clé Resend dans `assets/mousse-config.js`.
+
+1. Créer un projet Supabase dédié au test. Dans le SQL Editor, exécuter `supabase/schema.sql`, puis les migrations `supabase/migrations/20261022130000_security_hardening.sql` et `supabase/migrations/20261022140000_public_storefront_orders.sql` dans cet ordre.
+2. Dans les paramètres d’authentification Supabase, autoriser l’inscription par e-mail et régler l’URL de retour sur l’URL exacte du site publié. La fiche boutique est créée automatiquement au premier compte.
+3. Remplacer les valeurs vides de `assets/mousse-config.js` par l’URL du projet et sa clé publique/anon. Cette clé peut être publique parce que les accès sont limités par RLS ; elle ne doit jamais être la clé service-role.
+4. Vérifier un domaine d’envoi dans Resend. Dans les secrets de la fonction Edge `create-order`, définir `RESEND_API_KEY`, `ORDER_EMAIL_FROM` (une adresse d’expéditeur autorisée chez Resend), `ORDER_RATE_LIMIT_SALT` (secret aléatoire long), `APP_ORIGINS` (origines exactes séparées par des virgules), ainsi que `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY`. Déployer `supabase/functions/create-order` avec la configuration de `supabase/config.toml`.
+5. Publier cette branche sur un environnement de test et utiliser l’origine exacte dans `APP_ORIGINS`. Créer le compte Dklm avec `dklm.services@gmail.com`, confirmer l’inscription si Supabase le demande, puis se connecter. Ajouter au moins un produit, renseigner l’adresse de notification, et publier la boutique.
+6. Depuis une autre fenêtre ou un autre appareil, ouvrir Click & Collect, choisir Dklm, ajouter un produit et valider une commande. Vérifier le journal Resend et la boîte `dklm.services@gmail.com`. Si l’interface indique que l’e-mail n’est pas confirmé, ne pas renvoyer la commande à l’aveugle : contrôler la commande enregistrée dans la base et le journal de la fonction.
+
+L’e-mail de commande nécessite un domaine d’expédition vérifié chez Resend ; l’e-mail client n’est pas envoyé. Le site ne devient pas un service de commande prêt à l’emploi simplement en fusionnant cette branche : la base, les secrets, le déploiement Edge, la publication du site et les essais réels restent à configurer et à vérifier.
 
 ## Développement
 
