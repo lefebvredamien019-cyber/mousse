@@ -1,6 +1,5 @@
-// Public browser configuration only. Replace after creating the MOUSSE Supabase project.
-// Never put a service-role key, Resend key, or other secret in this file.
+// Public browser configuration only. Never place a service-role or secret key here.
 window.MOUSSE_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseUrl: "https://bdnhkkccaylwvlpmkcwz.supabase.co",
+  supabaseAnonKey: "sb_publishable_xXT_WRYDCZBG4uy7p_Y32A_a7Kvkg6Z"
 };
