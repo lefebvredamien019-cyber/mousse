@@ -1,63 +1,40 @@
 # MOUSSE — site public
 
-Site de présentation de MOUSSE pour les commerces de proximité.
+Site de présentation de MOUSSE et point d’entrée vers les boutiques locales, le Click & Collect et la livraison.
 
-## État actuel
+## État du projet
 
-La page contient un mode de présentation local et un parcours de test Supabase optionnel pour comptes commerçants, catalogue public, commandes Click & Collect/livraison et notification e-mail au commerce. Le parcours réel reste inactif tant que les réglages Supabase et d’envoi décrits ci-dessous ne sont pas faits. Le code du site est fusionné dans `main` ; la publication Pages et le domaine doivent être vérifiés.
+- Le site statique est publié par GitHub Pages. La dernière exécution **pages build and deployment** s’est terminée avec succès le 22 octobre 2026.
+- Le dépôt contient le domaine souhaité `www.mousse-market.fr`, mais la résolution DNS, le domaine personnalisé dans GitHub Pages et le certificat HTTPS n’ont pas pu être vérifiés. Ne pas considérer le domaine personnalisé comme confirmé tant qu’il n’est pas ouvert et contrôlé dans un navigateur.
+- Le projet Supabase de test est actif (région `eu-west-1`). Le schéma, les règles d’accès et les migrations de commande et de notification sont installés. Les fonctions Edge `create-order` et `notify-order-status` sont déployées.
+- Le site possède sa configuration publique Supabase. Elle ne contient pas de clé secrète.
+- Le parcours de boutique et de commande est préparé, mais il n’a pas encore été validé de bout en bout : aucun commerce ni produit de test n’est actuellement enregistré dans la base et les secrets du service d’e-mail ne sont pas encore configurés.
 
-- La recherche interroge l’API publique Recherche d’Entreprises lorsqu’un visiteur lance une recherche. Les résultats décrivent des établissements déclarés et ne garantissent pas qu’ils accueillent du public.
-- Sans configuration Supabase, le parcours d’inscription, le catalogue partagé, les commandes serveur et les e-mails restent désactivés ; la page fonctionne en démonstration locale.
-- Avec Supabase et Resend configurés, un compte propriétaire par commerce peut gérer sa boutique et ses produits ; les clients peuvent voir les boutiques publiées et passer une commande sans paiement. Une notification de nouvelle commande est envoyée au commerçant. Le client choisit un e-mail ou un SMS pour la confirmation et le suivi des statuts.
-- Ce code est un parcours de test, pas une mise en production complète : aucun paiement, confirmation client par SMS sans compte Twilio, règle géographique de livraison ni rôle personnel/admin n’est fourni. Le statut, l’annulation avec restauration du stock, le suivi d’expédition et les alertes client sont préparés, mais doivent être testés. Prévoir protections anti-robot, règles d’exploitation et informations légales avant ouverture publique.
-- La page Contact fournit l’adresse de support `dklm.services@gmail.com` sous forme de lien e-mail.
+## Ce que le parcours prévoit
 
-## Avant de publier sous www.mousse-market.fr
+Un commerçant peut créer un compte, compléter sa boutique, ajouter des produits et la publier. Un client peut consulter les boutiques publiées, choisir le retrait ou la livraison si le commerce l’a activée, passer une commande sans paiement et choisir le suivi par e-mail ou SMS. Le commerçant peut faire évoluer le statut d’une commande et envoyer une notification au client.
 
-Le dépôt contient le fichier `CNAME` avec `www.mousse-market.fr`. Cela déclare le domaine souhaité pour GitHub Pages, mais ne confirme ni le paramétrage Pages, ni la résolution DNS, ni la disponibilité du site en HTTPS.
+Les notifications ne sont réellement envoyées qu’une fois le fournisseur et ses secrets configurés. L’adresse du commerce `dklm.services@gmail.com` est l’adresse de réception de test confirmée par le propriétaire ; elle ne remplace pas une adresse d’expéditeur vérifiée chez le fournisseur d’e-mail.
 
-1. Dans les paramètres GitHub du dépôt, ouvrir **Pages** et vérifier qu’une source de publication est configurée et que `www.mousse-market.fr` est reconnu comme domaine personnalisé.
-2. Chez le fournisseur DNS du domaine, créer l’enregistrement **CNAME** pour l’hôte `www` vers la cible GitHub Pages affichée dans les paramètres du dépôt. Suivre les valeurs affichées par GitHub pour toute autre entrée DNS nécessaire ; ne pas remplacer les enregistrements existants sans les vérifier.
-3. Attendre la propagation DNS, puis vérifier le domaine dans GitHub Pages, activer **Enforce HTTPS** lorsque l’option devient disponible et tester `https://www.mousse-market.fr`.
-4. Confirmer que le domaine reste attaché au bon dépôt et que le certificat HTTPS est valide après publication.
+À ce stade, MOUSSE n’intègre pas de paiement. Le modèle d’accès installé couvre un compte propriétaire par commerce ; il ne fournit pas encore de rôles distincts pour le personnel ou l’administration MOUSSE. Les règles de livraison, les obligations légales, la protection anti-robot et les essais opérationnels doivent aussi être définis avant une ouverture commerciale plus large.
 
-La configuration DNS et GitHub Pages n’a pas été vérifiée pendant cette modification. Le domaine n’est donc pas déclaré en ligne.
+## Mise en service du test Dklm
 
-## À construire avant l’usage réel
+Les secrets doivent être saisis directement dans le tableau de bord du fournisseur, jamais dans le dépôt GitHub, le navigateur ou un message.
 
-### Authentification et rôles
+1. **Régler l’authentification Supabase.** Dans le tableau de bord du projet `bdnhkkccaylwvlpmkcwz`, activer l’inscription par e-mail. Régler l’URL du site et les URL de redirection autorisées pour le domaine réellement utilisé. Ajouter aussi l’URL GitHub Pages si elle sert aux essais. Les valeurs doivent correspondre exactement aux adresses utilisées par le navigateur.
+2. **Autoriser l’envoi d’e-mails.** Créer/configurer un compte Resend, vérifier son domaine d’envoi et choisir un expéditeur autorisé. Dans les secrets des fonctions Edge Supabase, définir `RESEND_API_KEY`, `ORDER_EMAIL_FROM` (l’adresse d’expédition vérifiée) et `ORDER_RATE_LIMIT_SALT` (valeur aléatoire longue). L’originaire du site est déjà autorisée par défaut dans le code des fonctions ; `APP_ORIGINS` peut servir à remplacer cette liste.
+3. **Activer les SMS seulement si souhaité.** Créer/configurer un compte Twilio puis définir `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` et `TWILIO_FROM_NUMBER`. L’envoi de SMS est payant et les comptes d’essai peuvent limiter les destinataires.
+4. **Créer la boutique de test.** Sur le site publié, s’inscrire avec `dklm.services@gmail.com`, confirmer l’adresse si demandé, se connecter, compléter la boutique Dklm, ajouter au moins un produit et publier la boutique.
+5. **Faire un vrai essai client.** Depuis une autre fenêtre ou un autre appareil, ouvrir la vitrine, sélectionner Dklm, ajouter un produit, renseigner les coordonnées du client, choisir retrait ou livraison et le mode de notification, puis envoyer la commande. Vérifier la commande et l’e-mail reçu par Dklm. Faire ensuite évoluer le statut et vérifier le message client. Pour tester le SMS, utiliser un numéro autorisé par Twilio.
+6. **Contrôler les réglages de production.** Vérifier les DNS et HTTPS du domaine, les informations légales et de confidentialité, les parcours d’erreur, les stocks et les consignes de préparation/livraison avant d’inviter de vrais clients.
 
-Choisir un fournisseur d’authentification et créer des comptes individuels. Prévoir au minimum :
+Si Resend n’est pas configuré, la commande ne peut pas être confirmée par les e-mails prévus. Si Twilio n’est pas configuré, le client ne doit pas choisir le suivi par SMS. Aucun paiement n’est prélevé par le parcours actuel.
 
-- **Commerçant propriétaire** : accès à son commerce, son profil, son catalogue et ses commandes.
-- **Personnel du commerce** : accès limité au commerce auquel il est rattaché, selon les permissions accordées.
-- **Administration MOUSSE** : accès de support et de modération contrôlé, avec journalisation.
+## Domaine personnalisé
 
-L’interface seule ne peut pas faire respecter ces rôles. Chaque accès doit être validé côté serveur, et chaque commerce doit être isolé des autres. Une demande de gestion de fiche doit vérifier l’identité et le droit de représentation avant d’accorder un accès.
-
-### Base de données et services serveur
-
-Mettre en place une base de données et un backend avant de remplacer le stockage local. Définir les données et règles d’accès pour les comptes, commerces, fiches revendiquées, produits, stocks, horaires, commandes et statuts. Appliquer des contrôles d’accès par commerce côté serveur (par exemple, des politiques de lignes si le service retenu les prend en charge). Ne jamais exposer de clé secrète dans le code public.
-
-Les commandes nécessitent aussi un traitement serveur fiable, la gestion des stocks et des notifications. Aucun paiement n’est actuellement intégré. L’intégration d’un prestataire de paiement, la livraison et les consignes sécurisées doivent être conçues et validées séparément avant toute promesse aux clients.
-
-### Contact et informations de service
-
-L’adresse de support affichée est `dklm.services@gmail.com`. Le propriétaire a confirmé que cette boîte est existante et fonctionnelle. Préparer également les informations de confidentialité et les conditions nécessaires avant de collecter ou traiter les données personnelles en production.
-
-## Configuration du parcours de test Dklm
-
-Cette procédure doit être faite par le propriétaire des comptes concernés. Ne jamais publier de clé `service_role` ou de clé Resend dans `assets/mousse-config.js`.
-
-1. Créer un projet Supabase dédié au test. Dans le SQL Editor, exécuter `supabase/schema.sql`, puis les migrations `supabase/migrations/20261022130000_security_hardening.sql`, `supabase/migrations/20261022140000_public_storefront_orders.sql` et `supabase/migrations/20261022150000_customer_notifications.sql` dans cet ordre.
-2. Dans les paramètres d’authentification Supabase, autoriser l’inscription par e-mail et régler l’URL de retour sur l’URL exacte du site publié. La fiche boutique est créée automatiquement au premier compte.
-3. Remplacer les valeurs vides de `assets/mousse-config.js` par l’URL du projet et sa clé publique/anon. Cette clé peut être publique parce que les accès sont limités par RLS ; elle ne doit jamais être la clé service-role.
-4. Configurer Resend avec un expéditeur autorisé et son domaine d’envoi. Dans les secrets Supabase, définir `RESEND_API_KEY`, `ORDER_EMAIL_FROM`, `ORDER_RATE_LIMIT_SALT` (secret aléatoire long), `APP_ORIGINS` (origines exactes séparées par des virgules), `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY`. Pour activer le choix SMS, créer/configurer un compte Twilio puis ajouter `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` et `TWILIO_FROM_NUMBER`. Les SMS sont payants et un compte d’essai peut limiter les numéros destinataires. Déployer `create-order` et `notify-order-status` avec la configuration de `supabase/config.toml`.
-5. Déployer le schéma et les fonctions sur le projet de test, puis utiliser l’origine exacte du site dans `APP_ORIGINS`. Créer le compte Dklm avec `dklm.services@gmail.com`, confirmer l’inscription si Supabase le demande, puis se connecter. L’adresse du compte est proposée comme destinataire commerçant ; ajouter au moins un produit puis publier la boutique.
-6. Depuis une autre fenêtre ou un autre appareil, ouvrir Click & Collect, choisir Dklm, ajouter un produit et choisir le suivi par e-mail ou SMS. Valider la commande puis vérifier la notification commerçant dans `dklm.services@gmail.com` et la confirmation client dans le canal choisi. Depuis l’espace commerçant, passer la commande en préparation, prête au retrait, expédiée (avec suivi), en livraison, livrée, retirée ou annulée : chaque changement déclenche une alerte au client. En cas d’échec d’envoi, le statut reste enregistré et le commerçant peut relancer l’alerte du même statut.
-
-L’adresse Dklm est une boîte existante et fonctionnelle, utilisée comme destinataire commerçant. L’envoi des e-mails nécessite quand même un expéditeur autorisé chez Resend ; le SMS nécessite les secrets Twilio. Le site ne devient pas un service de commande opérationnel par la seule publication du code : la base, les secrets, le déploiement Edge et les essais réels restent à configurer et vérifier. L’adresse Dklm est le destinataire ; le fournisseur d’envoi et son adresse d’expéditeur sont des réglages séparés.
+Le fichier `CNAME` déclare `www.mousse-market.fr` comme domaine souhaité. Il faut encore vérifier la section **Pages** des paramètres GitHub, configurer les enregistrements DNS demandés par GitHub auprès du fournisseur du domaine, attendre leur propagation, puis contrôler que le site s’ouvre en HTTPS et que le certificat est valide. Le fichier `CNAME` seul ne prouve pas que ces étapes sont terminées.
 
 ## Développement
 
-Le site est une page HTML/CSS/JavaScript statique. Ouvrir `index.html` dans un navigateur pour examiner l’interface. Les données de démonstration restent dans le navigateur ; les effacer dans les réglages du navigateur les supprime.
+Le site public est une page HTML/CSS/JavaScript statique. Ouvrir `index.html` dans un navigateur pour examiner l’interface. Les données de démonstration locale restent dans le navigateur ; les effacer dans les réglages du navigateur les supprime. Les commandes partagées et les comptes de test sont enregistrés dans le projet Supabase configuré.
