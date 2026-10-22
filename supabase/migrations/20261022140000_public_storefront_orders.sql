@@ -111,6 +111,7 @@ as $$
 declare
   v_shop record;
   v_item jsonb;
+  v_line jsonb;
   v_product record;
   v_quantity integer;
   v_subtotal integer := 0;
@@ -128,7 +129,7 @@ begin
       p_customer_email !~* '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$') then
     raise exception 'Invalid customer e-mail';
   end if;
-  if p_fulfillment not in ('pickup', 'delivery') then
+  if p_fulfillment is null or p_fulfillment not in ('pickup', 'delivery') then
     raise exception 'Invalid fulfillment method';
   end if;
   if p_fulfillment = 'delivery' and
@@ -136,8 +137,10 @@ begin
       or length(p_delivery_address) > 300) then
     raise exception 'A delivery address is required';
   end if;
-  if jsonb_typeof(p_items) <> 'array'
-     or jsonb_array_length(p_items) < 1 or jsonb_array_length(p_items) > 50 then
+  if p_items is null or jsonb_typeof(p_items) is distinct from 'array' then
+    raise exception 'Invalid order items';
+  end if;
+  if jsonb_array_length(p_items) < 1 or jsonb_array_length(p_items) > 50 then
     raise exception 'Invalid order items';
   end if;
 
@@ -188,22 +191,14 @@ begin
        set stock = p.stock - v_quantity
      where p.id = v_product.id;
 
-    insert into public.order_items
-      (order_id, product_id, product_name, quantity, unit_price_cents)
-    values
-      (coalesce(v_order_id, gen_random_uuid()), v_product.id, v_product.name,
-       v_quantity, v_product.price_cents);
-
-    if v_order_id is null then
-      -- The first item creates the order; item rows are linked below once the
-      -- order has been inserted with the final total.
-      delete from public.order_items
-       where order_id = (select max(o.id) from public.orders o where false);
-    end if;
-
     v_subtotal := v_subtotal + (v_product.price_cents * v_quantity);
+    if v_subtotal > 100000000 then
+      raise exception 'Order total exceeds the test checkout limit';
+    end if;
     v_lines := v_lines || jsonb_build_array(jsonb_build_object(
-      'name', v_product.name, 'quantity', v_quantity,
+      'product_id', v_product.id,
+      'name', v_product.name,
+      'quantity', v_quantity,
       'unit_price_cents', v_product.price_cents
     ));
   end loop;
@@ -221,23 +216,20 @@ begin
      fulfillment, delivery_address, delivery_note, customer_note, delivery_fee_cents)
   values
     (p_shop_id, trim(p_customer_name), nullif(trim(p_customer_email), ''),
-     'Reçue', v_total, p_fulfillment, nullif(trim(p_delivery_address), ''),
+     'received', v_total, p_fulfillment, nullif(trim(p_delivery_address), ''),
      left(coalesce(p_delivery_note, ''), 500), left(coalesce(p_customer_note, ''), 500),
      v_delivery_fee)
   returning id into v_order_id;
 
-  -- Replace the temporary item references with the durable order ID.
-  -- Re-read requested items and insert their server-priced snapshot.
-  for v_item in select value from jsonb_array_elements(p_items)
+  -- Persist the server-priced item snapshot under the new order.
+  for v_line in select value from jsonb_array_elements(v_lines)
   loop
-    v_quantity := (v_item ->> 'quantity')::integer;
-    select p.id, p.name, p.price_cents into v_product
-      from public.products p
-     where p.id = (v_item ->> 'product_id')::uuid;
     insert into public.order_items
       (order_id, product_id, product_name, quantity, unit_price_cents)
     values
-      (v_order_id, v_product.id, v_product.name, v_quantity, v_product.price_cents);
+      (v_order_id, (v_line ->> 'product_id')::uuid,
+       v_line ->> 'name', (v_line ->> 'quantity')::integer,
+       (v_line ->> 'unit_price_cents')::integer);
   end loop;
 
   return jsonb_build_object(
