@@ -181,7 +181,6 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 @media(max-width:560px){#appearancePanel{top:130px;right:10px}}
 
 .mousse-app-logo{display:block;max-width:56px;max-height:42px;object-fit:contain}.brand .bubble{display:none}@media(max-width:850px){.mousse-app-logo{max-width:40px;height:32px}}
-</style>
 /* Accessibilité, navigation et finition mobile */
 .skip-link{position:fixed;left:12px;top:12px;z-index:1000;padding:11px 16px;border-radius:12px;background:var(--forest);color:#fff;transform:translateY(-160%);transition:transform .15s}
 .skip-link:focus{transform:translateY(0)}
@@ -190,9 +189,15 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 .view[aria-labelledby]{scroll-margin-top:110px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .foot a{text-decoration:underline;text-underline-offset:3px}
+.notice-error{background:#f8e5e1!important;border-color:#dfaaa0!important;color:#702d25!important}
+button:disabled{opacity:.6;cursor:not-allowed}
+#liveShopPicker{margin-top:16px}
 @media(max-width:700px){.side{align-items:flex-start}.nav{scroll-snap-type:x proximity;overscroll-behavior-inline:contain}.nav button{scroll-snap-align:start}.nav::-webkit-scrollbar{height:4px}.nav::-webkit-scrollbar-thumb{background:#8eaa99;border-radius:4px}.foot{padding:22px 18px;gap:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/mousse-config.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Aller au contenu</a>
@@ -255,7 +260,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 </section>
 <section class="view" id="view-collect">
   <div class="eyebrow">Vitrine client · démonstration interactive</div><h1 class="headline" id="collect-title">Commander chez un commerçant</h1><p class="sub">Ajoutez des produits au panier, puis choisissez le retrait en boutique ou la livraison si le commerçant la propose.</p>
-  <div class="notice"><strong>Mode présentation :</strong> les commandes sont enregistrées uniquement dans ce navigateur. Aucun paiement, e-mail ou livraison réelle n'est déclenché.</div>
+  <div class="notice"><strong>Avant les commandes réelles :</strong> le mode présentation reste local. Le catalogue partagé, la commande serveur et l’e-mail au commerçant s’activent uniquement après configuration de Supabase et du service d’e-mail. Aucun paiement n’est intégré.</div>
+  <div class="card hidden" id="liveShopPicker"><h3>Boutique</h3><div class="field"><label for="liveShopSelect">Choisir un commerce ouvert aux commandes</label><select id="liveShopSelect"><option value="">Chargement des commerces…</option></select></div><p class="muted" id="deliveryFeeHint" aria-live="polite"></p></div>
   <div class="grid two">
     <article class="card"><h3>Catalogue de démonstration</h3><p>Les articles ajoutés dans l’espace commerçant apparaissent ici sur ce navigateur.</p><div id="clientCatalog"></div>
       
@@ -265,14 +271,14 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
     </article>
     <article class="card"><h3>Finaliser la commande</h3>
       <div class="field"><label for="customerName">Votre nom</label><input id="customerName" placeholder="Nom et prénom"></div>
-      <div class="field"><label for="customerEmail">E-mail (facultatif en démo)</label><input id="customerEmail" type="email" placeholder="vous@exemple.fr"></div>
-      <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Click & Collect — retrait en boutique</option><option value="delivery">Livraison à domicile (simulation)</option></select></div>
+      <div class="field"><label for="customerEmail">E-mail (facultatif)</label><input id="customerEmail" type="email" placeholder="vous@exemple.fr"></div>
+      <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Click & Collect — retrait en boutique</option><option value="delivery">Livraison à domicile</option></select></div>
       <div id="deliveryFields" class="hidden"><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" placeholder="N°, rue, code postal, ville"></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
       <div class="field"><label for="customerNote">Note pour le commerçant</label><textarea id="customerNote" placeholder="Précisions sur la commande…"></textarea></div>
-      <button class="btn" style="width:100%" onclick="placeDemoOrder()">Confirmer la commande de démonstration</button><div id="orderMessage" class="success hidden"></div>
+      <input id="orderWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" style="width:100%" onclick="placeDemoOrder()">Confirmer la commande</button><div id="orderMessage" class="success hidden"></div>
     </article>
   </div>
-  <div class="sectiontitle"><div><h2>Commandes reçues (démo)</h2><p>Les commandes créées sur ce navigateur apparaissent ici.</p></div><button class="btn light" onclick="renderOrders()">Actualiser</button></div><div id="ordersList" class="grid two"></div>
+  <div class="sectiontitle"><div><h2>Commandes reçues (démo locale)</h2><p>Seules les commandes du mode présentation apparaissent ici.</p></div><button class="btn light" onclick="renderOrders()">Actualiser</button></div><div id="ordersList" class="grid two"></div>
 </section>
 <section class="view" id="view-consignes">
   <div class="eyebrow">Retrait sans attente</div><h1 class="headline" id="consignes-title">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
@@ -280,8 +286,16 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 </section>
 <section class="view" id="view-commerce">
   <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline" id="commerce-title">Ma boutique, en quelques clics</h1><p class="sub">Renseigne les informations essentielles, choisis une couleur, ajoute ton logo : l’aperçu se met à jour simplement.</p>
-  <div class="notice"><strong>À savoir :</strong> cette version de présentation sauvegarde les données sur cet ordinateur uniquement. La création de vrais comptes sécurisés et la synchronisation entre appareils nécessitent encore Supabase.</div>
-  <div class="grid two">
+  <div class="notice"><strong>Magasin test :</strong> crée le compte Dklm avec <strong>dklm.services@gmail.com</strong>, ajoute les produits, puis publie la boutique. Les vrais comptes, commandes et e-mails nécessitent encore le backend et l’expéditeur configurés.</div>
+  <article class="card" id="merchantAccount"><h2>Compte commerçant</h2><p>Crée un compte de test ou connecte-toi pour gérer une boutique séparée.</p>
+    <div class="field"><label for="signupShopName">Nom du magasin</label><input id="signupShopName" value="Dklm"></div>
+    <div class="field"><label for="merchantLoginEmail">E-mail du compte</label><input id="merchantLoginEmail" type="email" autocomplete="username" value="dklm.services@gmail.com"></div>
+    <div class="field"><label for="merchantLoginPassword">Mot de passe (10 caractères minimum)</label><input id="merchantLoginPassword" type="password" autocomplete="current-password" minlength="10"></div>
+    <div class="actions"><button class="btn" id="merchantRegisterButton" type="button">Créer le compte Dklm</button><button class="btn light" id="merchantLoginButton" type="button">Se connecter</button></div>
+  </article>
+  <button class="btn light hidden" id="merchantSignOut" type="button">Se déconnecter</button>
+  <div id="merchantAuthStatus" class="success" role="status" aria-live="polite">Préparation du compte de test…</div>
+  <div class="grid two" id="merchantWorkspace">
     <article class="card"><h3>Étape 1 · Mes informations</h3>
       <div class="field"><label for="merchantName">Nom de l’établissement</label><input id="merchantName" placeholder="Ex. La Boutique du Centre"></div>
       <div class="field"><label for="merchantActivity">Activité</label><select id="merchantActivity"><option>Commerce indépendant</option><option>CBD</option><option>Alimentation</option><option>Vêtements</option><option>Boissons / café</option><option>Pièces automobiles</option><option>Autre</option></select></div>
@@ -291,7 +305,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
       <div class="field"><label for="merchantLogo">Logo de la boutique</label><input id="merchantLogo" type="file" accept="image/*" onchange="previewMerchantLogo(event)"></div><img id="merchantLogoPreview" class="hidden" alt="Aperçu du logo commerçant" style="max-width:130px;max-height:100px;object-fit:contain;border-radius:12px">
       <div class="field"><label for="merchantColor">Couleur de la boutique</label><input id="merchantColor" type="color" value="#173f32" oninput="renderMerchantPreview()"></div>
       <div class="field"><label><input id="merchantDeliveryEnabled" type="checkbox" style="width:auto"> Je propose la livraison à domicile</label></div>
-      <button class="btn" onclick="saveMerchantDemo()">Enregistrer mon espace (démo)</button><div id="merchantSaved" class="success hidden"></div>
+      <div class="formgrid"><div class="field"><label for="merchantDeliveryFee">Frais de livraison (€)</label><input id="merchantDeliveryFee" type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="merchantDeliveryMin">Minimum de commande livraison (€)</label><input id="merchantDeliveryMin" type="number" min="0" step="0.01" value="0"></div></div>
+      <div class="field"><label><input id="merchantPublished" type="checkbox" style="width:auto"> Publier la boutique dans le catalogue client</label></div>
+      <button class="btn" onclick="saveMerchantDemo()">Enregistrer la boutique</button><div id="merchantSaved" class="success hidden"></div>
     </article>
     <article class="card"><h3>Étape 2 · Je vérifie le résultat</h3><div class="previewshop"><div class="previewhead" id="merchantPreviewHead"><img id="merchantPreviewLogo" class="hidden" alt="Logo" style="max-width:64px;max-height:55px;object-fit:contain;margin-bottom:8px"><h3 id="merchantPreviewName">Ma boutique</h3><p id="merchantPreviewIntro">Bienvenue dans notre boutique.</p></div><div class="previewbody"><p id="merchantPreviewAddress">Adresse du commerce à renseigner</p><span class="pill" id="merchantPreviewDelivery">Click & Collect</span></div></div>
       <div class="notice">Ce profil et le catalogue de démonstration sont stockés dans le navigateur de cet ordinateur, pas dans un compte en ligne.</div>
@@ -306,6 +322,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
     <div class="field"><label for="productEmoji">Icône produit (facultatif)</label><input id="productEmoji" maxlength="8" placeholder="🛍️"></div>
     <button class="btn" onclick="addMerchantProduct()">Ajouter au catalogue</button><div id="productSaved" class="success hidden"></div>
   </article><article class="card"><h3>Mon catalogue</h3><div id="merchantProducts"><p class="muted">Aucun article ajouté. Crée ton premier produit.</p></div></article></div>
+  </div>
 </section>
 <section class="view" id="view-contact" aria-labelledby="contact-title">
   <div class="eyebrow">À votre écoute</div><h1 class="headline" id="contact-title">Questions ou besoin d’aide ?</h1>
@@ -411,5 +428,6 @@ document.addEventListener('DOMContentLoaded',()=>{renderCart();renderOrders();co
  });
 })();
 </script>
+<script src="assets/mousse-live.js"></script>
 </body>
 </html>
