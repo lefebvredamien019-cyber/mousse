@@ -4,7 +4,7 @@ Site de présentation de MOUSSE pour les commerces de proximité.
 
 ## État actuel
 
-La page contient un mode de présentation local et un parcours de test Supabase optionnel pour comptes commerçants, catalogue public, commandes Click & Collect/livraison et notification e-mail au commerce. Le parcours réel reste inactif tant que les réglages décrits ci-dessous ne sont pas faits et que cette branche n’est pas publiée.
+La page contient un mode de présentation local et un parcours de test Supabase optionnel pour comptes commerçants, catalogue public, commandes Click & Collect/livraison et notification e-mail au commerce. Le parcours réel reste inactif tant que les réglages Supabase et d’envoi décrits ci-dessous ne sont pas faits. Le code du site est fusionné dans `main` ; la publication Pages et le domaine doivent être vérifiés.
 
 - La recherche interroge l’API publique Recherche d’Entreprises lorsqu’un visiteur lance une recherche. Les résultats décrivent des établissements déclarés et ne garantissent pas qu’ils accueillent du public.
 - Sans configuration Supabase, le parcours d’inscription, le catalogue partagé, les commandes serveur et les e-mails restent désactivés ; la page fonctionne en démonstration locale.
@@ -43,7 +43,7 @@ Les commandes nécessitent aussi un traitement serveur fiable, la gestion des st
 
 ### Contact et informations de service
 
-L’adresse de support affichée est `dklm.services@gmail.com`. Vérifier que cette boîte reçoit bien les messages. Préparer également les informations de confidentialité et les conditions nécessaires avant de collecter ou traiter les données personnelles en production.
+L’adresse de support affichée est `dklm.services@gmail.com`. Le propriétaire a confirmé que cette boîte est existante et fonctionnelle. Préparer également les informations de confidentialité et les conditions nécessaires avant de collecter ou traiter les données personnelles en production.
 
 ## Configuration du parcours de test Dklm
 
@@ -53,10 +53,10 @@ Cette procédure doit être faite par le propriétaire des comptes concernés. N
 2. Dans les paramètres d’authentification Supabase, autoriser l’inscription par e-mail et régler l’URL de retour sur l’URL exacte du site publié. La fiche boutique est créée automatiquement au premier compte.
 3. Remplacer les valeurs vides de `assets/mousse-config.js` par l’URL du projet et sa clé publique/anon. Cette clé peut être publique parce que les accès sont limités par RLS ; elle ne doit jamais être la clé service-role.
 4. Vérifier un domaine d’envoi dans Resend. Dans les secrets de la fonction Edge `create-order`, définir `RESEND_API_KEY`, `ORDER_EMAIL_FROM` (une adresse d’expéditeur autorisée chez Resend), `ORDER_RATE_LIMIT_SALT` (secret aléatoire long), `APP_ORIGINS` (origines exactes séparées par des virgules), ainsi que `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY`. Déployer `supabase/functions/create-order` avec la configuration de `supabase/config.toml`.
-5. Publier cette branche sur un environnement de test et utiliser l’origine exacte dans `APP_ORIGINS`. Créer le compte Dklm avec `dklm.services@gmail.com`, confirmer l’inscription si Supabase le demande, puis se connecter. Ajouter au moins un produit, renseigner l’adresse de notification, et publier la boutique.
-6. Depuis une autre fenêtre ou un autre appareil, ouvrir Click & Collect, choisir Dklm, ajouter un produit et valider une commande. Vérifier le journal Resend et la boîte `dklm.services@gmail.com`. Si l’interface indique que l’e-mail n’est pas confirmé, ne pas renvoyer la commande à l’aveugle : contrôler la commande enregistrée dans la base et le journal de la fonction.
+5. Déployer la fonction et le schéma sur le projet de test, puis utiliser l’origine exacte du site dans `APP_ORIGINS`. Créer le compte Dklm avec `dklm.services@gmail.com`, confirmer l’inscription si Supabase le demande, puis se connecter. L’adresse du compte est automatiquement proposée comme destinataire des commandes ; ajouter au moins un produit puis publier la boutique.
+6. Depuis une autre fenêtre ou un autre appareil, ouvrir Click & Collect, choisir Dklm, ajouter un produit et valider une commande. Vérifier le journal Resend et la boîte fonctionnelle `dklm.services@gmail.com`. Si l’interface indique que l’e-mail n’est pas confirmé, ne pas renvoyer la commande à l’aveugle : contrôler la commande enregistrée dans la base et le journal de la fonction.
 
-L’e-mail de commande nécessite un domaine d’expédition vérifié chez Resend ; l’e-mail client n’est pas envoyé. Le site ne devient pas un service de commande prêt à l’emploi simplement en fusionnant cette branche : la base, les secrets, le déploiement Edge, la publication du site et les essais réels restent à configurer et à vérifier.
+L’e-mail de commande nécessite un domaine d’expédition vérifié chez Resend ; l’e-mail client n’est pas envoyé. Le site ne devient pas un service de commande opérationnel par la seule publication du code : la base, les secrets, le déploiement Edge et les essais réels restent à configurer et vérifier. L’adresse Dklm est le destinataire ; le fournisseur d’envoi et son adresse d’expéditeur sont des réglages séparés.
 
 ## Développement
 
