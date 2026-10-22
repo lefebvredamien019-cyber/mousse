@@ -154,7 +154,8 @@ begin
     raise exception 'Shop is unavailable';
   end if;
   if v_shop.email is null or length(trim(v_shop.email)) > 254
-     or v_shop.email !~* '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+
+     or v_shop.email !~* '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+'
+     or v_shop.email ~ '[[:space:]]' then
     raise exception 'Shop notification e-mail is not configured';
   end if;
   if p_fulfillment = 'delivery' and not v_shop.delivery_enabled then
