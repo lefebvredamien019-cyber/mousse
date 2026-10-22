@@ -221,7 +221,7 @@ begin
   if auth.uid() is null then
     raise exception 'Authentication required';
   end if;
-  if p_status not in ('preparing', 'ready', 'shipped', 'in_delivery',
+  if p_status not in ('received', 'accepted', 'preparing', 'ready', 'shipped', 'in_delivery',
                       'delivered', 'collected', 'cancelled') then
     raise exception 'Invalid order status';
   end if;
