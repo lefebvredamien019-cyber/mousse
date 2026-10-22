@@ -228,7 +228,7 @@ begin
 
   select o.id, o.shop_id, o.status, o.fulfillment, o.customer_name,
          o.customer_email, o.customer_phone, o.notification_channel,
-         o.tracking_number, s.name as shop_name
+         o.customer_notification_status, o.tracking_number, s.name as shop_name
     into v_order
     from public.orders o
     join public.shops s on s.id = o.shop_id
@@ -237,6 +237,10 @@ begin
 
   if not found then
     raise exception 'Order not found for this shop';
+  end if;
+
+  if p_status = v_order.status and v_order.customer_notification_status = 'sent' then
+    raise exception 'This status notification was already sent';
   end if;
 
   if p_status <> v_order.status then
@@ -276,7 +280,8 @@ begin
    where o.id = p_order_id;
 
   select o.id, o.status, o.tracking_number, o.customer_name, o.customer_email,
-         o.customer_phone, o.notification_channel, o.fulfillment, s.name as shop_name
+         o.customer_phone, o.notification_channel, o.fulfillment, s.name as shop_name,
+         s.email as shop_email
     into v_order
     from public.orders o join public.shops s on s.id = o.shop_id
    where o.id = p_order_id;
@@ -287,7 +292,8 @@ begin
     'customer_name', v_order.customer_name, 'customer_email', v_order.customer_email,
     'customer_phone', v_order.customer_phone,
     'notification_channel', v_order.notification_channel,
-    'fulfillment', v_order.fulfillment, 'shop_name', v_order.shop_name
+    'fulfillment', v_order.fulfillment, 'shop_name', v_order.shop_name,
+    'shop_email', v_order.shop_email
   );
 end;
 $$;
