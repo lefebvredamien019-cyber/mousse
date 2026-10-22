@@ -72,6 +72,7 @@
     workspace?.classList.remove("hidden");
     status("merchantAuthStatus", "Connecté à l’espace de " + data.name + ".");
     await window.renderMerchantProducts();
+    await window.renderOrders();
     await loadPublicShops(data.is_published ? data.id : null);
   }
 
@@ -276,6 +277,16 @@
     window.renderCart();
   };
 
+  window.toggleNotificationChannel = () => {
+    const channel = document.querySelector('input[name="customerNotification"]:checked')?.value || "email";
+    const email = document.getElementById("customerEmail");
+    const phone = document.getElementById("customerPhone");
+    document.getElementById("customerEmailField")?.classList.toggle("hidden", channel !== "email");
+    document.getElementById("customerPhoneField")?.classList.toggle("hidden", channel !== "sms");
+    if (email) email.required = channel === "email";
+    if (phone) phone.required = channel === "sms";
+  };
+
   window.toggleDelivery = () => {
     const select = document.getElementById("fulfilment");
     const addressFields = document.getElementById("deliveryFields");
@@ -309,6 +320,14 @@
     const name = document.getElementById("customerName").value.trim();
     const email = document.getElementById("customerEmail").value.trim();
     const fulfillment = document.getElementById("fulfilment").value;
+    const notificationChannel = document.querySelector('input[name="customerNotification"]:checked')?.value || "email";
+    const customerPhone = document.getElementById("customerPhone")?.value.trim() || "";
+    if (notificationChannel === "email" && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      return status("orderMessage", "Renseigne une adresse e-mail valide pour recevoir le suivi.", true);
+    }
+    if (notificationChannel === "sms" && !/^\\+[1-9]\\d{7,14}$/.test(customerPhone)) {
+      return status("orderMessage", "Renseigne un numéro au format international, par exemple +33612345678.", true);
+    }
     const subtotalCents = window.demoCart.reduce((sum, item) => sum + Math.round(item.price * 100) * item.qty, 0);
     if (fulfillment === "delivery" && subtotalCents < Number(currentShop?.delivery_min_cents || 0)) {
       return status("orderMessage", "Le panier n’atteint pas le minimum requis pour la livraison.", true);
@@ -318,7 +337,9 @@
     const body = {
       shop_id: currentShop.id,
       customer_name: name,
-      customer_email: email || null,
+      customer_email: notificationChannel === "email" ? email : null,
+      customer_phone: notificationChannel === "sms" ? customerPhone : null,
+      notification_channel: notificationChannel,
       fulfillment,
       delivery_address: document.getElementById("deliveryAddress").value.trim(),
       delivery_note: document.getElementById("deliveryNote").value.trim(),
@@ -331,12 +352,12 @@
     try {
       const { data, error } = await publicClient.functions.invoke("create-order", { body });
       if (error) throw error;
-      if (data?.email_sent) {
-        status("orderMessage", "Commande " + data.order_id + " enregistrée. Un e-mail vient d’être envoyé à " + currentShop.name + ".");
+      if (data?.order_created) {
+        status("orderMessage", "Commande " + data.order_id + " enregistrée. Alerte boutique : " + (data.merchant_notification_sent ? "e-mail envoyé" : "à vérifier") + " · alerte client : " + (data.customer_notification_sent ? "envoyée" : "à vérifier") + ".");
         window.demoCart.length = 0;
         window.renderCart();
       } else if (data?.order_created) {
-        status("orderMessage", "Commande enregistrée, mais l’envoi de l’e-mail n’a pas été confirmé. Ne valide pas une deuxième fois ; contacte le support pour vérifier la commande.", true);
+        status("orderMessage", "Commande enregistrée, mais une alerte n’a pas été confirmée. Ne valide pas une deuxième fois ; vérifie avec le commerçant.", true);
         window.demoCart.length = 0;
         window.renderCart();
       } else {
@@ -367,6 +388,92 @@
     await window.renderClientCatalog();
     window.toggleDelivery();
   });
+  const statusLabels = {
+    received: "Reçue", accepted: "Acceptée", preparing: "En préparation",
+    ready: "Prête au retrait", shipped: "Expédiée", in_delivery: "En livraison",
+    delivered: "Livrée", collected: "Retirée", cancelled: "Annulée"
+  };
+  const nextStatuses = (order) => ({
+    received: ["preparing", "cancelled"],
+    accepted: ["preparing", "cancelled"],
+    preparing: order.fulfillment === "pickup" ? ["ready", "cancelled"] : ["shipped", "in_delivery", "cancelled"],
+    ready: ["collected", "cancelled"],
+    shipped: ["delivered"],
+    in_delivery: ["delivered"],
+    delivered: [],
+    collected: [],
+    cancelled: []
+  }[order.status] || []);
+
+  window.renderOrders = async () => {
+    const element = document.getElementById("ordersList");
+    if (!element || !currentMerchant) return;
+    const { data, error } = await client.from("orders")
+      .select("id,status,fulfillment,customer_name,customer_email,customer_phone,notification_channel,customer_notification_status,delivery_address,total_cents,tracking_number,created_at,order_items(product_name,quantity,unit_price_cents)")
+      .eq("shop_id", currentMerchant.id).order("created_at", { ascending: false }).limit(50);
+    if (error) {
+      element.innerHTML = '<article class="card"><p>Impossible de charger les commandes.</p></article>';
+      return;
+    }
+    element.innerHTML = data?.length ? data.map(order => {
+      const items = (order.order_items || []).map(item =>
+        escape(item.product_name) + " × " + Number(item.quantity)
+      ).join(", ");
+      const next = nextStatuses(order);
+      if (["failed", "pending"].includes(order.customer_notification_status) && !next.includes(order.status)) {
+        next.unshift(order.status);
+      }
+      const contact = order.notification_channel === "sms" ? order.customer_phone : order.customer_email;
+      const options = [...new Set([order.status, ...next])].map(value =>
+        '<option value="' + escape(value) + '"' + (value === order.status ? " selected" : "") + '>' +
+        escape(statusLabels[value] || value) + (value === order.status && order.customer_notification_status === "failed" ? " · renvoyer l’alerte" : "") + "</option>"
+      ).join("");
+      return '<article class="card order-card" data-order-id="' + escape(order.id) + '">' +
+        '<div class="cardhead"><h3>Commande ' + escape(order.id.slice(0, 8)) + '</h3><span class="pill">' +
+        escape(statusLabels[order.status] || order.status) + '</span></div><p><strong>' +
+        escape(order.customer_name) + '</strong> · ' + escape(contact || "Contact manquant") + '</p>' +
+        '<p>' + (order.fulfillment === "pickup" ? "Click & Collect" : "Livraison") +
+        (order.delivery_address ? " · " + escape(order.delivery_address) : "") + '</p><p>' + items +
+        '</p><p><strong>' + euroCents(order.total_cents) + '</strong> · Alerte client : ' +
+        escape(order.customer_notification_status === "sent" ? "envoyée" : order.customer_notification_status === "failed" ? "échec" : "en attente") +
+        '</p><div class="field"><label>Statut et notification</label><select data-order-status>' + options +
+        '</select></div>' + (order.fulfillment === "delivery" ?
+          '<div class="field"><label>Numéro de suivi (si expédition postale)</label><input data-tracking value="' +
+          escape(order.tracking_number || "") + '" maxlength="120" placeholder="Numéro ou lien de suivi"></div>' : "") +
+        '<button class="btn" type="button" data-update-order>Mettre à jour et prévenir le client</button></article>';
+    }).join("") : '<article class="card"><p>Aucune commande reçue pour le moment.</p></article>';
+  };
+
+  document.getElementById("ordersList")?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-update-order]");
+    if (!button) return;
+    const card = button.closest("[data-order-id]");
+    const statusValue = card?.querySelector("[data-order-status]")?.value;
+    if (!card || !statusValue) return;
+    button.disabled = true;
+    const { data, error } = await client.functions.invoke("notify-order-status", {
+      body: {
+        order_id: card.dataset.orderId,
+        status: statusValue,
+        tracking_number: card.querySelector("[data-tracking]")?.value.trim() || null
+      }
+    });
+    button.disabled = false;
+    if (error || !data?.updated) {
+      status("merchantAuthStatus", "Statut non modifié. Vérifie le compte, le suivi et la configuration du service.", true);
+      return;
+    }
+    await window.renderOrders();
+    status("merchantAuthStatus", data.notification_sent
+      ? "Statut enregistré et alerte envoyée au client."
+      : "Statut enregistré, mais l’alerte a échoué. Vérifie la configuration puis réessaie le même statut.", !data.notification_sent);
+  });
+
+  document.querySelectorAll('input[name="customerNotification"]').forEach(input =>
+    input.addEventListener("change", window.toggleNotificationChannel)
+  );
+  window.toggleNotificationChannel();
+
   document.getElementById("merchantLoginButton")?.addEventListener("click", window.loginMerchant);
   document.getElementById("merchantRegisterButton")?.addEventListener("click", window.registerMerchant);
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);

@@ -1,3 +1,6 @@
 # Supabase Edge Function settings for MOUSSE.
 [functions.create-order]
 verify_jwt = false
+
+[functions.notify-order-status]
+verify_jwt = true
