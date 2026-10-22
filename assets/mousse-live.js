@@ -166,7 +166,7 @@
       is_published: document.getElementById("merchantPublished").checked,
       updated_at: new Date().toISOString()
     };
-    if (values.name.length < 2 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(values.email)) return status("merchantSaved", "Renseigne un nom et une adresse e-mail valide pour le commerce.", true);
+    if (values.name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) return status("merchantSaved", "Renseigne un nom et une adresse e-mail valide pour le commerce.", true);
     const { data, error } = await client.from("shops").update(values)
       .eq("id", currentMerchant.id).select("*").single();
     if (error) return status("merchantSaved", "Enregistrement impossible. Vérifie les règles de sécurité du commerce.", true);
@@ -322,10 +322,10 @@
     const fulfillment = document.getElementById("fulfilment").value;
     const notificationChannel = document.querySelector('input[name="customerNotification"]:checked')?.value || "email";
     const customerPhone = document.getElementById("customerPhone")?.value.trim() || "";
-    if (notificationChannel === "email" && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (notificationChannel === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return status("orderMessage", "Renseigne une adresse e-mail valide pour recevoir le suivi.", true);
     }
-    if (notificationChannel === "sms" && !/^\\+[1-9]\\d{7,14}$/.test(customerPhone)) {
+    if (notificationChannel === "sms" && !/^\+[1-9]\d{7,14}$/.test(customerPhone)) {
       return status("orderMessage", "Renseigne un numéro au format international, par exemple +33612345678.", true);
     }
     const subtotalCents = window.demoCart.reduce((sum, item) => sum + Math.round(item.price * 100) * item.qty, 0);
@@ -353,11 +353,14 @@
       const { data, error } = await publicClient.functions.invoke("create-order", { body });
       if (error) throw error;
       if (data?.order_created) {
-        status("orderMessage", "Commande " + data.order_id + " enregistrée. Alerte boutique : " + (data.merchant_notification_sent ? "e-mail envoyé" : "à vérifier") + " · alerte client : " + (data.customer_notification_sent ? "envoyée" : "à vérifier") + ".");
-        window.demoCart.length = 0;
-        window.renderCart();
-      } else if (data?.order_created) {
-        status("orderMessage", "Commande enregistrée, mais une alerte n’a pas été confirmée. Ne valide pas une deuxième fois ; vérifie avec le commerçant.", true);
+        const merchantSent = !!data.merchant_notification_sent;
+        const customerSent = !!data.customer_notification_sent;
+        const notificationIssue = !merchantSent || !customerSent;
+        const message = "Commande " + data.order_id + " enregistrée. Alerte boutique : " +
+          (merchantSent ? "e-mail envoyé" : "non confirmée") + " · alerte client : " +
+          (customerSent ? "envoyée" : "non confirmée") +
+          (notificationIssue ? ". Ne valide pas la commande une deuxième fois ; contacte le commerce." : ".");
+        status("orderMessage", message, notificationIssue);
         window.demoCart.length = 0;
         window.renderCart();
       } else {
