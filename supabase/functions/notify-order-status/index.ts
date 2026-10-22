@@ -23,6 +23,8 @@ const escapeHtml = (value) =>
 const statusMessage = (status, shopName, orderId, tracking) => {
   const prefix = "Commande " + orderId + " — " + shopName + " : ";
   const messages = {
+    received: "la boutique a bien reçu ta commande.",
+    accepted: "la boutique a accepté ta commande.",
     preparing: "le commerçant prépare ta commande.",
     ready: "ta commande est prête au retrait.",
     shipped: tracking
