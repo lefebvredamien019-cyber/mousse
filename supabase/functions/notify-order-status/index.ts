@@ -65,7 +65,7 @@ Deno.serve(async (request) => {
     ? body.tracking_number.trim().slice(0, 120)
     : "";
   if (!/^[0-9a-f-]{36}$/i.test(orderId) ||
-      !["preparing", "ready", "shipped", "in_delivery", "delivered", "collected", "cancelled"].includes(status)) {
+      !["received", "accepted", "preparing", "ready", "shipped", "in_delivery", "delivered", "collected", "cancelled"].includes(status)) {
     return json(400, { error: "Please check the order status" }, origin);
   }
 
