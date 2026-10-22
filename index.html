@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="description" content="Découvrez MOUSSE, une vitrine de présentation pour les commerces de proximité. Les fonctions interactives sont encore en démonstration.">
+<meta name="description" content="Découvrez MOUSSE, plateforme pour commerces de proximité : vitrines, catalogue partagé, Click & Collect et livraison. Le parcours de commande est en cours de mise en service.">
 <title>MOUSSE — Le commerce, autrement</title>
 <style>
 :root{--forest:#173f32;--forest2:#245642;--cream:#f5f2e8;--paper:#fffdf8;--ink:#202b24;--muted:#69776d;--line:#e0e4d9;--sage:#dfe8dc;--gold:#d6b76a;--red:#a94c43;--radius:18px}
@@ -249,7 +249,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <div class="pos-intro"><span class="pos-kicker">L’écosystème MOUSSE</span><h2 id="mousse-pos-title">Ta vitrine en ligne. Ta caisse en magasin. Un seul écosystème.</h2><p>MOUSSE aide les clients à découvrir les commerces. Le logiciel de caisse MOUSSE permettra aux commerçants de gérer leur catalogue et de synchroniser leurs stocks avec leur vitrine en ligne.</p><div class="pos-steps"><div><b>01</b><strong>Présente ton commerce</strong><span>Crée ta vitrine sur MOUSSE.</span></div><div><b>02</b><strong>Gère tes articles</strong><span>Ajoute tes produits dans la caisse MOUSSE.</span></div><div><b>03</b><strong>Synchronise tes stocks</strong><span>Les ventes en magasin actualisent les disponibilités en ligne, une fois la connexion activée.</span></div></div></div>
     <div class="pos-plans"><article class="pos-plan"><span class="plan-tag">Pour commencer</span><h3>MOUSSE Gratuit</h3><div class="plan-price">0 € <small>/ mois</small></div><p>Pour les commerces qui veulent découvrir la caisse.</p><ul><li>Jusqu’à <strong>20 articles</strong></li><li>Gestion du catalogue de base</li><li>Découverte de l’écosystème MOUSSE</li><li class="plan-muted">Catalogue étendu non inclus</li></ul><button class="btn light" onclick="showView('commerce')">Découvrir l’espace commerçant</button></article>
     <article class="pos-plan pos-premium"><span class="plan-tag">Pour développer ton activité</span><h3>MOUSSE Premium</h3><div class="plan-price">Tarif à définir</div><p>Pour les commerces avec un catalogue important.</p><ul><li><strong>Catalogue étendu</strong> — quantité à définir</li><li>Gestion de nombreux articles</li><li>Synchronisation des stocks avec MOUSSE prévue</li><li>Fonctions avancées selon la formule</li></ul><button class="btn" onclick="showView('commerce')">Préparer mon catalogue</button></article></div>
-    <p class="pos-disclaimer"><strong>Transparence :</strong> cette présentation décrit l’offre prévue. À ce stade, le site reste un prototype : la connexion réelle entre la caisse et MOUSSE, les comptes commerçants, la base de données partagée et la synchronisation automatique ne sont pas encore activés. Les tarifs Premium restent à fixer.</p>
+    <p class="pos-disclaimer"><strong>Transparence :</strong> cette présentation décrit l’offre prévue. Le projet de test Supabase est relié au site, mais la validation des comptes commerçants et l’envoi des notifications restent à finaliser. La connexion réelle à la caisse et la synchronisation automatique ne sont pas intégrées. Les tarifs Premium restent à fixer.</p>
   </section>
 </section>
 <section class="view" id="view-affluence">
@@ -261,7 +261,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 </section>
 <section class="view" id="view-collect">
   <div class="eyebrow">Vitrine client · démonstration interactive</div><h1 class="headline" id="collect-title">Commander chez un commerçant</h1><p class="sub">Ajoutez des produits au panier, puis choisissez le retrait en boutique ou la livraison si le commerçant la propose.</p>
-  <div class="notice"><strong>Avant les commandes réelles :</strong> le mode présentation reste local. Le catalogue partagé, la commande serveur et l’e-mail au commerçant s’activent uniquement après configuration de Supabase et du service d’e-mail. Aucun paiement n’est intégré.</div>
+  <div class="notice"><strong>Avant les commandes réelles :</strong> le mode présentation reste local. Le catalogue et le serveur de commande sont préparés dans le projet de test. Les commandes resteront indisponibles jusqu’à la configuration de l’e-mail commerçant; les confirmations par SMS nécessitent aussi un compte Twilio. Aucun paiement n’est intégré.</div>
   <div class="card hidden" id="liveShopPicker"><h3>Boutique</h3><div class="field"><label for="liveShopSelect">Choisir un commerce ouvert aux commandes</label><select id="liveShopSelect"><option value="">Chargement des commerces…</option></select></div><p class="muted" id="deliveryFeeHint" aria-live="polite"></p></div>
   <div class="grid two">
     <article class="card"><h3>Catalogue de démonstration</h3><p>Les articles ajoutés dans l’espace commerçant apparaissent ici sur ce navigateur.</p><div id="clientCatalog"></div>
@@ -333,7 +333,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
   <p class="sub">Pour toute question sur MOUSSE, un problème technique ou une demande concernant une fiche commerce, contactez l’équipe à l’adresse de support indiquée ci-dessous.</p>
   <div class="grid two">
     <article class="card"><div class="symbol" aria-hidden="true">✉</div><h2>Contacter MOUSSE</h2><p>Pour toute question, demande ou problème technique, écrivez-nous à l’adresse de support :</p><p><a class="support-email" href="mailto:dklm.services@gmail.com">dklm.services@gmail.com</a></p></article>
-    <article class="card"><div class="symbol" aria-hidden="true">ℹ</div><h2>À propos de cette version</h2><p>Ce site présente MOUSSE et ses parcours interactifs. Les commandes, profils et demandes de gestion de fiche restent enregistrés localement dans le navigateur de démonstration. Ils ne sont pas transmis à l’équipe.</p></article>
+    <article class="card"><div class="symbol" aria-hidden="true">ℹ</div><h2>À propos de cette version</h2><p>Ce site présente MOUSSE et ses parcours de démonstration. Les profils locaux et demandes de gestion de fiche créés dans la démonstration restent enregistrés dans ce navigateur et ne sont pas transmis à l’équipe. Le parcours de commande connecté est en cours de configuration pour le test Dklm.</p></article>
   </div>
 </section>
 <section class="view" id="view-reglages">
