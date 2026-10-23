@@ -502,7 +502,15 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     <div class="field"><label for="signupShopName">Nom du magasin</label><input id="signupShopName" value="Dklm"></div>
     <div class="field"><label for="merchantLoginEmail">E-mail du compte</label><input id="merchantLoginEmail" type="email" autocomplete="username" value="dklm.services@gmail.com"></div>
     <div class="field"><label for="merchantLoginPassword">Mot de passe (10 caractères minimum)</label><input id="merchantLoginPassword" type="password" autocomplete="current-password" minlength="10"></div>
-    <div class="actions"><button class="btn" id="merchantRegisterButton" type="button">Créer le compte Dklm</button><button class="btn light" id="merchantLoginButton" type="button">Se connecter</button></div>
+    <div class="actions"><button class="btn" id="merchantRegisterButton" type="button">Créer le compte Dklm</button><button class="btn light" id="merchantLoginButton" type="button">Se connecter</button><button class="btn light" id="merchantForgotPassword" type="button">Mot de passe oublié ?</button></div>
+    <div id="merchantRecoveryStatus" class="success hidden" role="status" aria-live="polite"></div>
+    <section id="merchantRecoveryPanel" class="card hidden" aria-labelledby="merchantRecoveryTitle">
+      <h3 id="merchantRecoveryTitle">Choisir un nouveau mot de passe</h3>
+      <p>Ce formulaire apparaît après l’ouverture du lien sécurisé reçu par e-mail.</p>
+      <div class="field"><label for="merchantNewPassword">Nouveau mot de passe</label><input id="merchantNewPassword" type="password" autocomplete="new-password" minlength="10"></div>
+      <div class="field"><label for="merchantNewPasswordConfirm">Confirmer le nouveau mot de passe</label><input id="merchantNewPasswordConfirm" type="password" autocomplete="new-password" minlength="10"></div>
+      <button class="btn" id="merchantSaveNewPassword" type="button">Enregistrer le nouveau mot de passe</button>
+    </section>
   </article>
   <button class="btn light hidden" id="merchantSignOut" type="button">Se déconnecter</button>
   <div id="merchantAuthStatus" class="success" role="status" aria-live="polite">Préparation du compte de test…</div>
