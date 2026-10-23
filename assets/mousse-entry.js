@@ -16,6 +16,7 @@
   function showGate() {
     document.documentElement.classList.add("role-unselected");
     reveal("roleGate");
+    conceal("clientStart");
     conceal("merchantStart");
     conceal("merchantSetup");
     const shell = document.querySelector(".shell");
@@ -29,6 +30,8 @@
     document.documentElement.classList.remove("role-unselected");
 
     if (role === "merchant") {
+      conceal("clientStart");
+      document.documentElement.classList.remove("role-unselected");
       conceal("merchantStart");
       const firstTime = byId("firstMerchantVisit");
       if (firstTime && firstTime.checked) {
@@ -41,15 +44,42 @@
 
     conceal("merchantStart");
     conceal("merchantSetup");
+    reveal("clientStart");
+    document.documentElement.classList.add("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "none";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  window.continueClientBrowsing = function () {
+    conceal("clientStart");
+    document.documentElement.classList.remove("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "";
     if (typeof window.showView === "function") window.showView("accueil");
     else reveal("view-accueil");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  window.openClientAccount = function () {
+    conceal("clientStart");
+    document.documentElement.classList.remove("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "";
+    if (typeof window.showView === "function") window.showView("client");
+    else reveal("view-client");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   window.backToRoleGate = showGate;
 
   window.continueMerchant = function () {
+    conceal("clientStart");
     conceal("merchantStart");
     conceal("merchantSetup");
+    document.documentElement.classList.remove("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "";
     if (typeof window.showView === "function") window.showView("commerce");
     else reveal("view-commerce");
     const email = byId("merchantLoginEmail");
@@ -57,7 +87,11 @@
   };
 
   window.openMerchantSetup = function () {
+    conceal("clientStart");
     conceal("merchantStart");
+    document.documentElement.classList.add("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "none";
     reveal("merchantSetup");
     updateSetupProgress();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -65,6 +99,9 @@
 
   window.backToMerchantStart = function () {
     conceal("merchantSetup");
+    document.documentElement.classList.add("role-unselected");
+    const shell = document.querySelector(".shell");
+    if (shell) shell.style.display = "none";
     reveal("merchantStart");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
