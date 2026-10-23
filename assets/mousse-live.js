@@ -55,8 +55,17 @@
     if (delivery) delivery.checked = !!shop.delivery_enabled;
     set("merchantDeliveryFee", (Number(shop.delivery_fee_cents || 0) / 100).toFixed(2));
     set("merchantDeliveryMin", (Number(shop.delivery_min_cents || 0) / 100).toFixed(2));
+    set("merchantTemplate", shop.shop_template || "classic");
+    set("merchantPauseMessage", shop.pause_message || "");
+    set("merchantPauseReturn", shop.pause_return_at ? new Date(shop.pause_return_at).toISOString().slice(0, 16) : "");
+    set("merchantDeliveryPostcodes", Array.isArray(shop.delivery_postcodes) ? shop.delivery_postcodes.join(", ") : "");
+    set("merchantDeliveryRadius", shop.delivery_radius_km ?? "");
+    set("merchantResponseDeadline", shop.response_deadline_minutes || 30);
+    set("merchantReminderMinutes", shop.reminder_minutes || 10);
+    const paused = document.getElementById("merchantOrdersPaused");
+    if (paused) paused.checked = !!shop.order_paused;
     const published = document.getElementById("merchantPublished");
-    if (published) published.checked = !!shop.is_published;
+    if (published) { published.checked = !!shop.is_published; published.disabled = true; }
     window.renderMerchantPreview();
   };
 
@@ -92,7 +101,7 @@
     const catalog = document.getElementById("clientCatalog");
     if (!picker || !catalog) return;
     const { data, error } = await publicClient.from("shops")
-      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents")
+      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km")
       .eq("is_published", true).order("name");
     if (error) {
       picker.innerHTML = '<option value="">Boutiques momentanément indisponibles</option>';
@@ -167,10 +176,27 @@
       delivery_enabled: document.getElementById("merchantDeliveryEnabled").checked,
       delivery_fee_cents: fee,
       delivery_min_cents: minimum,
-      is_published: document.getElementById("merchantPublished").checked,
+      shop_template: document.getElementById("merchantTemplate").value,
+      order_paused: document.getElementById("merchantOrdersPaused").checked,
+      pause_message: document.getElementById("merchantPauseMessage").value.trim().slice(0, 240),
+      pause_return_at: document.getElementById("merchantPauseReturn").value ? new Date(document.getElementById("merchantPauseReturn").value).toISOString() : null,
+      delivery_postcodes: [...new Set(document.getElementById("merchantDeliveryPostcodes").value.split(",").map(value => value.trim()).filter(Boolean))],
+      delivery_radius_km: document.getElementById("merchantDeliveryRadius").value ? Number(document.getElementById("merchantDeliveryRadius").value) : null,
+      response_deadline_minutes: Number(document.getElementById("merchantResponseDeadline").value || 30),
+      reminder_minutes: Number(document.getElementById("merchantReminderMinutes").value || 10),
+      is_published: currentMerchant.is_published,
       updated_at: new Date().toISOString()
     };
     if (values.name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) return status("merchantSaved", "Renseigne un nom et une adresse e-mail valide pour le commerce.", true);
+    if (!["classic", "restaurant", "services", "hybrid"].includes(values.shop_template)) return status("merchantSaved", "Choisis un modèle de vitrine valide.", true);
+    if (!Number.isInteger(values.response_deadline_minutes) || values.response_deadline_minutes < 5 || values.response_deadline_minutes > 1440 ||
+        !Number.isInteger(values.reminder_minutes) || values.reminder_minutes < 1 || values.reminder_minutes >= values.response_deadline_minutes) {
+      return status("merchantSaved", "Le délai maximal doit être de 5 à 1 440 minutes et le rappel doit arriver avant l’expiration.", true);
+    }
+    if (values.delivery_radius_km !== null && (!Number.isInteger(values.delivery_radius_km) || values.delivery_radius_km < 1 || values.delivery_radius_km > 200)) return status("merchantSaved", "Le rayon de livraison doit être compris entre 1 et 200 km.", true);
+    if (values.delivery_postcodes.some(code => !/^\d{5}$/.test(code))) return status("merchantSaved", "Chaque code postal doit contenir 5 chiffres.", true);
+    if (values.pause_return_at && Number.isNaN(Date.parse(values.pause_return_at))) return status("merchantSaved", "Vérifie la date de reprise estimée.", true);
+    if (values.order_paused && values.pause_return_at && Date.parse(values.pause_return_at) <= Date.now()) return status("merchantSaved", "La reprise estimée doit être dans le futur.", true);
     const { data, error } = await client.from("shops").update(values)
       .eq("id", currentMerchant.id).select("*").single();
     if (error) return status("merchantSaved", "Enregistrement impossible. Vérifie les règles de sécurité du commerce.", true);
