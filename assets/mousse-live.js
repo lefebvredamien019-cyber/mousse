@@ -84,7 +84,7 @@
     account?.classList.toggle("hidden", !!currentUser);
     document.getElementById("merchantSignOut")?.classList.toggle("hidden", !currentUser);
     workspace?.classList.toggle("hidden", !currentUser);
-    if (currentUser) await loadMerchant();
+    if (currentUser) { await loadMerchant(); if (currentMerchant) window.showView?.('merchantDashboard'); }
   }
 
   async function loadPublicShops(preferredId = null) {
@@ -117,6 +117,7 @@
     if (error) return status("merchantAuthStatus", "Connexion impossible. Vérifie l’adresse et le mot de passe.", true);
     currentUser = data.user;
     await refreshSession();
+    if (currentMerchant) window.showView?.('merchantDashboard');
   };
 
   window.registerMerchant = async () => {
