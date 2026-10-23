@@ -639,7 +639,8 @@ function filterDiscoverShops(){
     if(count)count.textContent='Aucun filtre actif.';
     return;
   }
-  const query=[q,location && !q ? location : ''].filter(Boolean).join(' ').trim();
+  const categoryQueries={alimentation:'restaurant alimentation boulangerie',beaute:'coiffure esthétique beauté',auto:'garage automobile mécanique',maison:'bâtiment travaux maison jardin',sante:'santé médical',services:'services aux entreprises',commerce:'commerce de détail'};
+  const query=[q || (!category && !location ? '' : categoryQueries[category] || ''),location].filter(Boolean).join(' ').trim();
   searchNationalBusinesses(query,{category,location,sort});
 }
 async function searchNationalBusinesses(q,filters={}){const el=document.getElementById('discoverResults');const request=++discoverRequest;el.innerHTML='<div class="card"><strong>Recherche en cours…</strong><p>Interrogation de la base publique des établissements français.</p></div>';try{const url='https://recherche-entreprises.api.gouv.fr/search?q='+encodeURIComponent(q)+'&page=1&per_page=25&etat_administratif=A';const response=await fetch(url,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error('API indisponible ('+response.status+')');const data=await response.json();if(request!==discoverRequest)return;const rows=Array.isArray(data.results)?data.results:[];const mapped=[];rows.forEach((x,i)=>{const sites=Array.isArray(x.matching_etablissements)?x.matching_etablissements:[];const all=sites.length?sites:[x.siege].filter(Boolean);all.forEach((site,j)=>{const name=site.nom_complet||site.nom_raison_sociale||x.nom_complet||x.nom_raison_sociale||'Établissement';const addr=[site.adresse,site.code_postal,site.libelle_commune||site.commune].filter(Boolean).join(' · ');mapped.push({id:String(site.siret||x.siren||('result-'+i+'-'+j)),name,activity:site.activite_principale||x.activite_principale||'Activité non précisée',town:site.libelle_commune||site.commune||'',address:addr||'Adresse non disponible',emoji:'🏪',siren:x.siren||'',siret:site.siret||'',crowd:'Non renseignée',wait:'Information non disponible',intro:'Établissement issu des données publiques françaises. Les informations de vitrine seront ajoutées par le commerçant après vérification.',messages:[['🏛️','Source publique','Fiche issue de l’API Recherche d’Entreprises.'],['🔐','Gestion de la fiche','Le propriétaire devra vérifier son droit à gérer cet établissement.']],ads:[['Fiche établissement','Le commerçant pourra ajouter ses informations après validation.']]})})});discoverShops.splice(0,discoverShops.length,...mapped);
@@ -652,12 +653,12 @@ async function searchNationalBusinesses(q,filters={}){const el=document.getEleme
       const activity=String(shop.activity||'').toLowerCase();
       const name=String(shop.name||'').toLowerCase();
       const match={
-        alimentation:/alimentation|restauration|restaurant|boulanger|pâtiss|épicer|aliment|boisson|traiteur|snack/.test(activity+' '+name),
-        beaute:/coiff|beauté|esthétique|bien-être|soin|massage|spa|barbier/.test(activity+' '+name),
-        auto:/automobile|mécan|garage|réparation de véhicules|entretien de véhicules|carrosserie/.test(activity+' '+name),
-        maison:/construction|bâtiment|travaux|plomb|électric|menuis|peinture|jardin|maçon/.test(activity+' '+name),
-        sante:/santé|médical|médecin|dent|infirm|pharm|kiné|vétérin/.test(activity+' '+name),
-        services:/service|conseil|informatique|nettoyage|formation|transport|comptab|juridique/.test(activity+' '+name),
+        alimentation:/^(10|11|47\\.1|47\\.2|56)|alimentation|restauration|restaurant|boulanger|pâtiss|épicer|aliment|boisson|traiteur|snack/.test(activity+' '+name),
+        beaute:/^96\\.0[2-4]|coiff|beauté|esthétique|bien-être|soin|massage|spa|barbier/.test(activity+' '+name),
+        auto:/^45\\.|automobile|mécan|garage|réparation de véhicules|entretien de véhicules|carrosserie/.test(activity+' '+name),
+        maison:/^43\\.|^81\\.|construction|bâtiment|travaux|plomb|électric|menuis|peinture|jardin|maçon/.test(activity+' '+name),
+        sante:/^86\\.|^47\\.73|santé|médical|médecin|dent|infirm|pharm|kiné|vétérin/.test(activity+' '+name),
+        services:/^(62|69|70|78|82|49)\\.|service|conseil|informatique|nettoyage|formation|transport|comptab|juridique/.test(activity+' '+name),
         commerce:true
       };
       if(!match[filters.category])return false;
