@@ -37,6 +37,7 @@
   let currentUser = null;
   let currentMerchant = null;
   let currentShop = null;
+  let currentIsAdmin = false;
   let loadGeneration = 0;
   window.MOUSSE_LIVE_STATUS = "configured";
 
@@ -160,6 +161,85 @@
     showNotice("Dossier enregistré et transmis à MOUSSE. Le SIRET et les informations doivent encore être vérifiés avant toute publication. Le logo et les photos ne sont pas encore téléversés.");
   }
 
+  async function checkAdminAccess() {
+    currentIsAdmin = false;
+    const nav = document.getElementById("adminNavButton");
+    if (!currentUser) {
+      nav?.classList.add("hidden");
+      return;
+    }
+    const { data, error } = await client.from("mousse_admins")
+      .select("user_id").eq("user_id", currentUser.id).maybeSingle();
+    currentIsAdmin = !error && !!data;
+    nav?.classList.toggle("hidden", !currentIsAdmin);
+    if (currentIsAdmin) await window.loadAdminApplications();
+  }
+
+  window.loadAdminApplications = async () => {
+    const list = document.getElementById("adminApplicationsList");
+    if (!list || !currentIsAdmin) return;
+    const { data, error } = await client.from("merchant_applications")
+      .select("id,owner_id,business_name,legal_name,siret,category,manager_name,business_email,phone,address,postal_code,city,description,products_services,requested_tools,status,review_note,submitted_at")
+      .order("submitted_at", { ascending: false }).limit(100);
+    if (error) {
+      list.innerHTML = '<article class="card"><p>Impossible de charger les dossiers. Vérifie les droits d’administration.</p></article>';
+      return;
+    }
+    const labels = { draft:"Brouillon", submitted:"À examiner", resubmitted:"Corrections renvoyées", changes_requested:"Corrections demandées", approved:"Approuvé", rejected:"Refusé" };
+    list.innerHTML = data?.length ? data.map(app => {
+      const tools = Array.isArray(app.requested_tools) ? app.requested_tools.join(", ") : "";
+      const waiting = ["submitted", "resubmitted", "changes_requested"].includes(app.status);
+      return '<article class="card admin-application-card" data-application-id="' + escape(app.id) + '">' +
+        '<div class="cardhead"><span class="pill">' + escape(labels[app.status] || app.status) + '</span><small>' +
+        escape(app.submitted_at ? new Date(app.submitted_at).toLocaleDateString("fr-FR") : "Non transmis") + '</small></div>' +
+        '<h3>' + escape(app.business_name) + '</h3><p><strong>Raison sociale :</strong> ' + escape(app.legal_name || "Non renseignée") +
+        '<br><strong>SIRET :</strong> ' + escape(app.siret) + '<br><strong>Activité :</strong> ' + escape(app.category) +
+        '<br><strong>Responsable :</strong> ' + escape(app.manager_name) + '<br><strong>Contact :</strong> ' + escape(app.business_email) +
+        (app.phone ? " · " + escape(app.phone) : "") + '<br><strong>Adresse :</strong> ' +
+        escape([app.address, app.postal_code, app.city].filter(Boolean).join(", ")) + '</p>' +
+        '<p>' + escape(app.description || "Aucune description") + '</p>' +
+        (app.products_services ? '<p><strong>Offre :</strong> ' + escape(app.products_services) + '</p>' : "") +
+        (tools ? '<p><strong>Outils souhaités :</strong> ' + escape(tools) + '</p>' : "") +
+        (app.review_note ? '<div class="notice"><strong>Dernier retour :</strong> ' + escape(app.review_note) + '</div>' : "") +
+        (waiting ? '<div class="field"><label>Motif / retour MOUSSE</label><textarea data-review-note maxlength="1000" placeholder="Obligatoire pour demander des corrections ou refuser">' +
+          escape(app.review_note || "") + '</textarea></div><div class="admin-application-actions">' +
+          '<button class="btn" type="button" data-review-decision="approved">Approuver et publier</button>' +
+          '<button class="btn light" type="button" data-review-decision="changes_requested">Demander des corrections</button>' +
+          '<button class="btn light" type="button" data-review-decision="rejected">Refuser le dossier</button></div>' :
+          '<p class="muted">Aucune action nécessaire pour ce statut.</p>') + '</article>';
+    }).join("") : '<article class="card"><p>Aucun dossier commerçant pour le moment.</p></article>';
+  };
+
+  document.getElementById("adminApplicationsList")?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-review-decision]");
+    if (!button || !currentIsAdmin) return;
+    const card = button.closest("[data-application-id]");
+    const decision = button.dataset.reviewDecision;
+    const note = card?.querySelector("[data-review-note]")?.value.trim() || "";
+    const message = document.getElementById("adminReviewStatus");
+    if (!card) return;
+    if (decision !== "approved" && note.length < 5) {
+      status("adminReviewStatus", "Ajoute un motif clair d’au moins 5 caractères pour demander des corrections ou refuser.", true);
+      return;
+    }
+    button.disabled = true;
+    const { data, error } = await client.rpc("review_merchant_application", {
+      p_application_id: card.dataset.applicationId,
+      p_decision: decision,
+      p_note: note
+    });
+    button.disabled = false;
+    if (error || !data?.ok) {
+      status("adminReviewStatus", "Décision non enregistrée. Vérifie les droits d’administration et la présence de la boutique liée.", true);
+      return;
+    }
+    status("adminReviewStatus", decision === "approved"
+      ? "Dossier approuvé : la vitrine liée est maintenant publiée."
+      : decision === "changes_requested" ? "Corrections demandées. Le motif a été enregistré."
+      : "Dossier refusé. Le motif a été enregistré.");
+    await window.loadAdminApplications();
+  });
+
   async function loadMerchant() {
     if (!currentUser) return;
     const { data, error } = await client.from("shops").select("*").eq("owner_id", currentUser.id).maybeSingle();
@@ -185,7 +265,12 @@
     account?.classList.toggle("hidden", !!currentUser);
     document.getElementById("merchantSignOut")?.classList.toggle("hidden", !currentUser);
     workspace?.classList.toggle("hidden", !currentUser);
-    if (currentUser) { await loadMerchant(); if (currentMerchant) window.showView?.('merchantDashboard'); }
+    if (currentUser) {
+      await loadMerchant();
+      await checkAdminAccess();
+      if (currentIsAdmin) window.showView?.("admin");
+      else if (currentMerchant) window.showView?.("merchantDashboard");
+    }
   }
 
   function renderFeaturedShops(shops) {
