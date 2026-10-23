@@ -31,6 +31,8 @@
   document.getElementById("liveShopPicker")?.classList.remove("hidden");
   window.demoCart = demoCart;
   const client = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
+  window.MOUSSE_CLIENT_AUTHENTICATED = false;
+  window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
   const publicClient = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
@@ -265,12 +267,11 @@
     account?.classList.toggle("hidden", !!currentUser);
     document.getElementById("merchantSignOut")?.classList.toggle("hidden", !currentUser);
     workspace?.classList.toggle("hidden", !currentUser);
-    if (currentUser) {
-      await loadMerchant();
-      await checkAdminAccess();
-      if (currentIsAdmin) window.showView?.("admin");
-      else if (currentMerchant) window.showView?.("merchantDashboard");
-    }
+    if(currentUser){
+      await loadMerchant(); await checkAdminAccess();
+      if(currentIsAdmin||currentMerchant){window.MOUSSE_IS_MERCHANT_AUTHENTICATED=true;if(typeof window.enterMerchantWorkspace==="function")window.enterMerchantWorkspace();if(currentIsAdmin)window.showView?.("admin");}
+      else window.MOUSSE_IS_MERCHANT_AUTHENTICATED=false;
+    }else window.MOUSSE_IS_MERCHANT_AUTHENTICATED=false;
   }
 
   function renderFeaturedShops(shops) {
@@ -345,14 +346,56 @@
     return { ok: true, message: "Affluence publiée et visible sur la vitrine publique du commerce." };
   };
 
+  window.loginClient = async () => {
+    const email=document.getElementById("clientAuthEmail")?.value.trim()||"", password=document.getElementById("clientAuthPassword")?.value||"";
+    if(!email||!password)return status("clientAuthStatus","Renseigne ton adresse e-mail et ton mot de passe.",true);
+    const {error}=await client.auth.signInWithPassword({email,password});
+    if(error)return status("clientAuthStatus","Connexion impossible. Vérifie l’adresse et le mot de passe.",true);
+    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Connexion réussie. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
+  };
+  window.registerClient = async () => {
+    const email=document.getElementById("clientAuthEmail")?.value.trim()||"", password=document.getElementById("clientAuthPassword")?.value||"";
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("clientAuthStatus","Renseigne une adresse e-mail valide.",true);
+    if(password.length<10)return status("clientAuthStatus","Choisis un mot de passe d’au moins 10 caractères.",true);
+    const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:"https://www.mousse-market.fr/"}});
+    if(error)return status("clientAuthStatus","Création du compte impossible. Vérifie les champs et les réglages d’inscription.",true);
+    if(!data.session)return status("clientAuthStatus","Compte créé. Confirme l’adresse reçue par e-mail, puis connecte-toi ici.");
+    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
+  };
+  // Client password recovery uses Supabase Auth; the profile remains a local-only prototype.
+  window.saveClientNewPassword = async () => {
+    const password = document.getElementById("clientNewPassword")?.value || "";
+    const confirm = document.getElementById("clientNewPasswordConfirm")?.value || "";
+    if (password.length < 10 || password !== confirm) return status("clientAuthStatus", "Les deux mots de passe doivent correspondre et contenir au moins 10 caractères.", true);
+    const { error } = await client.auth.updateUser({ password });
+    if (error) return status("clientAuthStatus", "Impossible d’enregistrer ce mot de passe. Rouvre le lien reçu par e-mail puis réessaie.", true);
+    document.getElementById("clientRecoveryPanel")?.classList.add("hidden");
+    document.getElementById("clientNewPassword").value = "";
+    document.getElementById("clientNewPasswordConfirm").value = "";
+    status("clientAuthStatus", "Mot de passe modifié. Tu peux maintenant te connecter.");
+  };
+
+  window.requestClientPasswordReset = async () => {
+    const email=document.getElementById("clientAuthEmail")?.value.trim()||"";
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("clientAuthStatus","Saisis une adresse e-mail valide pour demander la réinitialisation.",true);
+    const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:"https://www.mousse-market.fr/"});
+    status("clientAuthStatus",error?"La demande n’a pas pu être envoyée. Vérifie la configuration e-mail et l’URL de redirection.":"Si cette adresse correspond à un compte, un e-mail de réinitialisation va être envoyé.");
+  };
+  window.logoutClient = async () => {
+    const {error}=await client.auth.signOut(); if(error)return status("clientAuthStatus","Déconnexion impossible. Réessaie.",true);
+    window.MOUSSE_CLIENT_AUTHENTICATED=false;window.MOUSSE_IS_MERCHANT_AUTHENTICATED=false;window.backToRoleGate?.();
+  };
+
   window.loginMerchant = async () => {
-    const email = document.getElementById("merchantLoginEmail").value.trim();
-    const password = document.getElementById("merchantLoginPassword").value;
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) return status("merchantAuthStatus", "Connexion impossible. Vérifie l’adresse et le mot de passe.", true);
-    currentUser = data.user;
-    await refreshSession();
-    if (currentMerchant) window.showView?.('merchantDashboard');
+    const gate=document.getElementById("merchantLoginGate"), gateVisible=!!(gate&&!gate.hidden);
+    const email=(gateVisible?document.getElementById("merchantGateEmail")?.value:document.getElementById("merchantLoginEmail")?.value||"").trim();
+    const password=gateVisible?document.getElementById("merchantGatePassword")?.value||"":document.getElementById("merchantLoginPassword")?.value||"";
+    if(!email||!password)return status(gateVisible?"merchantGateStatus":"merchantAuthStatus","Renseigne ton adresse e-mail et ton mot de passe.",true);
+    const {data,error}=await client.auth.signInWithPassword({email,password});
+    if(error)return status(gateVisible?"merchantGateStatus":"merchantAuthStatus","Connexion impossible. Vérifie l’adresse et le mot de passe.",true);
+    currentUser=data.user; await refreshSession();
+    if(!currentMerchant&&!currentIsAdmin){window.MOUSSE_IS_MERCHANT_AUTHENTICATED=false;return status(gateVisible?"merchantGateStatus":"merchantAuthStatus","Compte connecté, mais aucun espace professionnel actif n’est associé à ce compte. Vérifie ton inscription ou contacte MOUSSE.",true);}
+    window.MOUSSE_IS_MERCHANT_AUTHENTICATED=true; window.enterMerchantWorkspace?.();
   };
 
   window.registerMerchant = async () => {
@@ -802,10 +845,15 @@
   document.getElementById("merchantForgotPassword")?.addEventListener("click", window.requestMerchantPasswordReset);
   document.getElementById("merchantSaveNewPassword")?.addEventListener("click", window.saveMerchantNewPassword);
   client.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") { window.MOUSSE_CLIENT_AUTHENTICATED = false; window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false; }
     if (event === "PASSWORD_RECOVERY") {
-      document.getElementById("merchantRecoveryPanel")?.classList.remove("hidden");
-      status("merchantRecoveryStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
-      document.getElementById("merchantRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      // A password belongs to the Supabase identity, regardless of whether it is used as a client or merchant.
+      window.MOUSSE_CLIENT_AUTHENTICATED = false;
+      window.enterMousse?.("client");
+      window.openClientLogin?.();
+      document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
+      status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+      document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   });
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);

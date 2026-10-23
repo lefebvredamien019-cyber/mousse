@@ -19,6 +19,8 @@
     conceal("clientStart");
     conceal("merchantStart");
     conceal("merchantSetup");
+    conceal("merchantLoginGate");
+    conceal("clientAuthPanel");
     const shell = document.querySelector(".shell");
     if (shell) shell.style.display = "";
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -37,13 +39,15 @@
       if (firstTime && firstTime.checked) {
         window.openMerchantSetup();
       } else {
-        window.continueMerchant();
+        window.openMerchantLogin();
       }
       return;
     }
 
     conceal("merchantStart");
     conceal("merchantSetup");
+    conceal("merchantLoginGate");
+    conceal("clientAuthPanel");
     reveal("clientStart");
     document.documentElement.classList.add("role-unselected");
     const shell = document.querySelector(".shell");
@@ -53,6 +57,7 @@
 
   window.continueClientBrowsing = function () {
     conceal("clientStart");
+    conceal("clientAuthPanel");
     document.documentElement.classList.remove("role-unselected");
     const shell = document.querySelector(".shell");
     if (shell) shell.style.display = "";
@@ -61,32 +66,69 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  window.openClientLogin = function () {
+    conceal("roleGate");
+    conceal("merchantLoginGate"); conceal("merchantStart"); conceal("merchantSetup");
+    reveal("clientStart"); reveal("clientAuthPanel");
+    document.documentElement.classList.add("role-unselected");
+    const shell = document.querySelector(".shell"); if (shell) shell.style.display = "none";
+    const email = byId("clientAuthEmail"); if (email) email.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  window.closeClientLogin = function () {
+    conceal("clientAuthPanel");
+    const email = byId("clientAuthEmail"); if (email) email.value = "";
+    const password = byId("clientAuthPassword"); if (password) password.value = "";
+  };
   window.openClientAccount = function () {
-    conceal("clientStart");
+    if (!window.MOUSSE_CLIENT_AUTHENTICATED) return window.openClientLogin();
+    conceal("clientStart"); conceal("clientAuthPanel");
     document.documentElement.classList.remove("role-unselected");
-    const shell = document.querySelector(".shell");
-    if (shell) shell.style.display = "";
-    if (typeof window.showView === "function") window.showView("client");
-    else reveal("view-client");
+    const shell = document.querySelector(".shell"); if (shell) shell.style.display = "";
+    if (typeof window.showView === "function") window.showView("client"); else reveal("view-client");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   window.backToRoleGate = showGate;
 
-  window.continueMerchant = function () {
-    conceal("clientStart");
-    conceal("merchantStart");
-    conceal("merchantSetup");
-    document.documentElement.classList.remove("role-unselected");
-    const shell = document.querySelector(".shell");
-    if (shell) shell.style.display = "";
-    if (typeof window.showView === "function") window.showView("commerce");
-    else reveal("view-commerce");
-    const email = byId("merchantLoginEmail");
-    if (email) email.focus({ preventScroll: true });
+  window.continueMerchant = function () { window.openMerchantLogin(); };
+  window.openMerchantLogin = function () {
+    conceal("roleGate");
+    conceal("clientStart"); conceal("clientAuthPanel"); conceal("merchantStart"); conceal("merchantSetup");
+    reveal("merchantLoginGate"); document.documentElement.classList.add("role-unselected");
+    const shell = document.querySelector(".shell"); if (shell) shell.style.display = "none";
+    const email = byId("merchantGateEmail"); if (email) email.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  window.submitMerchantGateLogin = async function () {
+    const email=byId("merchantGateEmail")?.value.trim()||"", password=byId("merchantGatePassword")?.value||"";
+    if(!email||!password){const el=byId("merchantGateStatus");if(el){el.textContent="Renseigne ton adresse e-mail et ton mot de passe.";el.classList.remove("hidden");}return;}
+    const oldEmail=byId("merchantLoginEmail"),oldPassword=byId("merchantLoginPassword");if(oldEmail)oldEmail.value=email;if(oldPassword)oldPassword.value=password;
+    if(typeof window.loginMerchant==="function")await window.loginMerchant();else{const el=byId("merchantGateStatus");if(el){el.textContent="Le service de connexion n’est pas disponible. Recharge la page puis réessaie.";el.classList.remove("hidden");}}
+  };
+  window.requestMerchantGateReset = async function () {
+    const email=byId("merchantGateEmail")?.value.trim()||"",oldEmail=byId("merchantLoginEmail");if(oldEmail)oldEmail.value=email;
+    if(typeof window.requestMerchantPasswordReset==="function")await window.requestMerchantPasswordReset();
+    const oldStatus=byId("merchantRecoveryStatus"),gateStatus=byId("merchantGateStatus");if(oldStatus&&gateStatus){gateStatus.textContent=oldStatus.textContent||"Si cette adresse correspond à un compte, un e-mail de réinitialisation va être envoyé.";gateStatus.classList.remove("hidden");}
+  };
+  window.saveMerchantGateNewPassword = async function () {
+    const password=byId("merchantGateNewPassword")?.value||"", confirm=byId("merchantGateNewPasswordConfirm")?.value||"";
+    if(password.length<10||password!==confirm){const el=byId("merchantGateStatus");if(el){el.textContent="Les deux mots de passe doivent correspondre et contenir au moins 10 caractères.";el.classList.remove("hidden");}return;}
+    const oldPassword=byId("merchantNewPassword"),oldConfirm=byId("merchantNewPasswordConfirm");
+    if(oldPassword)oldPassword.value=password;if(oldConfirm)oldConfirm.value=confirm;
+    if(typeof window.saveMerchantNewPassword==="function")await window.saveMerchantNewPassword();
+    const oldStatus=byId("merchantRecoveryStatus"),gateStatus=byId("merchantGateStatus");
+    if(oldStatus&&gateStatus){gateStatus.textContent=oldStatus.textContent;gateStatus.classList.remove("hidden");}
+  };
+
+  window.enterMerchantWorkspace = function () {
+    conceal("roleGate");conceal("clientStart");conceal("clientAuthPanel");conceal("merchantStart");conceal("merchantLoginGate");conceal("merchantSetup");
+    document.documentElement.classList.remove("role-unselected");const shell=document.querySelector(".shell");if(shell)shell.style.display="";
+    if(typeof window.showView==="function")window.showView("merchantDashboard");window.scrollTo({top:0,behavior:"smooth"});
   };
 
   window.openMerchantSetup = function () {
+    conceal("merchantLoginGate");
     conceal("clientStart");
     conceal("merchantStart");
     document.documentElement.classList.add("role-unselected");
@@ -99,6 +141,7 @@
 
   window.backToMerchantStart = function () {
     conceal("merchantSetup");
+    conceal("merchantLoginGate");
     document.documentElement.classList.add("role-unselected");
     const shell = document.querySelector(".shell");
     if (shell) shell.style.display = "none";
