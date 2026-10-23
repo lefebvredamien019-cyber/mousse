@@ -127,7 +127,10 @@
     if (name.length < 2) return status("merchantAuthStatus", "Renseigne d’abord le nom de ton commerce.", true);
     if (!email || password.length < 10) return status("merchantAuthStatus", "Utilise une adresse e-mail valide et un mot de passe d’au moins 10 caractères.", true);
     const { data, error } = await client.auth.signUp({
-      email, password, options: { data: { shop_name: name } }
+      email, password, options: {
+        data: { shop_name: name },
+        emailRedirectTo: `${window.location.origin}/`
+      }
     });
     if (error) return status("merchantAuthStatus", "Création du compte impossible. Vérifie les réglages d’inscription Supabase.", true);
     currentUser = data.session?.user || null;
