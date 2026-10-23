@@ -371,7 +371,26 @@
         status("orderMessage", "La commande n’a pas pu être confirmée. Réessaie après vérification du service.", true);
       }
     } catch (error) {
-      status("orderMessage", "Le service de commande est indisponible. Vérifie les paramètres du magasin et réessaie.", true);
+      let serverMessage = "";
+      try {
+        const response = error?.context;
+        if (response && typeof response.clone === "function") {
+          const payload = await response.clone().json();
+          serverMessage = String(payload?.error || payload?.message || "");
+        }
+      } catch (_) {}
+      const knownMessages = {
+        "Order service is not configured": "Le service de commande n’est pas entièrement configuré. Contacte l’administrateur du site.",
+        "Order service is temporarily unavailable": "Le service de commande est temporairement indisponible. Réessaie plus tard.",
+        "The order could not be created. Please review the shop and basket.": "Commande refusée : vérifie que la boutique est publiée, que son e-mail est valide et que les articles sont disponibles.",
+        "Please check the order details": "Vérifie les coordonnées, le mode de retrait/livraison et les informations de commande.",
+        "Please wait before placing another order": "Trop de tentatives rapprochées. Attends quelques minutes avant de réessayer.",
+        "Unable to validate this request": "Le serveur n’a pas pu valider la demande. Recharge la page puis réessaie."
+      };
+      const message = knownMessages[serverMessage] ||
+        (serverMessage ? "Commande impossible : " + serverMessage : "Le service de commande n’a pas répondu correctement. Réessaie ; si le problème continue, vérifie les journaux du service.");
+      status("orderMessage", message, true);
+      console.error("[MOUSSE create-order]", { message: serverMessage || error?.message || "unknown" });
     } finally {
       if (button) button.disabled = false;
     }
