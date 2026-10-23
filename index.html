@@ -290,6 +290,16 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
 
 /* Espace client — prototype local responsive */
 .preference-row{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}.preference-row input{margin-top:5px;accent-color:var(--forest);width:17px;height:17px;flex:none}.preference-row span{display:grid;gap:3px}.preference-row small{font-size:12px;color:var(--muted)}.client-list{display:grid;gap:8px;margin-top:14px}.client-list-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}.client-list-item strong{display:block}.client-list-item small{display:block;color:var(--muted);overflow-wrap:anywhere}.client-list-item button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;color:var(--forest);font-size:12px}.loyalty-preview{margin-top:14px;padding:18px;border:1px dashed #b9c8b7;border-radius:14px;background:#f7f8f1}.loyalty-preview p{color:var(--muted);font-size:13px}
+/* Inscription commerçant : choix clair et encart gratuité */
+.first-time-choice{margin:18px 0 0;padding:14px 17px;border:1px solid #526957;border-radius:16px;background:#1c2b23;max-width:760px}
+.first-time-choice label{display:flex;align-items:flex-start;gap:12px;cursor:pointer;color:#f5f0df}
+.first-time-choice input{width:19px;height:19px;flex:none;margin:3px 0 0;accent-color:#d7b875}
+.first-time-choice span{display:grid;gap:4px}.first-time-choice strong{font-size:14px}.first-time-choice small{font-size:12px;line-height:1.5;color:#bdcbbf}
+.free-start-note{margin:24px 0;padding:24px clamp(18px,3vw,30px);border:1px solid #c9e0cd;border-radius:22px;background:linear-gradient(135deg,#f5fff5,#e2f2e4);color:#173f34}
+.free-start-note h3{font-size:clamp(20px,3vw,28px);margin:12px 0 8px;letter-spacing:-.5px}
+.free-start-note p{line-height:1.7;margin:8px 0;color:#355b4c}
+.free-start-badge{display:inline-flex;align-items:center;border-radius:99px;padding:6px 11px;background:#176b4c;color:#fff;font-size:12px;font-weight:850;letter-spacing:.4px}
+@media(max-width:650px){.first-time-choice{padding:12px}.free-start-note{border-radius:17px;padding:18px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/mousse-config.js"></script>
@@ -306,6 +316,9 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     <button type="button" class="role-option role-customer" onclick="enterMousse('client')">
       <span class="role-icon" aria-hidden="true">▣</span><span class="role-copy"><strong>Partie client</strong><small>Découvrir les commerces et consulter leurs produits.</small></span><span class="role-arrow" aria-hidden="true">↗</span>
     </button>
+  </div>
+  <div class="first-time-choice">
+    <label for="firstMerchantVisit"><input id="firstMerchantVisit" type="checkbox"> <span><strong>C’est ma première inscription comme commerçant</strong><small>Coche cette case avant de cliquer sur « Partie commerçant » pour ouvrir l’inscription guidée.</small></span></label>
   </div>
   <p class="role-gate-foot">Une seule plateforme, deux espaces adaptés à tes besoins.</p>
   <section class="mousse-explainer" aria-labelledby="mousseExplainerTitle">
@@ -346,7 +359,8 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     </div>
   
   </section>
-  <section id="merchantStart" class="merchant-start" hidden aria-labelledby="merchantStartTitle">
+</section>
+<section id="merchantStart" class="merchant-start" hidden aria-labelledby="merchantStartTitle">
     <button type="button" class="setup-back" onclick="backToRoleGate()">← Retour au choix</button>
     <span class="role-kicker">Espace commerçant</span><h2 id="merchantStartTitle">Comment souhaites-tu commencer ?</h2>
     <p>Reprends ton activité habituelle ou configure ton établissement pour la première fois.</p>
@@ -357,6 +371,12 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
   </section>
   <section id="merchantSetup" class="merchant-setup" hidden aria-labelledby="merchantSetupTitle">
     <button type="button" class="setup-back" onclick="backToMerchantStart()">← Retour</button>
+    <section class="free-start-note" aria-label="Les services MOUSSE sont gratuits">
+      <span class="free-start-badge">100 % gratuit</span>
+      <h3>MOUSSE est là pour aider les commerces locaux.</h3>
+      <p><strong>L’inscription, la visibilité/publicité sur MOUSSE, le logiciel et les services MOUSSE présentés ici sont entièrement gratuits.</strong> L’idée est simple : aider ta boutique à se faire connaître et rendre service aux clients, sans te facturer l’accès à ces outils.</p>
+      <p>Tu remplis ta fiche, tu choisis les outils qui t’intéressent et l’équipe MOUSSE pourra vérifier les informations avant activation. Les éventuels frais d’un prestataire ou d’un équipement externe restent soumis à ses propres conditions.</p>
+    </section>
     <header class="setup-heading"><span class="role-kicker">Bienvenue chez MOUSSE</span><h2 id="merchantSetupTitle">Premiers pas avec ton commerce</h2><p>Complète les informations utiles. Tu peux préparer ta fiche avant sa vérification et son activation.</p><div class="setup-progress"><span id="setupProgressBar"></span></div><small id="setupProgressText">0 % complété · les champs marqués * sont requis</small></header>
     <div class="setup-layout"><form id="merchantSetupForm" class="setup-form">
       <section class="setup-panel"><span class="setup-step">01</span><h3>Entreprise et responsable</h3><p>Ces informations serviront à identifier ton établissement. Le SIRET devra être vérifié avant toute validation.</p>
@@ -376,7 +396,6 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
       <article><span>05</span><h4>Consignes & équipements</h4><p>Étudier les équipements utiles au retrait de commandes ou à l’exploitation.</p></article>
       <div class="offer-promise"><strong>Des conditions professionnelles à négocier</strong><p>Tu peux demander une étude ou un devis via MOUSSE. Aucun partenariat, remise ou tarif préférentiel n’est annoncé comme acquis tant qu’il n’a pas été confirmé par le fournisseur.</p><a href="mailto:contact@mousse-market.fr?subject=Demande%20d%E2%80%99offre%20professionnelle%20MOUSSE">Demander une étude professionnelle ↗</a></div>
     </aside></div>
-  </section></section>
 </section>
 <div class="shell">
 <aside class="side">
