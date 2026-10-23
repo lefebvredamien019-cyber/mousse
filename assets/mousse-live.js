@@ -847,9 +847,20 @@
   client.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") { window.MOUSSE_CLIENT_AUTHENTICATED = false; window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false; }
     if (event === "PASSWORD_RECOVERY") {
-      document.getElementById("merchantRecoveryPanel")?.classList.remove("hidden");
-      status("merchantRecoveryStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
-      document.getElementById("merchantRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (window.location.search.includes("auth_flow=client")) {
+        window.MOUSSE_CLIENT_AUTHENTICATED = false;
+        window.enterMousse?.("client");
+        window.openClientLogin?.();
+        document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
+        status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+        document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
+        window.openMerchantLogin?.();
+        document.getElementById("merchantGateRecoveryPanel")?.classList.remove("hidden");
+        status("merchantGateStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+        document.getElementById("merchantGateRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   });
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);
