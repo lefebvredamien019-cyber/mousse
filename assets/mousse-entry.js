@@ -29,9 +29,13 @@
     document.documentElement.classList.remove("role-unselected");
 
     if (role === "merchant") {
-      conceal("merchantSetup");
-      reveal("merchantStart");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      conceal("merchantStart");
+      const firstTime = byId("firstMerchantVisit");
+      if (firstTime && firstTime.checked) {
+        window.openMerchantSetup();
+      } else {
+        window.continueMerchant();
+      }
       return;
     }
 
