@@ -847,20 +847,13 @@
   client.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") { window.MOUSSE_CLIENT_AUTHENTICATED = false; window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false; }
     if (event === "PASSWORD_RECOVERY") {
-      if (window.location.search.includes("auth_flow=client")) {
-        window.MOUSSE_CLIENT_AUTHENTICATED = false;
-        window.enterMousse?.("client");
-        window.openClientLogin?.();
-        document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
-        status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
-        document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      } else {
-        window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
-        window.openMerchantLogin?.();
-        document.getElementById("merchantGateRecoveryPanel")?.classList.remove("hidden");
-        status("merchantGateStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
-        document.getElementById("merchantGateRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+      // A password belongs to the Supabase identity, regardless of whether it is used as a client or merchant.
+      window.MOUSSE_CLIENT_AUTHENTICATED = false;
+      window.enterMousse?.("client");
+      window.openClientLogin?.();
+      document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
+      status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+      document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   });
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);
