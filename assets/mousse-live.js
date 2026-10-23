@@ -362,6 +362,7 @@
     if(!data.session)return status("clientAuthStatus","Compte créé. Confirme l’adresse reçue par e-mail, puis connecte-toi ici.");
     window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
   };
+  // Client password recovery uses Supabase Auth; the profile remains a local-only prototype.
   window.saveClientNewPassword = async () => {
     const password = document.getElementById("clientNewPassword")?.value || "";
     const confirm = document.getElementById("clientNewPasswordConfirm")?.value || "";
