@@ -199,12 +199,47 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 
 .reviews{margin-top:24px}.demo-pill{display:inline-flex;align-items:center;border-radius:999px;background:#fff0c7;color:#624b11;padding:5px 10px;font-size:12px;font-weight:700;white-space:nowrap}.reviews-summary{display:flex;align-items:center;gap:18px;background:var(--sage);border-radius:14px;padding:16px;margin:14px 0}.review-score{display:grid;gap:2px;min-width:130px}.review-score strong{font-size:30px;line-height:1.2}.review-score span,.review-stars{color:#a77812;letter-spacing:2px}.review-score small{font-size:12px}.review-note{font-size:13px;color:var(--muted)}.review-list{display:grid;gap:12px}.review-item{border:1px solid var(--line);border-radius:12px;padding:14px}.review-item p{margin:8px 0}.review-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.review-tag{font-size:11px;font-weight:700;color:#665016;background:#fff0c7;border-radius:6px;padding:3px 7px}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.review-form-wrap,.review-moderation{border-top:1px solid var(--line);margin-top:20px;padding-top:18px}.review-form-wrap form{max-width:650px}.review-form-wrap textarea{min-height:100px}.review-empty{color:var(--muted);padding:14px 0}@media(max-width:650px){.reviews-summary{align-items:flex-start;flex-direction:column}.sectiontitle{gap:10px}}
+
+/* Accueil de choix : espaces client et commerçant */
+body.role-unselected{min-height:100vh;background:radial-gradient(ellipse at 80% 15%,#294a3a 0,transparent 38%),#111613;color:#f0eee5}
+body.role-unselected .shell{display:none}
+.role-gate{min-height:100vh;max-width:1120px;margin:0 auto;padding:clamp(28px,7vw,76px) clamp(18px,5vw,56px);display:flex;flex-direction:column;justify-content:center}
+.role-gate-brand{display:flex;align-items:center;gap:12px;font-size:24px;letter-spacing:2px;font-weight:900;color:#f5f0df}
+.role-gate-brand img{width:42px;height:42px;object-fit:contain}
+.role-gate-intro{max-width:720px;margin:clamp(36px,7vh,72px) 0 28px}
+.role-kicker{display:inline-flex;border:1px solid #526957;background:#1c2b23;border-radius:99px;padding:7px 13px;color:#d7b875;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.role-gate-intro h1{font-size:clamp(36px,6vw,64px);line-height:1.05;letter-spacing:-2px;margin:18px 0 14px;color:#f5f0df}
+.role-gate-intro p{max-width:590px;color:#bfc9bf;font-size:clamp(15px,2vw,18px);line-height:1.7;margin:0}
+.role-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.role-option{min-height:190px;display:flex;align-items:center;gap:18px;text-align:left;padding:clamp(20px,3vw,32px);border:1px solid #3b5142;border-radius:24px;background:linear-gradient(145deg,#1b2921,#17211b);color:#f5f0df;transition:transform .18s,border-color .18s,box-shadow .18s}
+.role-option:hover,.role-option:focus-visible{transform:translateY(-3px);border-color:#d7b875;box-shadow:0 16px 40px #0004;outline:none}
+.role-icon{width:58px;height:58px;flex:none;display:grid;place-items:center;border-radius:18px;background:#d7b875;color:#142019;font-size:29px}
+.role-copy{display:grid;gap:8px;flex:1}
+.role-copy strong{font-size:clamp(18px,2vw,23px)}
+.role-copy small{font-size:14px;line-height:1.6;color:#b8c4b8}
+.role-arrow{align-self:flex-start;color:#d7b875;font-size:24px}
+.role-gate-foot{margin:26px 0 0;color:#87978a;font-size:12px}
+@media(max-width:650px){.role-gate{justify-content:flex-start;padding-top:36px}.role-gate-intro{margin:44px 0 24px}.role-options{grid-template-columns:1fr;gap:12px}.role-option{min-height:140px;padding:22px 18px;border-radius:20px}.role-icon{width:50px;height:50px}.role-gate-intro h1{letter-spacing:-1.2px}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/mousse-config.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Aller au contenu</a>
+<section id="roleGate" class="role-gate" aria-labelledby="roleGateTitle">
+  <div class="role-gate-brand"><img src="assets/mousse-mark.svg" alt="" onerror="this.style.display='none'"><span>MOUSSE</span></div>
+  <div class="role-gate-intro"><span class="role-kicker">Le commerce, autrement</span><h1 id="roleGateTitle">Bienvenue chez MOUSSE</h1><p>Tu souhaites découvrir les commerces ou gérer ta boutique ? Choisis ton espace pour continuer.</p></div>
+  <div class="role-options">
+    <button type="button" class="role-option role-merchant" onclick="enterMousse('merchant')">
+      <span class="role-icon" aria-hidden="true">⌂</span><span class="role-copy"><strong>Partie commerçant</strong><small>Gérer ma boutique, mes produits et mes commandes.</small></span><span class="role-arrow" aria-hidden="true">↗</span>
+    </button>
+    <button type="button" class="role-option role-customer" onclick="enterMousse('client')">
+      <span class="role-icon" aria-hidden="true">▣</span><span class="role-copy"><strong>Partie client</strong><small>Découvrir les commerces et consulter leurs produits.</small></span><span class="role-arrow" aria-hidden="true">↗</span>
+    </button>
+  </div>
+  <p class="role-gate-foot">Une seule plateforme, deux espaces adaptés à tes besoins.</p>
+</section>
 <div class="shell">
 <aside class="side">
   <a class="brand" href="#" onclick="showView('accueil');return false"><img src="assets/mousse-mark.svg" alt="Logo de l’application MOUSSE" class="mousse-app-logo" onerror="this.style.display='none'"><span>MOUSSE</span></a>
@@ -423,7 +458,24 @@ function renderClientCatalog(){const el=document.getElementById('clientCatalog')
 
 function euro(n){return Number(n).toLocaleString('fr-FR',{style:'currency',currency:'EUR'})}
 function renderReceipt(order){const total=Number(order.total)||0,items=order.items||[],rates={};items.forEach(i=>{const rate=Number(i.vatRate??20),amount=includedVat(i.price*i.qty,rate);rates[rate]=(rates[rate]||0)+amount});const vatTotal=Object.values(rates).reduce((a,b)=>a+b,0);return '<section class="card" id="receipt-'+escapeDemo(order.id)+'"><h3>Ticket de caisse · MOUSSE</h3><p>'+escapeDemo(order.created||'')+'</p><div>'+items.map(i=>'<div class="row"><span>'+escapeDemo(i.name)+' × '+i.qty+'<small>TVA '+vatLabel(i.vatRate??20)+'</small></span><strong>'+euro(i.price*i.qty)+'</strong></div>').join('')+'</div><hr><p>Total TTC <strong>'+euro(total)+'</strong></p><p>Dont TVA incluse : <strong>'+euro(vatTotal)+'</strong></p>'+Object.keys(rates).sort((a,b)=>Number(a)-Number(b)).map(rate=>'<p>TVA '+vatLabel(rate)+' incluse : '+euro(rates[rate])+'</p>').join('')+'<button class="btn light" onclick="printReceipt(\''+escapeDemo(order.id)+'\')">Imprimer le ticket</button></section>'}
-function printReceipt(id){const el=document.getElementById('receipt-'+id);if(!el)return;const w=window.open('','_blank','width=420,height=700');if(!w){alert('Autorise la fenêtre d’impression pour imprimer le ticket.');return}w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Ticket MOUSSE</title><style>body{font:14px Arial;padding:16px}h3{text-align:center}.row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ddd;padding:6px 0}button{display:none}</style></head><body>'+el.innerHTML+'</body></html>');w.document.close();w.focus();w.print()}
+function printReceipt(id){const el=document.getElementById('receipt-'+id);if(!el)return;const w=window.open('','_blank','width=420,height=700');if(!w){alert('Autorise la fenêtre d’impression pour imprimer le ticket.');return}w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Ticket MOUSSE</title><style>body{font:14px Arial;padding:16px}h3{text-align:center}.row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ddd;padding:6px 0}button{display:none}</style></head><body>'+el.innerHTML+'
+<script>
+document.body.classList.add('role-unselected');
+function enterMousse(role){
+  const gate=document.getElementById('roleGate');
+  if(!gate||!['merchant','client'].includes(role))return;
+  gate.hidden=true;
+  document.body.classList.remove('role-unselected');
+  if(role==='merchant'){
+    if(typeof window.showView==='function')window.showView('commerce');
+  }else{
+    if(typeof window.showView==='function')window.showView('accueil');
+  }
+  window.scrollTo({top:0,behavior:'instant'});
+}
+</script>
+
+</body></html>');w.document.close();w.focus();w.print()}
 function addToCart(name,price){const item=demoCart.find(x=>x.name===name);if(item)item.qty++;else demoCart.push({name,price,qty:1,vatRate:(readProducts().find(p=>p.name===name)?.vatRate??20)});renderCart()}
 function renderCart(){const lines=document.getElementById('cartLines');if(!lines)return;const count=demoCart.reduce((s,x)=>s+x.qty,0),total=demoCart.reduce((s,x)=>s+x.price*x.qty,0);document.getElementById('cartCount').textContent=count+' article(s)';document.getElementById('cartTotal').textContent=euro(total)+' TTC';lines.innerHTML=demoCart.length?demoCart.map((x,i)=>'<div class="row"><span>'+escapeDemo(x.name)+' × '+x.qty+'<small>Prix TTC · TVA '+vatLabel(x.vatRate??20)+'</small></span><strong>'+euro(x.price*x.qty)+'</strong><button class="btn light" type="button" onclick="removeCart('+i+')" aria-label="Retirer un exemplaire">−</button></div>').join('')+'<p>TVA incluse : '+euro(demoCart.reduce((s,x)=>s+includedVat(x.price*x.qty,x.vatRate??20),0))+'</p>':'Votre panier est vide.'}
 function removeCart(i){if(demoCart[i]){demoCart[i].qty--;if(demoCart[i].qty<=0)demoCart.splice(i,1);renderCart()}}
