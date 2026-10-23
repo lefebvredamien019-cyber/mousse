@@ -272,6 +272,15 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
 .explainer-bottom>div{max-width:680px}.explainer-bottom h3{margin-top:10px}.explainer-cta{flex:none;border:0;border-radius:99px;background:#d7b875;color:#142019;padding:13px 18px;font-weight:850}
 @media(max-width:700px){.mousse-explainer{margin-top:58px}.explainer-grid{grid-template-columns:1fr;gap:14px}.explainer-visual{height:195px}.explainer-copy{padding:20px}.explainer-bottom{align-items:flex-start;flex-direction:column}.explainer-cta{width:100%}}
 
+/* Parcours séparés : client et professionnel */
+.client-start{max-width:980px;margin:30px auto;padding:clamp(22px,4vw,48px);border-radius:28px;background:#fff;color:#182b2b;box-shadow:0 20px 60px #153c3212}
+.client-start h2{font-size:clamp(1.9rem,4vw,3rem);letter-spacing:-.04em;margin:10px 0}
+.client-start>p{color:#60716d;max-width:720px;line-height:1.7}
+.client-start-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:28px}
+.client-start-note{font-size:13px!important;margin-top:24px}
+html.role-unselected .client-start,html.role-unselected .merchant-start,html.role-unselected .merchant-setup{display:block}
+@media(max-width:820px){.client-start{margin:12px;padding:20px;border-radius:20px}}
+@media(max-width:560px){.client-start-options{grid-template-columns:1fr}}
 /* Parcours commerçant : Premiers pas */
 [hidden]{display:none!important}
 .merchant-start,.merchant-setup{max-width:1180px;margin:30px auto;padding:clamp(20px,4vw,44px);border-radius:28px;background:#fff;color:#182b2b;box-shadow:0 20px 60px #153c3212}
@@ -359,6 +368,17 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     </div>
   
   </section>
+</section>
+<section id="clientStart" class="client-start" hidden aria-labelledby="clientStartTitle">
+  <button type="button" class="setup-back" onclick="backToRoleGate()">← Retour au choix</button>
+  <span class="role-kicker">Espace client</span>
+  <h2 id="clientStartTitle">Bienvenue côté client</h2>
+  <p>Tu peux te connecter si tu le souhaites, ou découvrir librement les commerces MOUSSE sans créer de compte.</p>
+  <div class="client-start-options">
+    <button type="button" class="merchant-start-card" onclick="openClientAccount()"><span class="start-card-icon">♙</span><strong>Connexion / Mon espace</strong><span>Accéder à ton espace client et retrouver les fonctionnalités liées à ton compte.</span><em>Mon espace →</em></button>
+    <button type="button" class="merchant-start-card start-card-primary" onclick="continueClientBrowsing()"><span class="start-card-icon">↗</span><strong>Visiter sans compte</strong><span>Parcourir les commerces et leurs informations librement. Une connexion sera demandée si une action la nécessite.</span><em>Découvrir MOUSSE →</em></button>
+  </div>
+  <p class="client-start-note">La visite du site est libre. Certaines fonctions de compte et de commande sont encore en cours de mise en service.</p>
 </section>
 <section id="merchantStart" class="merchant-start" hidden aria-labelledby="merchantStartTitle">
     <button type="button" class="setup-back" onclick="backToRoleGate()">← Retour au choix</button>
@@ -771,6 +791,6 @@ function clearClientDemoData(){localStorage.removeItem(CLIENT_DEMO_KEY);renderCl
 
 document.addEventListener('DOMContentLoaded',()=>{renderCustomerReviews();renderClientSpace()});
 </script>
-<script src="assets/mousse-entry.js?v=20261023-1445"></script>
+<script src="assets/mousse-entry.js?v=20261023-1505"></script>
 </body>
 </html>
