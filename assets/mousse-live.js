@@ -69,6 +69,97 @@
     window.renderMerchantPreview();
   };
 
+  const applicationStatusLabels = {
+    draft: "Brouillon", submitted: "Dossier transmis à MOUSSE", resubmitted: "Dossier corrigé et retransmis",
+    changes_requested: "Corrections demandées", approved: "Dossier approuvé", rejected: "Dossier refusé"
+  };
+
+  async function loadMerchantApplication() {
+    if (!currentUser) return;
+    const { data, error } = await client.from("merchant_applications")
+      .select("status,review_note,submitted_at,reviewed_at").eq("owner_id", currentUser.id).maybeSingle();
+    if (error || !data) return;
+    const notice = document.getElementById("setupNotice");
+    if (!notice) return;
+    notice.hidden = false;
+    notice.textContent = (applicationStatusLabels[data.status] || data.status) +
+      (data.review_note ? " — Retour MOUSSE : " + data.review_note : "") +
+      (data.submitted_at ? " · Envoyé le " + new Date(data.submitted_at).toLocaleDateString("fr-FR") : "");
+  }
+
+  async function submitMerchantApplication(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const notice = document.getElementById("setupNotice");
+    if (!notice) return;
+    const showNotice = (message, isError = false) => {
+      notice.textContent = message;
+      notice.hidden = false;
+      notice.classList.toggle("notice-error", isError);
+    };
+    if (!currentUser) {
+      showNotice("Connecte-toi d’abord dans l’espace commerçant, puis reviens transmettre ton dossier. Rien n’a été envoyé.", true);
+      return;
+    }
+    const formData = new FormData(form);
+    const siret = String(formData.get("siret") || "").replace(/\D/g, "");
+    if (!/^[0-9]{14}$/.test(siret)) {
+      showNotice("Le SIRET doit contenir exactement 14 chiffres.", true);
+      return;
+    }
+    const { data: existing, error: readError } = await client.from("merchant_applications")
+      .select("status,review_note,reviewed_at").eq("owner_id", currentUser.id).maybeSingle();
+    if (readError) {
+      showNotice("Impossible de charger ton dossier. Réessaie dans un instant.", true);
+      return;
+    }
+    if (existing?.status === "approved") {
+      showNotice("Ton dossier est déjà approuvé. Contacte MOUSSE si tu dois modifier les informations de validation.", true);
+      return;
+    }
+    const nextStatus = existing && ["changes_requested", "rejected"].includes(existing.status)
+      ? "resubmitted" : existing?.status === "resubmitted" ? "resubmitted" : "submitted";
+    const values = {
+      owner_id: currentUser.id,
+      business_name: String(formData.get("businessName") || "").trim(),
+      legal_name: String(formData.get("legalName") || "").trim(),
+      siret,
+      category: String(formData.get("category") || "").trim(),
+      manager_name: String(formData.get("managerName") || "").trim(),
+      business_email: String(formData.get("email") || "").trim().toLowerCase(),
+      phone: String(formData.get("phone") || "").trim(),
+      website: String(formData.get("website") || "").trim(),
+      address: String(formData.get("address") || "").trim(),
+      postal_code: String(formData.get("postalCode") || "").trim(),
+      city: String(formData.get("city") || "").trim(),
+      network: String(formData.get("network") || "").trim(),
+      link_request: formData.get("linkRequest") === "on",
+      opening_hours: String(formData.get("hours") || "").trim(),
+      description: String(formData.get("description") || "").trim(),
+      products_services: String(formData.get("products") || "").trim(),
+      requested_tools: formData.getAll("tools").map(value => String(value)),
+      status: nextStatus,
+      review_note: existing?.review_note || "",
+      reviewed_at: existing?.reviewed_at || null,
+      submitted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    if (!values.business_name || !values.category || !values.manager_name || !values.business_email ||
+        !values.address || !values.postal_code || !values.city) {
+      showNotice("Complète tous les champs obligatoires avant l’envoi.", true);
+      return;
+    }
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) { submitButton.disabled = true; submitButton.textContent = "Envoi du dossier…"; }
+    const { error } = await client.from("merchant_applications").upsert(values, { onConflict: "owner_id" });
+    if (submitButton) { submitButton.disabled = false; submitButton.textContent = "Vérifier mon dossier"; }
+    if (error) {
+      showNotice("Le dossier n’a pas pu être enregistré. Vérifie ta connexion et les champs, puis réessaie.", true);
+      return;
+    }
+    showNotice("Dossier enregistré et transmis à MOUSSE. Le SIRET et les informations doivent encore être vérifiés avant toute publication. Le logo et les photos ne sont pas encore téléversés.");
+  }
+
   async function loadMerchant() {
     if (!currentUser) return;
     const { data, error } = await client.from("shops").select("*").eq("owner_id", currentUser.id).maybeSingle();
@@ -82,6 +173,7 @@
     status("merchantAuthStatus", "Connecté à l’espace de " + data.name + ".");
     await window.renderMerchantProducts();
     await window.renderOrders();
+    await loadMerchantApplication();
     await loadPublicShops(data.is_published ? data.id : null);
   }
 
@@ -619,6 +711,7 @@
   );
   window.toggleNotificationChannel();
 
+  document.getElementById("merchantSetupForm")?.addEventListener("submit", submitMerchantApplication);
   document.getElementById("merchantLoginButton")?.addEventListener("click", window.loginMerchant);
   document.getElementById("merchantRegisterButton")?.addEventListener("click", window.registerMerchant);
   document.getElementById("merchantForgotPassword")?.addEventListener("click", window.requestMerchantPasswordReset);
