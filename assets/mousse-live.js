@@ -405,7 +405,7 @@
       ? document.getElementById("merchantGateEmail")?.value
       : document.getElementById("merchantLoginEmail")?.value) || "").trim().toLowerCase();
     const statusId = gateVisible ? "merchantGateStatus" : "merchantAuthStatus";
-    if (!email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return status(statusId, "Saisis d’abord une adresse e-mail valide.", true);
     }
     const { error } = await publicClient.auth.resend({
