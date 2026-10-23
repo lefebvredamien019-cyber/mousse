@@ -398,6 +398,27 @@
     window.MOUSSE_IS_MERCHANT_AUTHENTICATED=true; window.enterMerchantWorkspace?.();
   };
 
+  window.resendMerchantConfirmation = async () => {
+    const gate = document.getElementById("merchantLoginGate");
+    const gateVisible = !!(gate && !gate.hidden);
+    const email = String((gateVisible
+      ? document.getElementById("merchantGateEmail")?.value
+      : document.getElementById("merchantLoginEmail")?.value) || "").trim().toLowerCase();
+    const statusId = gateVisible ? "merchantGateStatus" : "merchantAuthStatus";
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      return status(statusId, "Saisis d’abord une adresse e-mail valide.", true);
+    }
+    const { error } = await publicClient.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: "https://www.mousse-market.fr/" }
+    });
+    if (error) {
+      return status(statusId, "Le renvoi n’a pas abouti. Réessaie dans quelques minutes ou vérifie la configuration e-mail Supabase.", true);
+    }
+    status(statusId, "Demande effectuée. Si cette adresse correspond à un compte en attente de confirmation, vérifie ta boîte de réception et les courriers indésirables.");
+  };
+
   window.registerMerchant = async () => {
     const name = document.getElementById("signupShopName").value.trim();
     const email = document.getElementById("merchantLoginEmail").value.trim();
