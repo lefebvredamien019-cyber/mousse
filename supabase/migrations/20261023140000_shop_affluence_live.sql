@@ -3,7 +3,7 @@ alter table public.shop_affluence
 
 alter table public.shop_affluence
   add constraint shop_affluence_status_check
-  check (status = any (array['calme'::text, 'modere'::text, 'charge'::text, 'ferme'::text));
+  check (status = any (array['calme'::text, 'modere'::text, 'charge'::text, 'ferme'::text]));
 
 create unique index if not exists shop_affluence_shop_id_uidx
   on public.shop_affluence (shop_id);
