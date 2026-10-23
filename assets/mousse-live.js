@@ -198,6 +198,35 @@
     await refreshSession();
   };
 
+  window.requestMerchantPasswordReset = async () => {
+    const email = document.getElementById("merchantLoginEmail")?.value.trim() || "";
+    const result = document.getElementById("merchantRecoveryStatus");
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status("merchantRecoveryStatus", "Saisis d’abord une adresse e-mail valide.", true);
+      return;
+    }
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://www.mousse-market.fr/"
+    });
+    // Keep the response generic to avoid disclosing whether an account exists.
+    status("merchantRecoveryStatus", error
+      ? "La demande n’a pas pu être envoyée. Vérifie la configuration e-mail et l’URL de redirection Supabase."
+      : "Si cette adresse correspond à un compte, un e-mail de réinitialisation va être envoyé.");
+  };
+
+  window.saveMerchantNewPassword = async () => {
+    const password = document.getElementById("merchantNewPassword")?.value || "";
+    const confirm = document.getElementById("merchantNewPasswordConfirm")?.value || "";
+    if (password.length < 10) return status("merchantRecoveryStatus", "Le nouveau mot de passe doit contenir au moins 10 caractères.", true);
+    if (password !== confirm) return status("merchantRecoveryStatus", "Les deux mots de passe ne correspondent pas.", true);
+    const { error } = await client.auth.updateUser({ password });
+    if (error) return status("merchantRecoveryStatus", "Impossible d’enregistrer ce mot de passe. Rouvre le lien reçu par e-mail et réessaie.", true);
+    document.getElementById("merchantRecoveryPanel")?.classList.add("hidden");
+    document.getElementById("merchantNewPassword").value = "";
+    document.getElementById("merchantNewPasswordConfirm").value = "";
+    status("merchantRecoveryStatus", "Mot de passe modifié. Tu peux maintenant te connecter.");
+  };
+
   window.logoutMerchant = async () => {
     const { error } = await client.auth.signOut();
     if (error) return status("merchantAuthStatus", "Déconnexion impossible. Réessaie.", true);
@@ -592,6 +621,15 @@
 
   document.getElementById("merchantLoginButton")?.addEventListener("click", window.loginMerchant);
   document.getElementById("merchantRegisterButton")?.addEventListener("click", window.registerMerchant);
+  document.getElementById("merchantForgotPassword")?.addEventListener("click", window.requestMerchantPasswordReset);
+  document.getElementById("merchantSaveNewPassword")?.addEventListener("click", window.saveMerchantNewPassword);
+  client.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      document.getElementById("merchantRecoveryPanel")?.classList.remove("hidden");
+      status("merchantRecoveryStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+      document.getElementById("merchantRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);
   window.addEventListener("DOMContentLoaded", async () => {
     await refreshSession();
