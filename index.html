@@ -399,7 +399,13 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
     <div class="field"><label for="clientAuthPassword">Mot de passe</label><input id="clientAuthPassword" type="password" autocomplete="current-password" minlength="10" required></div>
     <div class="actions"><button class="btn" type="button" onclick="loginClient()">Se connecter</button><button class="btn light" type="button" onclick="registerClient()">Créer mon compte</button></div>
     <button class="auth-text-button" type="button" onclick="requestClientPasswordReset()">Mot de passe oublié ?</button>
-    <div id="clientAuthStatus" class="success hidden" role="status" aria-live="polite"></div><button class="setup-back" type="button" onclick="closeClientLogin()">← Retour</button>
+    <div id="clientAuthStatus" class="success hidden" role="status" aria-live="polite"></div>
+    <section id="clientRecoveryPanel" class="card hidden" aria-labelledby="clientRecoveryTitle"><h3 id="clientRecoveryTitle">Choisir un nouveau mot de passe</h3>
+      <div class="field"><label for="clientNewPassword">Nouveau mot de passe</label><input id="clientNewPassword" type="password" autocomplete="new-password" minlength="10"></div>
+      <div class="field"><label for="clientNewPasswordConfirm">Confirmer le nouveau mot de passe</label><input id="clientNewPasswordConfirm" type="password" autocomplete="new-password" minlength="10"></div>
+      <button class="btn" type="button" onclick="saveClientNewPassword()">Enregistrer le nouveau mot de passe</button>
+    </section>
+    <button class="setup-back" type="button" onclick="closeClientLogin()">← Retour</button>
   </div>
   <aside class="auth-gate-info"><span class="role-kicker">Protection du compte</span><h3>Ton espace, tes préférences.</h3>
     <p>La connexion utilise Supabase Auth. Les préférences et adresses affichées dans l’espace client restent actuellement une démonstration enregistrée sur cet appareil ; elles ne sont pas encore synchronisées dans un profil en ligne.</p>
@@ -424,6 +430,11 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
       <div class="field"><label for="merchantGatePassword">Mot de passe</label><input id="merchantGatePassword" type="password" autocomplete="current-password" minlength="10" required></div>
       <div class="actions"><button class="btn" type="button" onclick="submitMerchantGateLogin()">Se connecter</button><button class="btn light" type="button" onclick="requestMerchantGateReset()">Mot de passe oublié ?</button></div>
       <div id="merchantGateStatus" class="success hidden" role="status" aria-live="polite"></div>
+      <section id="merchantGateRecoveryPanel" class="card hidden" aria-labelledby="merchantGateRecoveryTitle"><h3 id="merchantGateRecoveryTitle">Choisir un nouveau mot de passe</h3>
+        <div class="field"><label for="merchantGateNewPassword">Nouveau mot de passe</label><input id="merchantGateNewPassword" type="password" autocomplete="new-password" minlength="10"></div>
+        <div class="field"><label for="merchantGateNewPasswordConfirm">Confirmer le nouveau mot de passe</label><input id="merchantGateNewPasswordConfirm" type="password" autocomplete="new-password" minlength="10"></div>
+        <button class="btn" type="button" onclick="saveMerchantGateNewPassword()">Enregistrer le nouveau mot de passe</button>
+      </section>
     </div><aside class="auth-gate-info">
       <span class="role-kicker">Les outils MOUSSE pour les pros</span><h3>Plus de visibilité, moins de complications.</h3>
       <p>MOUSSE aide les commerces de proximité à présenter leur activité et à informer leurs clients depuis un même espace.</p>
