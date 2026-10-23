@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>document.documentElement.classList.add("role-unselected");</script>
 <script>if (location.protocol === "http:" && location.hostname === "www.mousse-market.fr") location.replace("https://www.mousse-market.fr" + location.pathname + location.search + location.hash);</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -202,7 +203,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 /* Accueil de choix : espaces client et commerçant */
 body.role-unselected{min-height:100vh;background:radial-gradient(ellipse at 80% 15%,#294a3a 0,transparent 38%),#111613;color:#f0eee5}
-body.role-unselected .shell{display:none}
+html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!important}
 .role-gate{min-height:100vh;max-width:1120px;margin:0 auto;padding:clamp(28px,7vw,76px) clamp(18px,5vw,56px);display:flex;flex-direction:column;justify-content:center}
 .role-gate-brand{display:flex;align-items:center;gap:12px;font-size:24px;letter-spacing:2px;font-weight:900;color:#f5f0df}
 .role-gate-brand img{width:42px;height:42px;object-fit:contain}
@@ -550,6 +551,7 @@ function enterMousse(role){
   const gate=document.getElementById('roleGate');
   if(!gate||!['merchant','client'].includes(role))return;
   gate.hidden=true;
+  document.documentElement.classList.remove('role-unselected');
   document.body.classList.remove('role-unselected');
   if(role==='merchant'){
     if(typeof window.showView==='function')window.showView('commerce');
