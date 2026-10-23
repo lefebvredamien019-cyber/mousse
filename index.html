@@ -285,6 +285,9 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
 @media(max-width:820px){.setup-layout{grid-template-columns:1fr}.setup-offers{position:static;order:-1}.merchant-start,.merchant-setup{margin:12px;padding:20px;border-radius:20px}}
 @media(max-width:560px){.merchant-start-options,.setup-fields,.setup-tool-grid{grid-template-columns:1fr}.merchant-start-card{min-height:190px}.setup-panel{padding:18px}}
 
+
+/* Espace client — prototype local responsive */
+.preference-row{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}.preference-row input{margin-top:5px;accent-color:var(--forest);width:17px;height:17px;flex:none}.preference-row span{display:grid;gap:3px}.preference-row small{font-size:12px;color:var(--muted)}.client-list{display:grid;gap:8px;margin-top:14px}.client-list-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}.client-list-item strong{display:block}.client-list-item small{display:block;color:var(--muted);overflow-wrap:anywhere}.client-list-item button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;color:var(--forest);font-size:12px}.loyalty-preview{margin-top:14px;padding:18px;border:1px dashed #b9c8b7;border-radius:14px;background:#f7f8f1}.loyalty-preview p{color:var(--muted);font-size:13px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/mousse-config.js"></script>
@@ -381,6 +384,7 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     <button class="active" aria-current="page" data-view="accueil" aria-controls="view-accueil" onclick="showView('accueil')"><span class="ico" aria-hidden="true">⌂</span>Accueil</button>
     <button data-view="affluence" aria-controls="view-affluence" onclick="showView('affluence')"><span class="ico" aria-hidden="true">◉</span>Affluence</button>
     <button data-view="collect" aria-controls="view-collect" onclick="showView('collect')"><span class="ico" aria-hidden="true">▣</span>Click & Collect</button>
+    <button data-view="client" aria-controls="view-client" onclick="showView('client')"><span class="ico" aria-hidden="true">♙</span>Espace client</button>
     <button data-view="consignes" aria-controls="view-consignes" onclick="showView('consignes')"><span class="ico" aria-hidden="true">▤</span>Consignes</button>
     <button data-view="commerce" aria-controls="view-commerce" onclick="showView('commerce')"><span class="ico" aria-hidden="true">⌂</span>Espace commerçant</button>
     <button data-view="reglages" aria-controls="view-reglages" onclick="showView('reglages')"><span class="ico" aria-hidden="true">⚙</span>Paramètres</button>
@@ -535,6 +539,46 @@ html.role-unselected .shell{display:none}.role-gate[hidden]{display:none!importa
     <article class="card"><div class="symbol" aria-hidden="true">ℹ</div><h2>À propos de cette version</h2><p>Ce site présente MOUSSE et ses parcours de démonstration. Les profils locaux et demandes de gestion de fiche créés dans la démonstration restent enregistrés dans ce navigateur et ne sont pas transmis à l’équipe. Le parcours de commande connecté est en cours de configuration pour le test Dklm.</p></article>
   </div>
 </section>
+<section class="view" id="view-client" aria-labelledby="client-title">
+  <div class="eyebrow">Côté client</div>
+  <h1 class="headline" id="client-title">Mon espace MOUSSE</h1>
+  <p class="sub">Retrouve tes préférences, tes adresses et tes cartes de fidélité au même endroit. Cette première version enregistre les données uniquement dans ce navigateur : elles ne sont pas encore synchronisées avec un compte en ligne.</p>
+  <div class="notice"><strong>Mode prototype local.</strong> N’enregistre pas ici d’informations sensibles. La synchronisation multi-appareils et la connexion client sécurisée restent à raccorder.</div>
+  <div class="grid two">
+    <article class="card">
+      <div class="cardhead"><div><div class="eyebrow">01 · Profil</div><h2>Mes informations</h2></div><div class="symbol" aria-hidden="true">♙</div></div>
+      <div class="field"><label for="clientFullName">Nom affiché</label><input id="clientFullName" maxlength="80" autocomplete="name" placeholder="Ton nom"></div>
+      <div class="field"><label for="clientEmail">Adresse e-mail</label><input id="clientEmail" type="email" maxlength="254" autocomplete="email" placeholder="toi@exemple.fr"></div>
+      <button class="btn" type="button" onclick="saveClientProfile()">Enregistrer mon profil</button>
+      <p id="clientProfileStatus" class="success hidden" role="status"></p>
+    </article>
+    <article class="card">
+      <div class="cardhead"><div><div class="eyebrow">02 · Préférences</div><h2>Mes notifications</h2></div><div class="symbol" aria-hidden="true">♧</div></div>
+      <p>Choisis les informations que tu souhaites recevoir. Les préférences sont enregistrées localement dans cette démonstration.</p>
+      <label class="preference-row"><input id="prefOrders" type="checkbox" checked> <span><strong>Commandes</strong><small>Confirmation et évolution des commandes</small></span></label>
+      <label class="preference-row"><input id="prefAlerts" type="checkbox" checked> <span><strong>Alertes locales</strong><small>Informations utiles dans ma zone</small></span></label>
+      <label class="preference-row"><input id="prefPromotions" type="checkbox"> <span><strong>Promotions</strong><small>Offres des commerces que je choisis</small></span></label>
+      <label class="preference-row"><input id="prefLoyalty" type="checkbox" checked> <span><strong>Fidélité</strong><small>Points, tampons et récompenses</small></span></label>
+      <button class="btn" type="button" onclick="saveClientPreferences()">Enregistrer mes choix</button>
+      <p id="clientPreferencesStatus" class="success hidden" role="status"></p>
+    </article>
+    <article class="card">
+      <div class="cardhead"><div><div class="eyebrow">03 · Livraison</div><h2>Mes adresses</h2></div><div class="symbol" aria-hidden="true">⌖</div></div>
+      <p>Garde plusieurs adresses pour accélérer tes prochaines commandes. Elles restent sur cet appareil dans la version actuelle.</p>
+      <div class="field"><label for="clientAddressLabel">Nom de l’adresse</label><input id="clientAddressLabel" maxlength="40" placeholder="Maison, travail…"></div>
+      <div class="field"><label for="clientAddressValue">Adresse complète</label><input id="clientAddressValue" maxlength="240" autocomplete="street-address" placeholder="Numéro, rue, code postal, ville"></div>
+      <button class="btn" type="button" onclick="addClientAddress()">Ajouter cette adresse</button>
+      <div id="clientAddresses" class="client-list" aria-live="polite"></div>
+      <p id="clientAddressStatus" class="success hidden" role="status"></p>
+    </article>
+    <article class="card">
+      <div class="cardhead"><div><div class="eyebrow">04 · Fidélité</div><h2>Mes cartes de fidélité</h2></div><div class="symbol" aria-hidden="true">✳</div></div>
+      <p>Chaque commerce garde son propre programme : les points et récompenses ne sont pas mutualisés entre boutiques.</p>
+      <div class="loyalty-preview"><strong>Les programmes seront affichés ici</strong><p>Une fois connecté au compte client et aux commerces participants, tu retrouveras tes cartes, tampons, points et récompenses.</p><span class="pill amber">Connexion en ligne à raccorder</span></div>
+    </article>
+  </div>
+  <article class="card"><div class="cardhead"><div><div class="eyebrow">05 · Tes données</div><h2>Garde le contrôle</h2></div><div class="symbol" aria-hidden="true">⌑</div></div><p>Tu peux effacer les données de démonstration stockées sur cet appareil. Cette action ne supprime aucun compte ni aucune donnée du serveur.</p><button class="btn light" type="button" onclick="clearClientDemoData()">Effacer mes données locales de démonstration</button><p id="clientClearStatus" class="success hidden" role="status"></p></article>
+</section>
 <section class="view" id="view-reglages">
   <div class="eyebrow">Configuration</div><h1 class="headline" id="settings-title">Paramètres</h1><p class="sub">La première version est un prototype de présentation. Les accès sécurisés et la sauvegarde en ligne seront nécessaires avant une utilisation réelle par plusieurs commerçants.</p>
   <div class="grid two"><article class="card"><h3>Comptes commerçants</h3><p>Chaque commerce devra avoir son propre compte et ne pourra consulter que ses informations, produits et commandes.</p><span class="pill amber">À développer</span></article><article class="card"><h3>Données & confidentialité</h3><p>Avant la mise en production, il faudra choisir un service d’authentification et de base de données et définir les règles de protection des données.</p><span class="pill amber">À configurer</span></article></div>
@@ -556,7 +600,7 @@ function changeAd(step){const shop=discoverShops.find(s=>s.id===selectedDiscover
 function goToAd(index){const shop=discoverShops.find(s=>s.id===selectedDiscoverId);if(!shop)return;activeAd=index;renderAd(shop)}
 function requestClaim(id){const shop=discoverShops.find(s=>s.id===id);if(!shop)return;const name=prompt('Pour demander la gestion de cette fiche, indique ton nom et ton rôle dans le commerce :');if(!name||!name.trim())return;const email=prompt('Adresse e-mail professionnelle de contact :');if(!email||!email.trim())return;const request={establishmentId:shop.id,name:shop.name,siren:shop.siren,siret:shop.siret,claimant:name.trim(),email:email.trim(),createdAt:new Date().toISOString(),status:'À vérifier'};try{const requests=JSON.parse(localStorage.getItem('mousse-claim-requests')||'[]');requests.push(request);localStorage.setItem('mousse-claim-requests',JSON.stringify(requests));alert('Demande enregistrée sur cet appareil. Attention : ce prototype ne transmet pas encore la demande à MOUSSE. Une vérification sécurisée côté serveur doit être mise en place avant ouverture au public.')}catch(e){alert('Impossible d’enregistrer la demande sur cet appareil.')} }
 
-function showView(id){const next=document.getElementById('view-'+id);if(!next)return;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav [data-view]').forEach(b=>{const active=b.dataset.view===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});next.classList.add('active');const names={accueil:'Magasins',merchantDashboard:'Tableau de bord commerçant',marketing:'Marketing',affluence:'Affluence',collect:'Click & Collect',consignes:'Consignes',commerce:'Mon commerce',reglages:'Paramètres',contact:'Contact et assistance'};document.getElementById('breadcrumb').textContent='MOUSSE · '+(names[id]||'');window.scrollTo({top:0,behavior:'smooth'})}
+function showView(id){const next=document.getElementById('view-'+id);if(!next)return;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav [data-view]').forEach(b=>{const active=b.dataset.view===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});next.classList.add('active');const names={accueil:'Magasins',merchantDashboard:'Tableau de bord commerçant',marketing:'Marketing',affluence:'Affluence',collect:'Click & Collect',client:'Espace client',consignes:'Consignes',commerce:'Mon commerce',reglages:'Paramètres',contact:'Contact et assistance'};document.getElementById('breadcrumb').textContent='MOUSSE · '+(names[id]||'');window.scrollTo({top:0,behavior:'smooth'})}
 function updateStatus(){document.getElementById('dashstatus').textContent=document.getElementById('status').value}
 function saveAffluence(){updateStatus();const state={status:document.getElementById('status').value,wait:document.getElementById('wait').value,message:document.getElementById('noticeText').value};localStorage.setItem('mousse-affluence-state',JSON.stringify(state));document.getElementById('affluenceSaved').classList.remove('hidden')}
 function readAffluenceSlots(){try{return JSON.parse(localStorage.getItem('mousse-affluence-slots')||'[]')}catch(e){return []}}
@@ -670,7 +714,21 @@ function renderCustomerReviews(){
 function submitCustomerReview(event){event.preventDefault();const rating=Number(document.getElementById('reviewRating').value),author=document.getElementById('reviewAuthor').value.trim(),comment=document.getElementById('reviewComment').value.trim(),status=document.getElementById('reviewFormStatus');if(!Number.isInteger(rating)||rating<1||rating>5||author.length<2||author.length>50||comment.length<8||comment.length>1000){status.textContent='Vérifie la note, le nom (2 à 50 caractères) et le commentaire (8 à 1 000 caractères).';return}const items=readReviewItems();if(items.some(r=>r.status!=='rejected'&&r.author.toLowerCase()===author.toLowerCase()&&r.comment.toLowerCase()===comment.toLowerCase())){status.textContent='Un avis identique existe déjà dans cette démonstration.';return}items.unshift({id:'demo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),rating,author,comment,status:'pending',demo:false,created:new Date().toLocaleString('fr-FR')});localStorage.setItem('mousse-customer-reviews-demo',JSON.stringify(items));event.target.reset();status.textContent='Avis de test envoyé à la file de modération locale. Aucun avis réel n’a été publié.';renderCustomerReviews()}
 function moderateCustomerReview(id,status){const items=readReviewItems(),item=items.find(r=>r.id===id);if(!item||!['approved','rejected'].includes(status))return;item.status=status;localStorage.setItem('mousse-customer-reviews-demo',JSON.stringify(items));renderCustomerReviews()}
 function reportCustomerReview(id){const items=readReviewItems(),item=items.find(r=>r.id===id&&r.status==='approved');if(!item)return;const reports=(()=>{try{return JSON.parse(localStorage.getItem('mousse-customer-review-reports-demo')||'[]')}catch(e){return[]}})();if(reports.some(r=>r.reviewId===id)){alert('Cet avis a déjà été signalé sur ce navigateur.');return}reports.push({reviewId:id,created:new Date().toISOString(),reason:'À examiner'});localStorage.setItem('mousse-customer-review-reports-demo',JSON.stringify(reports));alert('Signalement de démonstration enregistré localement. Il ne sera transmis à aucun commerçant.')}
-document.addEventListener('DOMContentLoaded',renderCustomerReviews);
+
+/* Espace client : stockage local de démonstration, sans données sensibles ni synchronisation serveur. */
+const CLIENT_DEMO_KEY='mousse-client-space-demo-v1';
+function readClientDemo(){try{const v=JSON.parse(localStorage.getItem(CLIENT_DEMO_KEY)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return {}}}
+function saveClientDemo(data){localStorage.setItem(CLIENT_DEMO_KEY,JSON.stringify(data))}
+function clientText(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function renderClientSpace(){const d=readClientDemo();const name=document.getElementById('clientFullName'),email=document.getElementById('clientEmail');if(!name)return;name.value=d.name||'';email.value=d.email||'';const p=d.preferences||{orders:true,alerts:true,promotions:false,loyalty:true};[['prefOrders','orders'],['prefAlerts','alerts'],['prefPromotions','promotions'],['prefLoyalty','loyalty']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=!!p[key]});renderClientAddresses()}
+function saveClientProfile(){const name=document.getElementById('clientFullName').value.trim(),email=document.getElementById('clientEmail').value.trim(),el=document.getElementById('clientProfileStatus');if(name.length>80||!email||!/^\S+@\S+\.\S+$/.test(email)){el.textContent='Renseigne un nom (80 caractères maximum) et une adresse e-mail valide.';el.classList.remove('hidden');return}const d=readClientDemo();d.name=name;d.email=email;saveClientDemo(d);el.textContent='Profil de démonstration enregistré sur cet appareil.';el.classList.remove('hidden')}
+function saveClientPreferences(){const d=readClientDemo();d.preferences={orders:document.getElementById('prefOrders').checked,alerts:document.getElementById('prefAlerts').checked,promotions:document.getElementById('prefPromotions').checked,loyalty:document.getElementById('prefLoyalty').checked};saveClientDemo(d);const el=document.getElementById('clientPreferencesStatus');el.textContent='Préférences enregistrées sur cet appareil. Aucun e-mail ni notification n’est envoyé par ce prototype.';el.classList.remove('hidden')}
+function renderClientAddresses(){const el=document.getElementById('clientAddresses');if(!el)return;const rows=readClientDemo().addresses||[];el.innerHTML=rows.length?rows.map((a,i)=>'<div class="client-list-item"><div><strong>'+clientText(a.label)+'</strong><small>'+clientText(a.address)+'</small></div><button type="button" aria-label="Supprimer l’adresse '+clientText(a.label)+'" onclick="removeClientAddress('+i+')">Supprimer</button></div>').join(''):'<p class="muted">Aucune adresse enregistrée.</p>'}
+function addClientAddress(){const label=document.getElementById('clientAddressLabel').value.trim(),address=document.getElementById('clientAddressValue').value.trim(),status=document.getElementById('clientAddressStatus');if(label.length<2||label.length>40||address.length<6||address.length>240){status.textContent='Renseigne un nom (2 à 40 caractères) et une adresse complète (6 à 240 caractères).';status.classList.remove('hidden');return}const d=readClientDemo();d.addresses=Array.isArray(d.addresses)?d.addresses:[];if(d.addresses.length>=10){status.textContent='Limite de démonstration : 10 adresses maximum.';status.classList.remove('hidden');return}d.addresses.push({label,address});saveClientDemo(d);document.getElementById('clientAddressLabel').value='';document.getElementById('clientAddressValue').value='';status.textContent='Adresse enregistrée uniquement dans ce navigateur.';status.classList.remove('hidden');renderClientAddresses()}
+function removeClientAddress(index){const d=readClientDemo();if(!Array.isArray(d.addresses))return;d.addresses.splice(index,1);saveClientDemo(d);renderClientAddresses()}
+function clearClientDemoData(){localStorage.removeItem(CLIENT_DEMO_KEY);renderClientSpace();const el=document.getElementById('clientClearStatus');el.textContent='Données locales de démonstration effacées. Aucun compte serveur n’a été modifié.';el.classList.remove('hidden')}
+
+document.addEventListener('DOMContentLoaded',()=>{renderCustomerReviews();renderClientSpace()});
 </script>
 </body>
 </html>
