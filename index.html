@@ -428,7 +428,7 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
       <span class="role-kicker">Espace professionnel sécurisé</span><h2 id="merchantLoginGateTitle">Connexion commerçant</h2><p>Connecte-toi pour retrouver ta boutique et ses outils.</p>
       <div class="field"><label for="merchantGateEmail">Adresse e-mail</label><input id="merchantGateEmail" type="email" autocomplete="username" maxlength="254" required></div>
       <div class="field"><label for="merchantGatePassword">Mot de passe</label><input id="merchantGatePassword" type="password" autocomplete="current-password" minlength="10" required></div>
-      <div class="actions"><button class="btn" type="button" onclick="submitMerchantGateLogin()">Se connecter</button><button class="btn light" type="button" onclick="requestMerchantGateReset()">Mot de passe oublié ?</button></div>
+      <div class="actions"><button class="btn" type="button" onclick="submitMerchantGateLogin()">Se connecter</button><button class="btn light" type="button" onclick="requestMerchantGateReset()">Mot de passe oublié ?</button><button class="btn light" type="button" onclick="resendMerchantConfirmation()">Renvoyer le mail de confirmation</button></div>
       <div id="merchantGateStatus" class="success hidden" role="status" aria-live="polite"></div>
       <section id="merchantGateRecoveryPanel" class="card hidden" aria-labelledby="merchantGateRecoveryTitle"><h3 id="merchantGateRecoveryTitle">Choisir un nouveau mot de passe</h3>
         <div class="field"><label for="merchantGateNewPassword">Nouveau mot de passe</label><input id="merchantGateNewPassword" type="password" autocomplete="new-password" minlength="10"></div>
@@ -589,7 +589,7 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
     <div class="field"><label for="signupShopName">Nom du magasin</label><input id="signupShopName" value="Dklm"></div>
     <div class="field"><label for="merchantLoginEmail">E-mail du compte</label><input id="merchantLoginEmail" type="email" autocomplete="username" value="dklm.services@gmail.com"></div>
     <div class="field"><label for="merchantLoginPassword">Mot de passe (10 caractères minimum)</label><input id="merchantLoginPassword" type="password" autocomplete="current-password" minlength="10"></div>
-    <div class="actions"><button class="btn" id="merchantRegisterButton" type="button">Créer le compte Dklm</button><button class="btn light" id="merchantLoginButton" type="button">Se connecter</button><button class="btn light" id="merchantForgotPassword" type="button">Mot de passe oublié ?</button></div>
+    <div class="actions"><button class="btn" id="merchantRegisterButton" type="button">Créer le compte Dklm</button><button class="btn light" id="merchantLoginButton" type="button">Se connecter</button><button class="btn light" id="merchantForgotPassword" type="button">Mot de passe oublié ?</button><button class="btn light" type="button" onclick="resendMerchantConfirmation()">Renvoyer le mail de confirmation</button></div>
     <div id="merchantRecoveryStatus" class="success hidden" role="status" aria-live="polite"></div>
     <section id="merchantRecoveryPanel" class="card hidden" aria-labelledby="merchantRecoveryTitle">
       <h3 id="merchantRecoveryTitle">Choisir un nouveau mot de passe</h3>
