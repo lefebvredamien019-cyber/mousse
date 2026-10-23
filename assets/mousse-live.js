@@ -129,7 +129,7 @@
     const { data, error } = await client.auth.signUp({
       email, password, options: {
         data: { shop_name: name },
-        emailRedirectTo: `${window.location.origin}/`
+        emailRedirectTo: "https://www.mousse-market.fr/"
       }
     });
     if (error) return status("merchantAuthStatus", "Création du compte impossible. Vérifie les réglages d’inscription Supabase.", true);
