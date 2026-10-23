@@ -96,6 +96,37 @@
     if (currentUser) { await loadMerchant(); if (currentMerchant) window.showView?.('merchantDashboard'); }
   }
 
+  function renderFeaturedShops(shops) {
+    const section = document.getElementById("liveFeaturedSection");
+    const grid = document.getElementById("liveFeaturedShops");
+    if (!section || !grid) return;
+    const published = [...shops].sort((a, b) => String(a.name).localeCompare(String(b.name), "fr"));
+    if (!published.length) {
+      section.hidden = true;
+      return;
+    }
+    // Rotate the starting point daily so visibility is not permanently tied to alphabetical order.
+    const day = Math.floor(Date.now() / 86400000);
+    const start = day % published.length;
+    const rotated = published.slice(start).concat(published.slice(0, start));
+    const picks = rotated.slice(0, Math.min(3, rotated.length));
+    section.hidden = false;
+    grid.innerHTML = picks.map(shop =>
+      '<article class="card"><div class="cardhead"><span class="symbol">🏪</span><span class="pill">Vitrine publiée</span></div>' +
+      '<h3>' + escape(shop.name) + '</h3><p>' + escape(shop.address || "Adresse non renseignée") + '</p>' +
+      '<p>' + escape((shop.description || "Découvrez les informations et les produits de ce commerce.").slice(0, 150)) + '</p>' +
+      '<button class="btn pale" type="button" data-open-shop="' + escape(shop.id) + '">Découvrir la boutique ↗</button></article>'
+    ).join("");
+    grid.querySelectorAll("[data-open-shop]").forEach(button => button.addEventListener("click", () => {
+      const picker = document.getElementById("liveShopSelect");
+      if (picker) picker.value = button.dataset.openShop;
+      currentShop = published.find(shop => shop.id === button.dataset.openShop) || null;
+      window.renderClientCatalog();
+      window.toggleDelivery();
+      window.showView?.("collect");
+    }));
+  }
+
   async function loadPublicShops(preferredId = null) {
     const picker = document.getElementById("liveShopSelect");
     const catalog = document.getElementById("clientCatalog");
@@ -108,6 +139,7 @@
       catalog.innerHTML = '<p class="muted">Impossible de charger les boutiques pour le moment.</p>';
       return;
     }
+    renderFeaturedShops(data || []);
     picker.innerHTML = '<option value="">Choisis une boutique</option>' +
       (data || []).map(shop => '<option value="' + escape(shop.id) + '">' + escape(shop.name) +
         (shop.address ? " · " + escape(shop.address) : "") + "</option>").join("");
