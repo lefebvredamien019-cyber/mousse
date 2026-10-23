@@ -119,6 +119,23 @@
     if (!data?.length) catalog.innerHTML = '<p class="muted">Aucune boutique n’est encore ouverte aux commandes.</p>';
   }
 
+  window.saveLiveAffluence = async (state) => {
+    if (!currentUser || !currentMerchant) {
+      return { ok: false, message: "Connecte-toi à ton espace commerçant pour publier l’affluence." };
+    }
+    const statusMap = { "Calme": "calme", "Modérée": "modere", "Forte": "charge", "Fermé": "ferme" };
+    const dbStatus = statusMap[state.status];
+    if (!dbStatus) return { ok: false, message: "Choisis un état d’affluence valide." };
+    const note = [state.wait ? "Attente estimée : " + state.wait : "", (state.message || "").trim()]
+      .filter(Boolean).join(" — ").slice(0, 500);
+    const { error } = await client.from("shop_affluence").upsert({
+      shop_id: currentMerchant.id, status: dbStatus, note, updated_at: new Date().toISOString()
+    }, { onConflict: "shop_id" });
+    if (error) return { ok: false, message: "L’affluence n’a pas pu être publiée. Vérifie la connexion puis réessaie." };
+    await loadPublicShops(currentShop?.id || null);
+    return { ok: true, message: "Affluence publiée et visible sur la vitrine publique du commerce." };
+  };
+
   window.loginMerchant = async () => {
     const email = document.getElementById("merchantLoginEmail").value.trim();
     const password = document.getElementById("merchantLoginPassword").value;
@@ -282,7 +299,16 @@
       element.innerHTML = '<p class="muted">Impossible de charger les articles.</p>';
       return;
     }
-    element.innerHTML = data?.length ? data.map(product =>
+    const { data: crowd } = await publicClient.from("shop_affluence")
+      .select("status,note,updated_at").eq("shop_id", currentShop.id).maybeSingle();
+    const crowdLabels = { calme: "🟢 Affluence calme", modere: "🟡 Affluence modérée", charge: "🔴 Forte affluence", ferme: "⚫ Commerce fermé" };
+    const crowdHtml = crowd ? '<div class="notice" aria-live="polite"><strong>' +
+      escape(crowdLabels[crowd.status] || "Affluence non renseignée") + '</strong>' +
+      (crowd.note ? '<p>' + escape(crowd.note) + '</p>' : '') +
+      '<small>Indiqué par le commerçant · mis à jour le ' +
+      escape(new Date(crowd.updated_at).toLocaleString("fr-FR")) + '</small></div>' :
+      '<p class="muted">Affluence non renseignée pour le moment.</p>';
+    element.innerHTML = crowdHtml + (data?.length ? data.map(product =>
       '<div class="row product"><div class="productart">🛍️</div><div class="productinfo"><strong>' +
       escape(product.name) + '</strong><small>' + escape(product.description) + " · " +
       (Number(product.stock) > 0 ? "En stock" : "Indisponible") + '</small></div><div class="productprice">' +
@@ -290,7 +316,7 @@
       escape(product.id) + '" data-name="' + escape(product.name) + '" data-price="' +
       Number(product.price_cents) + '" data-stock="' + Number(product.stock) + '"' +
       (Number(product.stock) < 1 ? " disabled" : "") + '>Ajouter</button></div>'
-    ).join("") : '<p class="muted">Cette boutique n’a pas encore d’article disponible.</p>';
+    ).join("") : '<p class="muted">Cette boutique n’a pas encore d’article disponible.</p>');
     element.querySelectorAll("[data-add-product]").forEach(button =>
       button.addEventListener("click", () => window.addToCart(
         button.dataset.addProduct, button.dataset.name,
