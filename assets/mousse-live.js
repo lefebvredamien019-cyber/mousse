@@ -362,6 +362,18 @@
     if(!data.session)return status("clientAuthStatus","Compte créé. Confirme l’adresse reçue par e-mail, puis connecte-toi ici.");
     window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
   };
+  window.saveClientNewPassword = async () => {
+    const password = document.getElementById("clientNewPassword")?.value || "";
+    const confirm = document.getElementById("clientNewPasswordConfirm")?.value || "";
+    if (password.length < 10 || password !== confirm) return status("clientAuthStatus", "Les deux mots de passe doivent correspondre et contenir au moins 10 caractères.", true);
+    const { error } = await client.auth.updateUser({ password });
+    if (error) return status("clientAuthStatus", "Impossible d’enregistrer ce mot de passe. Rouvre le lien reçu par e-mail puis réessaie.", true);
+    document.getElementById("clientRecoveryPanel")?.classList.add("hidden");
+    document.getElementById("clientNewPassword").value = "";
+    document.getElementById("clientNewPasswordConfirm").value = "";
+    status("clientAuthStatus", "Mot de passe modifié. Tu peux maintenant te connecter.");
+  };
+
   window.requestClientPasswordReset = async () => {
     const email=document.getElementById("clientAuthEmail")?.value.trim()||"";
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("clientAuthStatus","Saisis une adresse e-mail valide pour demander la réinitialisation.",true);
