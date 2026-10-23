@@ -326,10 +326,23 @@
     addressFields?.classList.toggle("hidden", select?.value !== "delivery");
     window.renderCart();
     const fee = document.getElementById("deliveryFeeHint");
-    if (fee) fee.textContent = currentShop?.delivery_enabled
-      ? "Frais de livraison : " + euroCents(currentShop.delivery_fee_cents) +
-        (currentShop.delivery_min_cents ? " · minimum " + euroCents(currentShop.delivery_min_cents) : "")
-      : "Cette boutique propose le retrait en boutique.";
+    if (fee) {
+      if (currentShop?.order_paused) {
+        const returnAt = currentShop.pause_return_at ? " · reprise estimée : " + new Date(currentShop.pause_return_at).toLocaleString("fr-FR") : "";
+        fee.textContent = "Commandes temporairement suspendues. " + (currentShop.pause_message || "Le commerce ne prend pas de nouvelles commandes pour le moment.") + returnAt;
+        fee.setAttribute("role", "status");
+      } else {
+        fee.textContent = currentShop?.delivery_enabled
+          ? "Frais de livraison : " + euroCents(currentShop.delivery_fee_cents) +
+            (currentShop.delivery_min_cents ? " · minimum " + euroCents(currentShop.delivery_min_cents) : "")
+          : "Cette boutique propose le retrait en boutique.";
+      }
+    }
+    const orderButton = document.querySelector('#view-collect button[onclick="placeDemoOrder()"]');
+    if (orderButton) {
+      orderButton.disabled = !!currentShop?.order_paused;
+      orderButton.textContent = currentShop?.order_paused ? "Commandes temporairement suspendues" : "Confirmer la commande";
+    }
   };
 
   const renderBaseCart = window.renderCart.bind(window);
@@ -363,6 +376,18 @@
       return status("orderMessage", "Le panier n’atteint pas le minimum requis pour la livraison.", true);
     }
     if (!currentShop) return status("orderMessage", "Choisis une boutique avant de commander.", true);
+    if (currentShop.order_paused) return status("orderMessage", currentShop.pause_message || "Cette boutique a temporairement suspendu les commandes.", true);
+    if (fulfillment === "delivery") {
+      const address = document.getElementById("deliveryAddress").value.trim();
+      if (!address) return status("orderMessage", "Renseigne l’adresse de livraison.", true);
+      const allowedPostcodes = Array.isArray(currentShop.delivery_postcodes) ? currentShop.delivery_postcodes : [];
+      if (allowedPostcodes.length) {
+        const enteredPostcodes = address.match(/\b\d{5}\b/g) || [];
+        if (!enteredPostcodes.some(code => allowedPostcodes.includes(code))) {
+          return status("orderMessage", "Cette adresse semble hors de la zone de livraison de ce commerce. Choisis le retrait en boutique ou contacte le commerçant.", true);
+        }
+      }
+    }
     if (!name || !window.demoCart?.length) return status("orderMessage", "Renseigne ton nom et ajoute au moins un article.", true);
     const body = {
       shop_id: currentShop.id,
