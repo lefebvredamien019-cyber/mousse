@@ -378,7 +378,7 @@
   window.requestClientPasswordReset = async () => {
     const email=document.getElementById("clientAuthEmail")?.value.trim()||"";
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("clientAuthStatus","Saisis une adresse e-mail valide pour demander la réinitialisation.",true);
-    const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:"https://www.mousse-market.fr/"});
+    const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:"https://www.mousse-market.fr/?recovery=client"});
     status("clientAuthStatus",error?"La demande n’a pas pu être envoyée. Vérifie la configuration e-mail et l’URL de redirection.":"Si cette adresse correspond à un compte, un e-mail de réinitialisation va être envoyé.");
   };
   window.logoutClient = async () => {
@@ -447,7 +447,7 @@
       return;
     }
     const { error } = await client.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://www.mousse-market.fr/"
+      redirectTo: "https://www.mousse-market.fr/?recovery=merchant"
     });
     // Keep the response generic to avoid disclosing whether an account exists.
     status("merchantRecoveryStatus", error
@@ -868,13 +868,21 @@
   client.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") { window.MOUSSE_CLIENT_AUTHENTICATED = false; window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false; }
     if (event === "PASSWORD_RECOVERY") {
-      // A password belongs to the Supabase identity, regardless of whether it is used as a client or merchant.
+      // Keep the password-reset form aligned with the account type that requested the email.
       window.MOUSSE_CLIENT_AUTHENTICATED = false;
-      window.enterMousse?.("client");
-      window.openClientLogin?.();
-      document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
-      status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
-      document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
+      const recoveryType = new URLSearchParams(window.location.search).get("recovery");
+      if (recoveryType === "merchant") {
+        document.getElementById("merchantRecoveryPanel")?.classList.remove("hidden");
+        status("merchantRecoveryStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+        document.getElementById("merchantRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        window.enterMousse?.("client");
+        window.openClientLogin?.();
+        document.getElementById("clientRecoveryPanel")?.classList.remove("hidden");
+        status("clientAuthStatus", "Lien de réinitialisation validé. Choisis ton nouveau mot de passe.");
+        document.getElementById("clientRecoveryPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   });
   document.getElementById("merchantSignOut")?.addEventListener("click", window.logoutMerchant);
