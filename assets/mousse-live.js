@@ -29,7 +29,7 @@
   }
 
   document.getElementById("liveShopPicker")?.classList.remove("hidden");
-  window.demoCart = demoCart;
+  window.demoCart = window.demoCart || [];
   const client = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
   window.MOUSSE_CLIENT_AUTHENTICATED = false;
   window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
