@@ -402,6 +402,10 @@
     window.MOUSSE_IS_MERCHANT_AUTHENTICATED=true; window.enterMerchantWorkspace?.();
   };
 
+  // The visible merchant login gate calls this name from its inline button handler.
+  // Route it through the shared login function so the gate inputs and status are handled correctly.
+  window.submitMerchantGateLogin = () => window.loginMerchant();
+
   window.resendMerchantConfirmation = async () => {
     const gate = document.getElementById("merchantLoginGate");
     const gateVisible = !!(gate && !gate.hidden);
