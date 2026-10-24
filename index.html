@@ -483,7 +483,7 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
   <div class="sidebottom"><strong>MOUSSE · DÉMO</strong>Une plateforme pensée pour les commerces indépendants.</div>
 </aside>
 <main class="main" id="main-content">
-<header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Mode présentation</span></div></div></header>
+<header class="top"><div class="crumb" id="breadcrumb">Votre espace · Accueil</div><div style="display:flex;align-items:center;gap:12px"><div class="user"><div class="avatar">M</div><div class="usertext"><strong id="topshop">Ma boutique</strong><br><span class="muted">Mode présentation</span></div></div><button class="btn light hidden" id="merchantSignOut" type="button" style="padding:8px 14px;font-size:13px;box-shadow:none">↪ Se déconnecter</button></div></header>
 <div class="content">
 <section class="view active" id="view-accueil" aria-labelledby="home-title">
   
@@ -599,7 +599,6 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
       <button class="btn" id="merchantSaveNewPassword" type="button">Enregistrer le nouveau mot de passe</button>
     </section>
   </article>
-  <button class="btn light hidden" id="merchantSignOut" type="button">Se déconnecter</button>
   <div id="merchantAuthStatus" class="success" role="status" aria-live="polite">Préparation du compte de test…</div>
   <div class="grid two" id="merchantWorkspace">
     <article class="card"><h3>Étape 1 · Mes informations</h3>
