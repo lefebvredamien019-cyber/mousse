@@ -616,6 +616,21 @@
     if (message) { message.textContent = "Demande préparée : " + type + " · plaque " + plate + " · " + service + (problem ? " · " + problem : "") + ". Cette version ne l’envoie pas encore au garage et ne consulte pas de base d’immatriculation."; message.classList.remove("hidden"); }
   };
 
+  document.getElementById("productImage")?.addEventListener("change", event => {
+    const file = event.target.files?.[0];
+    const preview = document.getElementById("productImagePreview");
+    if (!preview) return;
+    if (!file) { preview.src = ""; preview.classList.add("hidden"); return; }
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      event.target.value = "";
+      preview.src = "";
+      preview.classList.add("hidden");
+      return status("productSaved", "Choisis une image JPG, PNG, WEBP ou GIF de 5 Mo maximum.", true);
+    }
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove("hidden");
+  });
+
   window.addMerchantProduct = async () => {
     if (!currentMerchant) return status("productSaved", "Connecte-toi avant d’ajouter des articles.", true);
     const name = document.getElementById("productName").value.trim().slice(0, 120);
