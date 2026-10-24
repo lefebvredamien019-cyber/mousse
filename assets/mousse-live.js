@@ -621,15 +621,34 @@
     const name = document.getElementById("productName").value.trim().slice(0, 120);
     const price = Number(document.getElementById("productPrice").value);
     const stock = Number(document.getElementById("productStock").value);
+    const imageField = document.getElementById("productImage");
+    const imageFile = imageField?.files?.[0] || null;
     if (!name || !Number.isFinite(price) || price < 0 || price > 1000000 ||
         !Number.isInteger(stock) || stock < 0 || stock > 1000000) {
       return status("productSaved", "Vérifie le nom, le prix et le stock.", true);
+    }
+    let imageUrl = null;
+    if (imageFile) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(imageFile.type) || imageFile.size > 5 * 1024 * 1024) {
+        return status("productSaved", "Choisis une image JPG, PNG, WEBP ou GIF de 5 Mo maximum.", true);
+      }
+      const extension = ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "image/gif":"gif" })[imageFile.type];
+      const uniqueName = (window.crypto?.randomUUID?.() || (Date.now() + "-" + Math.random().toString(36).slice(2)));
+      const imagePath = currentMerchant.id + "/" + uniqueName + "." + extension;
+      status("productSaved", "Envoi de la photo en cours…");
+      const { data: uploaded, error: uploadError } = await client.storage.from("product-images").upload(imagePath, imageFile, {
+        contentType: imageFile.type, upsert: false, cacheControl: "3600"
+      });
+      if (uploadError || !uploaded) return status("productSaved", "Photo non envoyée. Vérifie la connexion puis réessaie.", true);
+      imageUrl = client.storage.from("product-images").getPublicUrl(uploaded.path).data.publicUrl;
     }
     const item = {
       shop_id: currentMerchant.id,
       name,
       description: document.getElementById("productDescription").value.trim().slice(0, 1000),
       category: document.getElementById("productCategory")?.value || "Autres",
+      image_url: imageUrl,
       price_cents: Math.round(price * 100),
       stock,
       active: true
@@ -640,6 +659,10 @@
       const field = document.getElementById(id);
       if (field) field.value = "";
     });
+    if (document.getElementById("productStock")) document.getElementById("productStock").value = "1";
+    if (imageField) imageField.value = "";
+    const preview = document.getElementById("productImagePreview");
+    if (preview) { preview.src = ""; preview.classList.add("hidden"); }
     status("productSaved", "Article ajouté au catalogue partagé.");
     await window.renderMerchantProducts();
     await window.renderClientCatalog();
