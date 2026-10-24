@@ -73,7 +73,7 @@
     if (paused) paused.checked = !!shop.order_paused;
     const published = document.getElementById("merchantPublished");
     if (published) { published.checked = !!shop.is_published; published.disabled = true; }
-    window.renderMerchantPreview();
+    window.renderMerchantPreview?.();
   };
 
   const applicationStatusLabels = {
@@ -531,7 +531,7 @@
       .eq("id", currentMerchant.id).select("*").single();
     if (error) return status("merchantSaved", "Enregistrement impossible. Vérifie les règles de sécurité du commerce.", true);
     currentMerchant = data;
-    window.renderMerchantPreview();
+    window.renderMerchantPreview?.();
     status("merchantSaved", values.is_published
       ? "Commerce enregistré et publié dans le catalogue client."
       : "Commerce enregistré en mode privé.");
