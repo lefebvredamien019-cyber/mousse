@@ -325,6 +325,9 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
 .free-start-note p{line-height:1.7;margin:8px 0;color:#355b4c}
 .free-start-badge{display:inline-flex;align-items:center;border-radius:99px;padding:6px 11px;background:#176b4c;color:#fff;font-size:12px;font-weight:850;letter-spacing:.4px}
 @media(max-width:650px){.first-time-choice{padding:12px}.free-start-note{border-radius:17px;padding:18px}}
+
+/* Parcours universel MOUSSE : catégories, détail, panier fixe et finalisation */
+#view-collect{padding-bottom:100px}#catalogPanel{min-height:280px}#clientCatalog .menu-category-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}#clientCatalog .menu-category-tile{min-height:135px;border-radius:18px;padding:20px;font-size:17px;box-shadow:0 7px 20px #173f3208}#clientCatalog .menu-category-tile>span:first-child{font-size:26px}#clientCatalog .row.product{padding:14px 0;border-bottom:1px solid var(--line);align-items:center}#clientCatalog .productart{width:86px;height:86px}#clientCatalog .productinfo small{display:block;line-height:1.5}.mousse-cart-bar{position:fixed;z-index:30;left:50%;bottom:14px;transform:translateX(-50%);width:min(920px,calc(100% - 28px));display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px 12px 20px;border:1px solid #d4e4d8;border-radius:20px;background:rgba(255,254,248,.96);box-shadow:0 12px 40px #123b3524;backdrop-filter:blur(16px)}.mousse-cart-bar>div{display:grid;gap:2px}.mousse-cart-bar small{color:var(--muted);font-size:13px}#checkoutStage{display:grid;gap:16px;max-width:920px;margin:0 auto}#checkoutStage .card{padding:clamp(18px,3vw,30px)}#checkoutStage .sectiontitle{margin:16px 0 10px}#checkoutStage .vehicle-request-card[hidden]{display:none!important}@media(max-width:560px){.mousse-cart-bar{bottom:8px;width:calc(100% - 16px);padding:10px 12px;border-radius:16px}.mousse-cart-bar .btn{padding:10px 13px;font-size:13px}#clientCatalog .menu-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#clientCatalog .menu-category-tile{padding:14px;min-height:112px;font-size:15px}#clientCatalog .row.product{flex-wrap:wrap}#clientCatalog .productart{width:64px;height:64px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2';"></script>
 <script src="assets/mousse-config.js"></script>
@@ -555,28 +558,40 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
   </section>
 </section>
 <section class="view" id="view-collect">
-  <div class="eyebrow">Vitrine client · démonstration interactive</div><h1 class="headline" id="collect-title">Commander chez un commerçant</h1><p class="sub">Ajoutez des produits au panier, puis choisissez le retrait en boutique ou la livraison si le commerçant la propose.</p>
-  <div class="notice"><strong>Avant les commandes réelles :</strong> le mode présentation reste local. Le catalogue et le serveur de commande sont préparés dans le projet de test. Les commandes resteront indisponibles jusqu’à la configuration de l’e-mail commerçant; les confirmations par SMS nécessitent aussi un compte Twilio. Aucun paiement n’est intégré.</div>
-  <div class="card hidden" id="liveShopPicker"><h3>Boutique</h3><div class="field"><label for="liveShopSelect">Choisir un commerce ouvert aux commandes</label><select id="liveShopSelect"><option value="">Chargement des commerces…</option></select></div><p class="muted" id="deliveryFeeHint" aria-live="polite"></p></div>
-  <div class="grid two">
-    <article class="card"><h3>Catalogue de démonstration</h3><p>Les articles ajoutés dans l’espace commerçant apparaissent ici sur ce navigateur.</p><article class="card vehicle-request-card" id="vehicleRequestCard"><div class="eyebrow">Pour les garages et mécaniciens</div><h3>Demander une intervention véhicule</h3><p class="muted">Le client pourra renseigner son immatriculation et décrire la panne pour aider le professionnel à préparer sa réponse.</p><div class="formgrid"><div class="field"><label for="vehiclePlate">Plaque d’immatriculation</label><input id="vehiclePlate" maxlength="12" placeholder="AB-123-CD" autocomplete="off"></div><div class="field"><label for="vehicleType">Type de véhicule</label><select id="vehicleType"><option>Voiture</option><option>Utilitaire</option><option>Poids lourd</option><option>Moto</option></select></div></div><div class="field"><label for="vehicleService">Intervention souhaitée</label><select id="vehicleService"><option>Vidange</option><option>Courroie de distribution</option><option>Bruit / claquement</option><option>Pneu à remplacer</option><option>Diagnostic de panne</option><option>Autre intervention</option></select></div><div class="field"><label for="vehicleProblem">Description du problème</label><textarea id="vehicleProblem" maxlength="1000" placeholder="Symptômes, kilométrage, photos à ajouter plus tard…"></textarea></div><button class="btn" type="button" onclick="prepareVehicleRequest()">Préparer ma demande</button><p id="vehicleRequestStatus" class="success hidden" role="status"></p><small class="muted">La plaque ne récupère pas à elle seule les caractéristiques techniques. Une source automobile autorisée sera nécessaire pour cette recherche.</small></article>
-      
-      
-      
-      <div class="sectiontitle"><div><h2>Mon panier</h2><p id="cartCount">Aucun article</p></div><strong id="cartTotal">0,00 €</strong></div><div id="cartLines" class="muted">Votre panier est vide.</div>
-    </article>
-    <article class="card"><h3>Finaliser la commande</h3>
-      <div class="field"><label for="customerName">Votre nom</label><input id="customerName" placeholder="Nom et prénom"></div>
-      <fieldset class="field choice-group"><legend>Recevoir le suivi de commande par</legend><label><input type="radio" name="customerNotification" value="email" checked> E-mail</label><label><input type="radio" name="customerNotification" value="sms"> SMS</label></fieldset>
+  <div class="eyebrow">Vitrine client · parcours simple</div>
+  <h1 class="headline" id="collect-title">Choisis, ajoute, commande.</h1>
+  <p class="sub">Entre dans une catégorie, choisis les produits ou prestations qui t’intéressent, puis ouvre ton panier quand tu veux.</p>
+  <div class="notice"><strong>À savoir :</strong> les commandes connectées sont disponibles uniquement lorsque le service du commerce est configuré. Le paiement en ligne n’est pas encore intégré à cette version.</div>
+  <div class="card hidden" id="liveShopPicker"><h3>Choisir un professionnel</h3><div class="field"><label for="liveShopSelect">Commerce ou prestataire</label><select id="liveShopSelect"><option value="">Chargement des commerces…</option></select></div><p class="muted" id="deliveryFeeHint" aria-live="polite"></p></div>
+  <div id="catalogStage"><div class="card" id="catalogPanel">
+    <div class="cardhead"><div><span class="eyebrow">Catalogue personnalisé</span><h2 id="catalogShopTitle">Les catégories</h2></div><span class="pill">Étape 1</span></div>
+    <p class="muted" id="catalogShopIntro">Choisis une catégorie pour voir les produits ou prestations.</p>
+    <div id="clientCatalog"><p class="muted">Choisis un commerce pour voir son catalogue.</p></div>
+  </div></div>
+  <div id="checkoutStage" class="hidden">
+    <button type="button" class="btn light menu-back" onclick="backToMousseCatalog()">← Retour aux catégories</button>
+    <div class="card"><span class="eyebrow">Dernière étape</span><h2>Récapitulatif de ta demande</h2><p class="muted">Vérifie tes choix avant de transmettre ta commande ou ta demande au professionnel.</p>
+      <div class="sectiontitle"><div><h3>Mon panier</h3><p id="cartCount">Aucun article</p></div><strong id="cartTotal">0,00 €</strong></div><div id="cartLines" class="muted">Ton panier est vide.</div>
+    </div>
+    <div class="card vehicle-request-card" id="vehicleRequestCard" hidden>
+      <div class="eyebrow">Informations véhicule · facultatif</div><h3>Parle-nous de ton véhicule</h3><p class="muted">La plaque est facultative. Tu peux aussi renseigner seulement ce que tu connais.</p>
+      <div class="formgrid"><div class="field"><label for="vehiclePlate">Plaque d’immatriculation (facultatif)</label><input id="vehiclePlate" maxlength="12" placeholder="AB-123-CD" autocomplete="off"></div><div class="field"><label for="vehicleType">Type de véhicule</label><select id="vehicleType"><option>Voiture</option><option>Utilitaire</option><option>Poids lourd</option><option>Moto</option><option>Autre</option></select></div></div>
+      <div class="formgrid"><div class="field"><label for="vehicleMake">Marque (facultatif)</label><input id="vehicleMake" maxlength="80" placeholder="Ex. Renault, DAF, Scania"></div><div class="field"><label for="vehicleModel">Modèle (facultatif)</label><input id="vehicleModel" maxlength="80" placeholder="Ex. Master, XF"></div></div>
+      <div class="field"><label for="vehicleProblem">Précisions sur la demande (facultatif)</label><textarea id="vehicleProblem" maxlength="1000" placeholder="Symptômes, kilométrage, bruit, pièces concernées…"></textarea></div>
+    </div>
+    <div class="card" id="checkoutPanel"><span class="eyebrow">Coordonnées et réception</span><h2>Finaliser la commande</h2>
+      <div class="field"><label for="customerName">Nom et prénom</label><input id="customerName" autocomplete="name" placeholder="Nom et prénom" required></div>
+      <fieldset class="field choice-group"><legend>Recevoir le suivi par</legend><label><input type="radio" name="customerNotification" value="email" checked> E-mail</label><label><input type="radio" name="customerNotification" value="sms"> SMS</label></fieldset>
       <div class="field" id="customerEmailField"><label for="customerEmail">Adresse e-mail</label><input id="customerEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr"></div>
-      <div class="field hidden" id="customerPhoneField"><label for="customerPhone">Téléphone au format international</label><input id="customerPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+33 6 12 34 56 78"><small class="muted">Ton numéro sert uniquement aux alertes de cette commande.</small></div>
-      <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Click & Collect — retrait en boutique</option><option value="delivery">Livraison à domicile</option></select></div>
-      <div id="deliveryFields" class="hidden"><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" placeholder="N°, rue, code postal, ville"></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
-      <div class="field"><label for="customerNote">Note pour le commerçant</label><textarea id="customerNote" placeholder="Précisions sur la commande…"></textarea></div>
-      <input id="orderWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" style="width:100%" onclick="placeDemoOrder()">Confirmer la commande</button><div id="orderMessage" class="success hidden"></div>
-    </article>
+      <div class="field hidden" id="customerPhoneField"><label for="customerPhone">Téléphone au format international</label><input id="customerPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+33 6 12 34 56 78"></div>
+      <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Retrait / rendez-vous sur place</option><option value="delivery">Livraison à domicile</option></select></div>
+      <div id="deliveryFields" class="hidden"><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" autocomplete="street-address" placeholder="N°, rue, code postal, ville"></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
+      <div class="field"><label for="customerNote">Informations complémentaires (facultatif)</label><textarea id="customerNote" placeholder="Précisions utiles pour le professionnel…"></textarea></div>
+      <div class="field"><label for="paymentMethod">Mode de paiement</label><select id="paymentMethod"><option value="on_site">Paiement sur place / au retrait</option><option value="online" disabled>Paiement en ligne — bientôt disponible</option></select><small class="muted">Le paiement en ligne n’est pas activé. Aucun paiement ne sera prélevé par MOUSSE.</small></div>
+      <input id="orderWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" style="width:100%" type="button" onclick="placeDemoOrder()">Envoyer ma commande / demande</button><div id="orderMessage" class="success hidden" role="status" aria-live="polite"></div>
+    </div>
   </div>
-
+  <div id="mousseCartBar" class="mousse-cart-bar hidden" aria-live="polite"><div><strong id="mousseCartBarLabel">Panier vide</strong><small id="mousseCartBarTotal">0,00 €</small></div><button class="btn" type="button" onclick="openMousseCheckout()">Voir le panier · Finaliser ↗</button></div>
 </section>
 <section class="view" id="view-consignes">
   <div class="eyebrow">Retrait sans attente</div><h1 class="headline" id="consignes-title">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
