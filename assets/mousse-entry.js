@@ -101,10 +101,36 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   window.submitMerchantGateLogin = async function () {
-    const email=byId("merchantGateEmail")?.value.trim()||"", password=byId("merchantGatePassword")?.value||"";
-    if(!email||!password){const el=byId("merchantGateStatus");if(el){el.textContent="Renseigne ton adresse e-mail et ton mot de passe.";el.classList.remove("hidden");}return;}
-    const oldEmail=byId("merchantLoginEmail"),oldPassword=byId("merchantLoginPassword");if(oldEmail)oldEmail.value=email;if(oldPassword)oldPassword.value=password;
-    if(typeof window.loginMerchant==="function")await window.loginMerchant();else{const el=byId("merchantGateStatus");if(el){el.textContent="Le service de connexion n’est pas disponible. Recharge la page puis réessaie.";el.classList.remove("hidden");}}
+    const email = String(byId("merchantGateEmail")?.value || "").trim();
+    const password = String(byId("merchantGatePassword")?.value || "");
+    const el = byId("merchantGateStatus");
+    const showStatus = (message, isError = false) => {
+      if (!el) return;
+      el.textContent = message;
+      el.classList.remove("hidden");
+      el.classList.toggle("notice-error", isError);
+    };
+    if (!email || !password) {
+      showStatus("Renseigne ton adresse e-mail et ton mot de passe.", true);
+      return;
+    }
+    const oldEmail = byId("merchantLoginEmail");
+    const oldPassword = byId("merchantLoginPassword");
+    if (oldEmail) oldEmail.value = email;
+    if (oldPassword) oldPassword.value = password;
+    if (typeof window.loginMerchant !== "function") {
+      showStatus("Le service de connexion ne s’est pas initialisé. Recharge la page puis réessaie.", true);
+      return;
+    }
+    showStatus("Connexion en cours…");
+    try {
+      await window.loginMerchant();
+      // If the shared handler returned without setting a message, make the result visible.
+      if (el && !el.textContent.trim()) showStatus("La connexion n’a renvoyé aucun résultat. Réessaie.");
+    } catch (error) {
+      console.error("MOUSSE merchant login failed:", error);
+      showStatus("Une erreur technique a interrompu la connexion. Recharge la page puis réessaie.", true);
+    }
   };
   window.requestMerchantGateReset = async function () {
     const email=byId("merchantGateEmail")?.value.trim()||"",oldEmail=byId("merchantLoginEmail");if(oldEmail)oldEmail.value=email;
