@@ -973,7 +973,7 @@
     window.demoCart.length = 0;
     window.renderCart();
     const { data } = await publicClient.from("shops").select(
-      "id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,business_category,menu_style,menu_categories,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km"
+      "id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,business_category,menu_style,menu_categories,menu_category_images,category_tile_size,product_tile_size,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km"
     ).eq("id", event.target.value).eq("is_published", true).maybeSingle();
     currentShop = data || null;
     await window.renderClientCatalog();
