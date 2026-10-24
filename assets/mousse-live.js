@@ -363,7 +363,7 @@
     const email=document.getElementById("clientAuthEmail")?.value.trim()||"", password=document.getElementById("clientAuthPassword")?.value||"";
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("clientAuthStatus","Renseigne une adresse e-mail valide.",true);
     if(password.length<10)return status("clientAuthStatus","Choisis un mot de passe d’au moins 10 caractères.",true);
-    const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:"https://www.mousse-market.fr/"}});
+    const {data,error}=await client.auth.signUp({email,password,options:{data:{account_type:"client"},emailRedirectTo:"https://www.mousse-market.fr/"}});
     if(error)return status("clientAuthStatus","Création du compte impossible. Vérifie les champs et les réglages d’inscription.",true);
     if(!data.session)return status("clientAuthStatus","Compte créé. Confirme l’adresse reçue par e-mail, puis connecte-toi ici.");
     window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
@@ -437,7 +437,7 @@
     if (!email || password.length < 10) return status("merchantAuthStatus", "Utilise une adresse e-mail valide et un mot de passe d’au moins 10 caractères.", true);
     const { data, error } = await client.auth.signUp({
       email, password, options: {
-        data: { shop_name: name },
+        data: { account_type: "merchant", shop_name: name },
         emailRedirectTo: "https://www.mousse-market.fr/"
       }
     });
