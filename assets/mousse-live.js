@@ -34,7 +34,7 @@
   window.MOUSSE_CLIENT_AUTHENTICATED = false;
   window.MOUSSE_IS_MERCHANT_AUTHENTICATED = false;
   const publicClient = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "mousse-public-anon-client" }
   });
   let currentUser = null;
   let currentMerchant = null;
@@ -822,7 +822,9 @@
     }
   };
 
-  const renderBaseCart = window.renderCart.bind(window);
+  const renderBaseCart = typeof window.renderCart === "function"
+    ? window.renderCart.bind(window)
+    : () => status("orderMessage", "Le panier n’a pas pu être initialisé. Recharge la page et réessaie.", true);
   window.renderCart = () => {
     renderBaseCart();
     const total = document.getElementById("cartTotal");
