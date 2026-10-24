@@ -574,12 +574,13 @@
   }
   document.getElementById("merchantActivity")?.addEventListener("change", event => {
     const activity = event.target.value;
-    const current = getMerchantCategories();
     const defaults = defaultMenuCategories[activity] || defaultMenuCategories.other;
-    if (!currentMerchant?.menu_categories?.length || JSON.stringify(current) === JSON.stringify(defaultMenuCategories[currentMerchant.business_category] || defaultMenuCategories.other)) {
-      currentMerchant = { ...(currentMerchant || {}), business_category: activity, menu_categories: [...defaults] };
-      renderMerchantCategoryEditor();
-    }
+    const stored = Array.isArray(currentMerchant?.menu_categories) ? currentMerchant.menu_categories : [];
+    const previousDefaults = defaultMenuCategories[currentMerchant?.business_category || "other"] || defaultMenuCategories.other;
+    const stillUsingDefaults = !stored.length || JSON.stringify(stored) === JSON.stringify(previousDefaults);
+    currentMerchant = { ...(currentMerchant || {}), business_category: activity,
+      menu_categories: stillUsingDefaults ? [...defaults] : stored };
+    renderMerchantCategoryEditor();
   });
   window.addMenuCategory = () => {
     const input = document.getElementById("newMenuCategory");
@@ -681,6 +682,8 @@
       element.innerHTML = '<p class="muted">Choisis une boutique pour voir son catalogue.</p>';
       return;
     }
+    const vehicleCard = document.getElementById("vehicleRequestCard");
+    if (vehicleCard) vehicleCard.hidden = currentShop.business_category !== "mechanic";
     const generation = ++loadGeneration;
     const { data, error } = await publicClient.from("products")
       .select("id,name,description,category,image_url,price_cents,stock,active")
