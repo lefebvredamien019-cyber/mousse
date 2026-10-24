@@ -61,6 +61,8 @@
     set("merchantTemplate", shop.shop_template || "classic");
     set("merchantActivity", shop.business_category || "other");
     set("merchantMenuStyle", shop.menu_style || "tiles");
+    set("merchantCategoryTileSize", shop.category_tile_size || "medium");
+    set("merchantProductTileSize", shop.product_tile_size || "medium");
     renderMerchantCategoryEditor();
     refreshProductCategoryOptions();
     set("merchantPauseMessage", shop.pause_message || "");
@@ -314,7 +316,7 @@
     const catalog = document.getElementById("clientCatalog");
     if (!picker || !catalog) return;
     const { data, error } = await publicClient.from("shops")
-      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,business_category,menu_style,menu_categories,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km")
+      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,business_category,menu_style,menu_categories,menu_category_images,category_tile_size,product_tile_size,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km")
       .eq("is_published", true).order("name");
     if (error) {
       picker.innerHTML = '<option value="">Boutiques momentanément indisponibles</option>';
@@ -507,6 +509,9 @@
       business_category: document.getElementById("merchantActivity").value,
       menu_style: document.getElementById("merchantMenuStyle").value,
       menu_categories: getMerchantCategories(),
+      menu_category_images: currentMerchant.menu_category_images && typeof currentMerchant.menu_category_images === "object" ? currentMerchant.menu_category_images : {},
+      category_tile_size: document.getElementById("merchantCategoryTileSize")?.value || "medium",
+      product_tile_size: document.getElementById("merchantProductTileSize")?.value || "medium",
       order_paused: document.getElementById("merchantOrdersPaused").checked,
       pause_message: document.getElementById("merchantPauseMessage").value.trim().slice(0, 240),
       pause_return_at: document.getElementById("merchantPauseReturn").value ? new Date(document.getElementById("merchantPauseReturn").value).toISOString() : null,
@@ -560,10 +565,32 @@
     const element = document.getElementById("merchantCategoryEditor");
     if (!element) return;
     const categories = getMerchantCategories();
-    element.innerHTML = categories.map((category, index) => '<div class="category-row"><input aria-label="Nom de catégorie" maxlength="60" value="' + escape(category) + '" data-category-name="' + index + '"><button class="btn light" type="button" data-category-up="' + index + '" ' + (index === 0 ? "disabled" : "") + '>↑</button><button class="btn light" type="button" data-category-down="' + index + '" ' + (index === categories.length - 1 ? "disabled" : "") + '>↓</button><button class="btn light" type="button" data-category-delete="' + index + '">Supprimer</button></div>').join("");
+    const categoryImages = currentMerchant?.menu_category_images && typeof currentMerchant.menu_category_images === "object" ? currentMerchant.menu_category_images : {};
+    element.innerHTML = categories.map((category, index) => '<div class="category-row"><input aria-label="Nom de catégorie" maxlength="60" value="' + escape(category) + '" data-category-name="' + index + '"><img class="category-photo" alt="" src="' + escape(categoryImages[category] || "") + '" ' + (categoryImages[category] ? "" : "hidden") + '><label class="category-photo-input">Photo <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-category-image="' + index + '" aria-label="Photo de la catégorie ' + escape(category) + '" style="width:100%"></label><button class="btn light" type="button" data-category-up="' + index + '" ' + (index === 0 ? "disabled" : "") + '>↑</button><button class="btn light" type="button" data-category-down="' + index + '" ' + (index === categories.length - 1 ? "disabled" : "") + '>↓</button><button class="btn light" type="button" data-category-delete="' + index + '">Supprimer</button></div>').join("");
     element.querySelectorAll("[data-category-name]").forEach(input => input.addEventListener("change", () => {
-      const updated = getMerchantCategories(); updated[Number(input.dataset.categoryName)] = input.value.trim().slice(0,60) || "Autres";
-      currentMerchant = { ...(currentMerchant || {}), menu_categories: updated }; renderMerchantCategoryEditor(); refreshProductCategoryOptions();
+      const updated = getMerchantCategories();
+      const index = Number(input.dataset.categoryName), oldName = updated[index], newName = input.value.trim().slice(0,60) || "Autres";
+      updated[index] = newName;
+      const images = { ...(currentMerchant?.menu_category_images || {}) };
+      if (oldName !== newName && images[oldName]) { images[newName] = images[oldName]; delete images[oldName]; }
+      currentMerchant = { ...(currentMerchant || {}), menu_categories: updated, menu_category_images: images }; renderMerchantCategoryEditor(); refreshProductCategoryOptions();
+    }));
+    element.querySelectorAll("[data-category-image]").forEach(input => input.addEventListener("change", async () => {
+      const file = input.files?.[0]; if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        input.value = ""; return status("merchantSaved", "Choisis une photo JPG, PNG, WEBP ou GIF de 5 Mo maximum.", true);
+      }
+      const category = getMerchantCategories()[Number(input.dataset.categoryImage)];
+      if (!category || !currentMerchant?.id) return status("merchantSaved", "Reconnecte-toi avant d’ajouter une photo.", true);
+      const extension = ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "image/gif":"gif" })[file.type];
+      const imagePath = currentMerchant.id + "/categories/" + (window.crypto?.randomUUID?.() || (Date.now() + "-" + Math.random().toString(36).slice(2))) + "." + extension;
+      status("merchantSaved", "Envoi de la photo de catégorie…");
+      const { data: uploaded, error: uploadError } = await client.storage.from("product-images").upload(imagePath, file, { contentType: file.type, upsert: false, cacheControl: "3600" });
+      if (uploadError || !uploaded) return status("merchantSaved", "Photo non envoyée. Vérifie la connexion puis réessaie.", true);
+      const images = { ...(currentMerchant.menu_category_images || {}), [category]: client.storage.from("product-images").getPublicUrl(uploaded.path).data.publicUrl };
+      currentMerchant = { ...currentMerchant, menu_category_images: images };
+      renderMerchantCategoryEditor();
+      status("merchantSaved", "Photo ajoutée à la catégorie. Clique sur « Enregistrer la boutique » pour sauvegarder les réglages.");
     }));
     element.querySelectorAll("[data-category-delete]").forEach(button => button.addEventListener("click", () => {
       const updated = getMerchantCategories(); updated.splice(Number(button.dataset.categoryDelete),1);
@@ -746,14 +773,19 @@
     if (title) title.textContent = currentShop.name || "Catalogue";
     if (intro) intro.textContent = currentShop.description || (isService ? "Choisis une spécialité pour découvrir les prestations proposées." : "Choisis un rayon pour découvrir les produits proposés.");
     element.dataset.menuStyle = currentShop.menu_style || "tiles";
+    element.dataset.categorySize = currentShop.category_tile_size || "medium";
+    element.dataset.productSize = currentShop.product_tile_size || "medium";
+    element.classList.remove("category-size-small", "category-size-medium", "category-size-large");
+    element.classList.add("category-size-" + (["small","medium","large"].includes(currentShop.category_tile_size) ? currentShop.category_tile_size : "medium"));
+    const categoryImages = currentShop.menu_category_images && typeof currentShop.menu_category_images === "object" ? currentShop.menu_category_images : {};
     const categoryTiles = '<div class="menu-category-grid">' + categories.map(category =>
-      '<button type="button" class="menu-category-tile" data-menu-category="' + escape(category) + '"><span>' + (isService ? "🔧" : "▦") + '</span><span>' + escape(category) + '</span><small>' +
+      '<button type="button" class="menu-category-tile" data-menu-category="' + escape(category) + '">' + (categoryImages[category] ? '<img src="' + escape(categoryImages[category]) + '" alt="">' : '<span>' + (isService ? "🔧" : "▦") + '</span>') + '<span>' + escape(category) + '</span><small>' +
       products.filter(product => (product.category || "Autres") === category).length + (isService ? " prestation(s)" : " produit(s)") + '</small></button>').join("") + '</div>';
     const backButton = selected ? '<button type="button" class="btn light menu-back" data-menu-back>← Toutes les catégories</button><div class="sectiontitle"><div><div class="eyebrow">Catégorie sélectionnée</div><h2>' + escape(selected) + '</h2><p>Choisis les éléments que tu veux ajouter à ton panier.</p></div><span class="pill">Étape 2</span></div>' : '';
-    const itemsHtml = selected ? (shown.length ? shown.map(product =>
+    const itemsHtml = selected ? (shown.length ? '<div class="product-card-grid">' + shown.map(product =>
       '<article class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>' + (isService ? "🔧" : "🛍️") + '</span>') +
       '</div><div class="productinfo"><strong>' + escape(product.name) + '</strong><small>' + escape(product.description || (isService ? "Prestation proposée par le professionnel." : "Détail à préciser par le commerçant.")) + '</small><small>' + (Number(product.stock) > 0 ? "Disponible" : "Indisponible") + '</small></div><div class="productprice">' + (Number(product.price_cents) > 0 ? euroCents(product.price_cents) : "Sur devis") + '</div><button class="btn pale" type="button" data-add-product="' + escape(product.id) + '" data-name="' + escape(product.name) + '" data-price="' + Number(product.price_cents) + '" data-stock="' + Number(product.stock) + '"' + (Number(product.stock) < 1 ? " disabled" : "") + '>Ajouter au panier</button></article>'
-    ).join("") : '<div class="notice">Aucun produit ou prestation dans cette catégorie pour le moment. Le professionnel pourra en ajouter depuis son espace.</div>') : categoryTiles;
+    ).join("") + '</div>' : '<div class="notice">Aucun produit ou prestation dans cette catégorie pour le moment. Le professionnel pourra en ajouter depuis son espace.</div>') : categoryTiles;
     element.innerHTML = crowdHtml + (selected ? backButton + itemsHtml : '<div class="sectiontitle"><div><div class="eyebrow">Étape 1</div><h2>Choisis une catégorie</h2><p>Chaque catégorie ouvre sa propre page de détail.</p></div></div>' + categoryTiles);
     element.querySelectorAll("[data-menu-category]").forEach(button => button.addEventListener("click", () => { window.MOUSSE_SELECTED_MENU_CATEGORY = button.dataset.menuCategory; window.renderClientCatalog(); }));
     element.querySelector("[data-menu-back]")?.addEventListener("click", () => { window.MOUSSE_SELECTED_MENU_CATEGORY = ""; window.renderClientCatalog(); });
