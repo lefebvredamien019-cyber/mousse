@@ -59,6 +59,10 @@
     set("merchantDeliveryFee", (Number(shop.delivery_fee_cents || 0) / 100).toFixed(2));
     set("merchantDeliveryMin", (Number(shop.delivery_min_cents || 0) / 100).toFixed(2));
     set("merchantTemplate", shop.shop_template || "classic");
+    set("merchantActivity", shop.business_category || "other");
+    set("merchantMenuStyle", shop.menu_style || "tiles");
+    renderMerchantCategoryEditor();
+    refreshProductCategoryOptions();
     set("merchantPauseMessage", shop.pause_message || "");
     set("merchantPauseReturn", shop.pause_return_at ? new Date(shop.pause_return_at).toISOString().slice(0, 16) : "");
     set("merchantDeliveryPostcodes", Array.isArray(shop.delivery_postcodes) ? shop.delivery_postcodes.join(", ") : "");
@@ -496,6 +500,9 @@
       delivery_fee_cents: fee,
       delivery_min_cents: minimum,
       shop_template: document.getElementById("merchantTemplate").value,
+      business_category: document.getElementById("merchantActivity").value,
+      menu_style: document.getElementById("merchantMenuStyle").value,
+      menu_categories: getMerchantCategories(),
       order_paused: document.getElementById("merchantOrdersPaused").checked,
       pause_message: document.getElementById("merchantPauseMessage").value.trim().slice(0, 240),
       pause_return_at: document.getElementById("merchantPauseReturn").value ? new Date(document.getElementById("merchantPauseReturn").value).toISOString() : null,
@@ -527,6 +534,78 @@
     await loadPublicShops(data.is_published ? data.id : null);
   };
 
+  const defaultMenuCategories = {
+    fast_food: ["Boissons", "Sandwichs", "Burgers", "Menus", "Desserts", "Accompagnements"],
+    restaurant: ["Entrées", "Plats", "Boissons", "Desserts"],
+    epicerie: ["Fruits et légumes", "Épicerie", "Boissons", "Produits frais"],
+    retail: ["Nouveautés", "Vêtements", "Accessoires", "Promotions"],
+    beauty: ["Coupes", "Colorations", "Soins", "Rendez-vous"],
+    mechanic: ["Moteur", "Train roulant", "Freinage", "Diagnostic", "Entretien"],
+    services: ["Prestations", "Dépannage", "Installation", "Autres"],
+    cbd: ["Fleurs", "Résines", "Huiles", "Accessoires"],
+    other: ["Produits", "Services", "Autres"]
+  };
+  const categoryLabels = { fast_food:"Fast-food / snack", restaurant:"Restaurant / café", epicerie:"Épicerie", retail:"Boutique / vêtements", beauty:"Coiffure / beauté", mechanic:"Mécanique auto / poids lourd", services:"Artisan / services", cbd:"CBD", other:"Autre métier" };
+  function getMerchantCategories() {
+    const stored = currentMerchant?.menu_categories;
+    if (Array.isArray(stored) && stored.length) return [...new Set(stored.map(value => String(value).trim()).filter(Boolean))].slice(0, 40);
+    const activity = document.getElementById("merchantActivity")?.value || currentMerchant?.business_category || "other";
+    return [...(defaultMenuCategories[activity] || defaultMenuCategories.other)];
+  }
+  function renderMerchantCategoryEditor() {
+    const element = document.getElementById("merchantCategoryEditor");
+    if (!element) return;
+    const categories = getMerchantCategories();
+    element.innerHTML = categories.map((category, index) => '<div class="category-row"><input aria-label="Nom de catégorie" maxlength="60" value="' + escape(category) + '" data-category-name="' + index + '"><button class="btn light" type="button" data-category-up="' + index + '" ' + (index === 0 ? "disabled" : "") + '>↑</button><button class="btn light" type="button" data-category-down="' + index + '" ' + (index === categories.length - 1 ? "disabled" : "") + '>↓</button><button class="btn light" type="button" data-category-delete="' + index + '">Supprimer</button></div>').join("");
+    element.querySelectorAll("[data-category-name]").forEach(input => input.addEventListener("change", () => {
+      const updated = getMerchantCategories(); updated[Number(input.dataset.categoryName)] = input.value.trim().slice(0,60) || "Autres";
+      currentMerchant = { ...(currentMerchant || {}), menu_categories: updated }; renderMerchantCategoryEditor(); refreshProductCategoryOptions();
+    }));
+    element.querySelectorAll("[data-category-delete]").forEach(button => button.addEventListener("click", () => {
+      const updated = getMerchantCategories(); updated.splice(Number(button.dataset.categoryDelete),1);
+      currentMerchant = { ...currentMerchant, menu_categories: updated.length ? updated : ["Autres"] }; renderMerchantCategoryEditor(); refreshProductCategoryOptions();
+    }));
+    element.querySelectorAll("[data-category-up], [data-category-down]").forEach(button => button.addEventListener("click", () => {
+      const updated = getMerchantCategories(), i = Number(button.dataset.categoryUp ?? button.dataset.categoryDown), target = button.hasAttribute("data-category-up") ? i-1 : i+1;
+      [updated[i], updated[target]] = [updated[target], updated[i]];
+      currentMerchant = { ...currentMerchant, menu_categories: updated }; renderMerchantCategoryEditor(); refreshProductCategoryOptions();
+    }));
+    refreshProductCategoryOptions();
+  }
+  window.addMenuCategory = () => {
+    const input = document.getElementById("newMenuCategory");
+    const name = input?.value.trim().slice(0,60);
+    if (!name) return status("merchantSaved", "Écris le nom de la catégorie avant de l’ajouter.", true);
+    const categories = getMerchantCategories();
+    if (categories.some(category => category.toLocaleLowerCase("fr") === name.toLocaleLowerCase("fr"))) return status("merchantSaved", "Cette catégorie existe déjà.", true);
+    if (categories.length >= 40) return status("merchantSaved", "Maximum 40 catégories par commerce.", true);
+    currentMerchant = { ...(currentMerchant || {}), menu_categories: [...categories, name] };
+    if (input) input.value = "";
+    renderMerchantCategoryEditor();
+  };
+  function refreshProductCategoryOptions() {
+    const select = document.getElementById("productCategory");
+    if (!select) return;
+    const previous = select.value;
+    const categories = getMerchantCategories();
+    select.innerHTML = categories.map(category => '<option value="' + escape(category) + '">' + escape(category) + '</option>').join("") || '<option value="Autres">Autres</option>';
+    if (categories.includes(previous)) select.value = previous;
+  }
+  function getPublicMenuCategories(shop, products) {
+    const configured = Array.isArray(shop?.menu_categories) ? shop.menu_categories.filter(value => typeof value === "string" && value.trim()) : [];
+    const used = [...new Set((products || []).map(product => product.category || "Autres"))];
+    return [...new Set([...configured, ...used])];
+  }
+  window.prepareVehicleRequest = () => {
+    const plate = (document.getElementById("vehiclePlate")?.value || "").trim().toUpperCase();
+    const type = document.getElementById("vehicleType")?.value || "Voiture";
+    const service = document.getElementById("vehicleService")?.value || "Autre intervention";
+    const problem = (document.getElementById("vehicleProblem")?.value || "").trim();
+    const message = document.getElementById("vehicleRequestStatus");
+    if (!plate) { if (message) { message.textContent = "Renseigne la plaque d’immatriculation pour préparer la demande."; message.classList.remove("hidden"); } return; }
+    if (message) { message.textContent = "Demande préparée : " + type + " · plaque " + plate + " · " + service + (problem ? " · " + problem : "") + ". Cette version ne l’envoie pas encore au garage et ne consulte pas de base d’immatriculation."; message.classList.remove("hidden"); }
+  };
+
   window.addMerchantProduct = async () => {
     if (!currentMerchant) return status("productSaved", "Connecte-toi avant d’ajouter des articles.", true);
     const name = document.getElementById("productName").value.trim().slice(0, 120);
@@ -540,6 +619,7 @@
       shop_id: currentMerchant.id,
       name,
       description: document.getElementById("productDescription").value.trim().slice(0, 1000),
+      category: document.getElementById("productCategory")?.value || "Autres",
       price_cents: Math.round(price * 100),
       stock,
       active: true
@@ -567,15 +647,15 @@
   window.renderMerchantProducts = async () => {
     const element = document.getElementById("merchantProducts");
     if (!element || !currentMerchant) return;
-    const { data, error } = await client.from("products").select("id,name,description,price_cents,stock,active")
+    const { data, error } = await client.from("products").select("id,name,description,category,image_url,price_cents,stock,active")
       .eq("shop_id", currentMerchant.id).order("created_at", { ascending: false });
     if (error) {
       element.innerHTML = '<p class="muted">Impossible de charger le catalogue.</p>';
       return;
     }
     element.innerHTML = data?.length ? data.map(product =>
-      '<div class="row product"><div class="productart">🛍️</div><div class="productinfo"><strong>' +
-      escape(product.name) + '</strong><small>' + escape(product.description) + " · Stock : " +
+      '<div class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>🛍️</span>') + '</div><div class="productinfo"><strong>' +
+      escape(product.name) + '</strong><small>' + escape(product.category || "Autres") + " · " + escape(product.description) + " · Stock : "
       Number(product.stock) + '</small></div><div class="productprice">' + euroCents(product.price_cents) +
       '</div><button class="btn light" type="button" data-delete-product="' + escape(product.id) +
       '">Supprimer</button></div>'
@@ -594,7 +674,7 @@
     }
     const generation = ++loadGeneration;
     const { data, error } = await publicClient.from("products")
-      .select("id,name,description,price_cents,stock,active")
+      .select("id,name,description,category,image_url,price_cents,stock,active")
       .eq("shop_id", currentShop.id).eq("active", true).order("name");
     if (generation !== loadGeneration) return;
     if (error) {
@@ -610,15 +690,29 @@
       '<small>Indiqué par le commerçant · mis à jour le ' +
       escape(new Date(crowd.updated_at).toLocaleString("fr-FR")) + '</small></div>' :
       '<p class="muted">Affluence non renseignée pour le moment.</p>';
-    element.innerHTML = crowdHtml + (data?.length ? data.map(product =>
-      '<div class="row product"><div class="productart">🛍️</div><div class="productinfo"><strong>' +
-      escape(product.name) + '</strong><small>' + escape(product.description) + " · " +
+    const products = data || [];
+    const categories = getPublicMenuCategories(currentShop, products);
+    const selectedCategory = window.MOUSSE_SELECTED_MENU_CATEGORY || "";
+    const shown = selectedCategory ? products.filter(product => (product.category || "Autres") === selectedCategory) : products;
+    const categoryTiles = categories.length > 1 ? '<div class="menu-category-grid">' + categories.map(category => '<button type="button" class="menu-category-tile ' + (selectedCategory === category ? "active" : "") + '" data-menu-category="' + escape(category) + '"><span>▦</span><span>' + escape(category) + '</span><small>' + products.filter(product => (product.category || "Autres") === category).length + ' article(s)</small></button>').join("") + '</div>' : "";
+    const backButton = selectedCategory ? '<button type="button" class="btn light menu-back" data-menu-back>← Toutes les catégories</button><h3>' + escape(selectedCategory) + '</h3>' : "";
+    element.innerHTML = crowdHtml + categoryTiles + backButton + (shown.length ? shown.map(product =>
+      '<div class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>🛍️</span>') + '</div><div class="productinfo"><strong>' +
+      escape(product.name) + '</strong><small>' + escape(product.category || "Autres") + " · " + escape(product.description) + " · " +
       (Number(product.stock) > 0 ? "En stock" : "Indisponible") + '</small></div><div class="productprice">' +
       euroCents(product.price_cents) + '</div><button class="btn pale" type="button" data-add-product="' +
       escape(product.id) + '" data-name="' + escape(product.name) + '" data-price="' +
       Number(product.price_cents) + '" data-stock="' + Number(product.stock) + '"' +
       (Number(product.stock) < 1 ? " disabled" : "") + '>Ajouter</button></div>'
     ).join("") : '<p class="muted">Cette boutique n’a pas encore d’article disponible.</p>');
+    element.querySelectorAll("[data-menu-category]").forEach(button => button.addEventListener("click", () => {
+      window.MOUSSE_SELECTED_MENU_CATEGORY = button.dataset.menuCategory;
+      window.renderClientCatalog();
+    }));
+    element.querySelector("[data-menu-back]")?.addEventListener("click", () => {
+      window.MOUSSE_SELECTED_MENU_CATEGORY = "";
+      window.renderClientCatalog();
+    });
     element.querySelectorAll("[data-add-product]").forEach(button =>
       button.addEventListener("click", () => window.addToCart(
         button.dataset.addProduct, button.dataset.name,
