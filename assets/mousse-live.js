@@ -314,7 +314,7 @@
     const catalog = document.getElementById("clientCatalog");
     if (!picker || !catalog) return;
     const { data, error } = await publicClient.from("shops")
-      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km")
+      .select("id,name,address,description,theme_color,delivery_enabled,delivery_fee_cents,delivery_min_cents,shop_template,business_category,menu_style,menu_categories,order_paused,pause_message,pause_return_at,delivery_postcodes,delivery_radius_km")
       .eq("is_published", true).order("name");
     if (error) {
       picker.innerHTML = '<option value="">Boutiques momentanément indisponibles</option>';
@@ -572,6 +572,15 @@
     }));
     refreshProductCategoryOptions();
   }
+  document.getElementById("merchantActivity")?.addEventListener("change", event => {
+    const activity = event.target.value;
+    const current = getMerchantCategories();
+    const defaults = defaultMenuCategories[activity] || defaultMenuCategories.other;
+    if (!currentMerchant?.menu_categories?.length || JSON.stringify(current) === JSON.stringify(defaultMenuCategories[currentMerchant.business_category] || defaultMenuCategories.other)) {
+      currentMerchant = { ...(currentMerchant || {}), business_category: activity, menu_categories: [...defaults] };
+      renderMerchantCategoryEditor();
+    }
+  });
   window.addMenuCategory = () => {
     const input = document.getElementById("newMenuCategory");
     const name = input?.value.trim().slice(0,60);
@@ -655,7 +664,7 @@
     }
     element.innerHTML = data?.length ? data.map(product =>
       '<div class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>🛍️</span>') + '</div><div class="productinfo"><strong>' +
-      escape(product.name) + '</strong><small>' + escape(product.category || "Autres") + " · " + escape(product.description) + " · Stock : "
+      escape(product.name) + '</strong><small>' + escape(product.category || "Autres") + " · " + escape(product.description) + " · Stock : " +
       Number(product.stock) + '</small></div><div class="productprice">' + euroCents(product.price_cents) +
       '</div><button class="btn light" type="button" data-delete-product="' + escape(product.id) +
       '">Supprimer</button></div>'
@@ -694,6 +703,7 @@
     const categories = getPublicMenuCategories(currentShop, products);
     const selectedCategory = window.MOUSSE_SELECTED_MENU_CATEGORY || "";
     const shown = selectedCategory ? products.filter(product => (product.category || "Autres") === selectedCategory) : products;
+    element.dataset.menuStyle = currentShop.menu_style || "tiles";
     const categoryTiles = categories.length > 1 ? '<div class="menu-category-grid">' + categories.map(category => '<button type="button" class="menu-category-tile ' + (selectedCategory === category ? "active" : "") + '" data-menu-category="' + escape(category) + '"><span>▦</span><span>' + escape(category) + '</span><small>' + products.filter(product => (product.category || "Autres") === category).length + ' article(s)</small></button>').join("") + '</div>' : "";
     const backButton = selectedCategory ? '<button type="button" class="btn light menu-back" data-menu-back>← Toutes les catégories</button><h3>' + escape(selectedCategory) + '</h3>' : "";
     element.innerHTML = crowdHtml + categoryTiles + backButton + (shown.length ? shown.map(product =>
