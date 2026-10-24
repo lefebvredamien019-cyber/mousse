@@ -612,12 +612,12 @@
   }
   window.prepareVehicleRequest = () => {
     const plate = (document.getElementById("vehiclePlate")?.value || "").trim().toUpperCase();
-    const type = document.getElementById("vehicleType")?.value || "Voiture";
-    const service = document.getElementById("vehicleService")?.value || "Autre intervention";
+    const type = (document.getElementById("vehicleType")?.value || "").trim();
+    const make = (document.getElementById("vehicleMake")?.value || "").trim();
+    const model = (document.getElementById("vehicleModel")?.value || "").trim();
     const problem = (document.getElementById("vehicleProblem")?.value || "").trim();
     const message = document.getElementById("vehicleRequestStatus");
-    if (!plate) { if (message) { message.textContent = "Renseigne la plaque d’immatriculation pour préparer la demande."; message.classList.remove("hidden"); } return; }
-    if (message) { message.textContent = "Demande préparée : " + type + " · plaque " + plate + " · " + service + (problem ? " · " + problem : "") + ". Cette version ne l’envoie pas encore au garage et ne consulte pas de base d’immatriculation."; message.classList.remove("hidden"); }
+    if (message) { message.textContent = "Informations véhicule prêtes : " + [type, make, model, plate ? "plaque " + plate : "", problem].filter(Boolean).join(" · ") + ". La plaque est facultative."; message.classList.remove("hidden"); }
   };
 
   document.getElementById("productImage")?.addEventListener("change", event => {
@@ -721,59 +721,46 @@
     const element = document.getElementById("clientCatalog");
     if (!element) return;
     if (!currentShop) {
-      element.innerHTML = '<p class="muted">Choisis une boutique pour voir son catalogue.</p>';
+      element.innerHTML = '<p class="muted">Choisis un commerce ou un prestataire pour voir son catalogue.</p>';
+      const title = document.getElementById("catalogShopTitle"); if (title) title.textContent = "Les catégories";
+      const intro = document.getElementById("catalogShopIntro"); if (intro) intro.textContent = "Choisis une catégorie pour voir les produits ou prestations.";
+      document.getElementById("mousseCartBar")?.classList.add("hidden");
       return;
     }
-    const vehicleCard = document.getElementById("vehicleRequestCard");
-    if (vehicleCard) vehicleCard.hidden = currentShop.business_category !== "mechanic";
     const generation = ++loadGeneration;
-    const { data, error } = await publicClient.from("products")
-      .select("id,name,description,category,image_url,price_cents,stock,active")
-      .eq("shop_id", currentShop.id).eq("active", true).order("name");
+    const { data, error } = await publicClient.from("products").select("id,name,description,category,image_url,price_cents,stock,active").eq("shop_id", currentShop.id).eq("active", true).order("name");
     if (generation !== loadGeneration) return;
-    if (error) {
-      element.innerHTML = '<p class="muted">Impossible de charger les articles.</p>';
-      return;
-    }
-    const { data: crowd } = await publicClient.from("shop_affluence")
-      .select("status,note,updated_at").eq("shop_id", currentShop.id).maybeSingle();
-    const crowdLabels = { calme: "🟢 Affluence calme", modere: "🟡 Affluence modérée", charge: "🔴 Forte affluence", ferme: "⚫ Commerce fermé" };
-    const crowdHtml = crowd ? '<div class="notice" aria-live="polite"><strong>' +
-      escape(crowdLabels[crowd.status] || "Affluence non renseignée") + '</strong>' +
-      (crowd.note ? '<p>' + escape(crowd.note) + '</p>' : '') +
-      '<small>Indiqué par le commerçant · mis à jour le ' +
-      escape(new Date(crowd.updated_at).toLocaleString("fr-FR")) + '</small></div>' :
-      '<p class="muted">Affluence non renseignée pour le moment.</p>';
+    if (error) { element.innerHTML = '<p class="muted">Impossible de charger les articles.</p>'; return; }
+    const { data: crowd } = await publicClient.from("shop_affluence").select("status,note,updated_at").eq("shop_id", currentShop.id).maybeSingle();
+    const crowdLabels = { calme:"🟢 Affluence calme", modere:"🟡 Affluence modérée", charge:"🔴 Forte affluence", ferme:"⚫ Commerce fermé" };
+    const crowdHtml = crowd ? '<div class="notice" aria-live="polite"><strong>' + escape(crowdLabels[crowd.status] || "Affluence non renseignée") + '</strong>' + (crowd.note ? '<p>' + escape(crowd.note) + '</p>' : '') + '<small>Indiqué par le professionnel · mis à jour le ' + escape(new Date(crowd.updated_at).toLocaleString("fr-FR")) + '</small></div>' : '';
     const products = data || [];
     const categories = getPublicMenuCategories(currentShop, products);
     const selectedCategory = window.MOUSSE_SELECTED_MENU_CATEGORY || "";
-    const shown = selectedCategory ? products.filter(product => (product.category || "Autres") === selectedCategory) : products;
+    const selected = selectedCategory && categories.includes(selectedCategory) ? selectedCategory : "";
+    if (selectedCategory && !selected) window.MOUSSE_SELECTED_MENU_CATEGORY = "";
+    const shown = selected ? products.filter(product => (product.category || "Autres") === selected) : [];
+    const isService = currentShop.business_category === "mechanic" || currentShop.shop_template === "services";
+    const title = document.getElementById("catalogShopTitle");
+    const intro = document.getElementById("catalogShopIntro");
+    if (title) title.textContent = currentShop.name || "Catalogue";
+    if (intro) intro.textContent = currentShop.description || (isService ? "Choisis une spécialité pour découvrir les prestations proposées." : "Choisis un rayon pour découvrir les produits proposés.");
     element.dataset.menuStyle = currentShop.menu_style || "tiles";
-    const categoryTiles = categories.length > 1 ? '<div class="menu-category-grid">' + categories.map(category => '<button type="button" class="menu-category-tile ' + (selectedCategory === category ? "active" : "") + '" data-menu-category="' + escape(category) + '"><span>▦</span><span>' + escape(category) + '</span><small>' + products.filter(product => (product.category || "Autres") === category).length + ' article(s)</small></button>').join("") + '</div>' : "";
-    const backButton = selectedCategory ? '<button type="button" class="btn light menu-back" data-menu-back>← Toutes les catégories</button><h3>' + escape(selectedCategory) + '</h3>' : "";
-    element.innerHTML = crowdHtml + categoryTiles + backButton + (shown.length ? shown.map(product =>
-      '<div class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>🛍️</span>') + '</div><div class="productinfo"><strong>' +
-      escape(product.name) + '</strong><small>' + escape(product.category || "Autres") + " · " + escape(product.description) + " · " +
-      (Number(product.stock) > 0 ? "En stock" : "Indisponible") + '</small></div><div class="productprice">' +
-      euroCents(product.price_cents) + '</div><button class="btn pale" type="button" data-add-product="' +
-      escape(product.id) + '" data-name="' + escape(product.name) + '" data-price="' +
-      Number(product.price_cents) + '" data-stock="' + Number(product.stock) + '"' +
-      (Number(product.stock) < 1 ? " disabled" : "") + '>Ajouter</button></div>'
-    ).join("") : '<p class="muted">Cette boutique n’a pas encore d’article disponible.</p>');
-    element.querySelectorAll("[data-menu-category]").forEach(button => button.addEventListener("click", () => {
-      window.MOUSSE_SELECTED_MENU_CATEGORY = button.dataset.menuCategory;
-      window.renderClientCatalog();
-    }));
-    element.querySelector("[data-menu-back]")?.addEventListener("click", () => {
-      window.MOUSSE_SELECTED_MENU_CATEGORY = "";
-      window.renderClientCatalog();
-    });
-    element.querySelectorAll("[data-add-product]").forEach(button =>
-      button.addEventListener("click", () => window.addToCart(
-        button.dataset.addProduct, button.dataset.name,
-        Number(button.dataset.price), Number(button.dataset.stock)
-      ))
-    );
+    const categoryTiles = '<div class="menu-category-grid">' + categories.map(category =>
+      '<button type="button" class="menu-category-tile" data-menu-category="' + escape(category) + '"><span>' + (isService ? "🔧" : "▦") + '</span><span>' + escape(category) + '</span><small>' +
+      products.filter(product => (product.category || "Autres") === category).length + (isService ? " prestation(s)" : " produit(s)") + '</small></button>').join("") + '</div>';
+    const backButton = selected ? '<button type="button" class="btn light menu-back" data-menu-back>← Toutes les catégories</button><div class="sectiontitle"><div><div class="eyebrow">Catégorie sélectionnée</div><h2>' + escape(selected) + '</h2><p>Choisis les éléments que tu veux ajouter à ton panier.</p></div><span class="pill">Étape 2</span></div>' : '';
+    const itemsHtml = selected ? (shown.length ? shown.map(product =>
+      '<article class="row product"><div class="productart">' + (product.image_url ? '<img src="' + escape(product.image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:13px">' : '<span>' + (isService ? "🔧" : "🛍️") + '</span>') +
+      '</div><div class="productinfo"><strong>' + escape(product.name) + '</strong><small>' + escape(product.description || (isService ? "Prestation proposée par le professionnel." : "Détail à préciser par le commerçant.")) + '</small><small>' + (Number(product.stock) > 0 ? "Disponible" : "Indisponible") + '</small></div><div class="productprice">' + (Number(product.price_cents) > 0 ? euroCents(product.price_cents) : "Sur devis") + '</div><button class="btn pale" type="button" data-add-product="' + escape(product.id) + '" data-name="' + escape(product.name) + '" data-price="' + Number(product.price_cents) + '" data-stock="' + Number(product.stock) + '"' + (Number(product.stock) < 1 ? " disabled" : "") + '>Ajouter au panier</button></article>'
+    ).join("") : '<div class="notice">Aucun produit ou prestation dans cette catégorie pour le moment. Le professionnel pourra en ajouter depuis son espace.</div>') : categoryTiles;
+    element.innerHTML = crowdHtml + (selected ? backButton + itemsHtml : '<div class="sectiontitle"><div><div class="eyebrow">Étape 1</div><h2>Choisis une catégorie</h2><p>Chaque catégorie ouvre sa propre page de détail.</p></div></div>' + categoryTiles);
+    element.querySelectorAll("[data-menu-category]").forEach(button => button.addEventListener("click", () => { window.MOUSSE_SELECTED_MENU_CATEGORY = button.dataset.menuCategory; window.renderClientCatalog(); }));
+    element.querySelector("[data-menu-back]")?.addEventListener("click", () => { window.MOUSSE_SELECTED_MENU_CATEGORY = ""; window.renderClientCatalog(); });
+    element.querySelectorAll("[data-add-product]").forEach(button => button.addEventListener("click", () => window.addToCart(button.dataset.addProduct, button.dataset.name, Number(button.dataset.price), Number(button.dataset.stock))));
+    const vehicleCard = document.getElementById("vehicleRequestCard");
+    if (vehicleCard) vehicleCard.hidden = !isService;
+    window.renderCart?.();
   };
 
   window.addToCart = (id, name, priceCents, stock) => {
@@ -827,6 +814,15 @@
     : () => status("orderMessage", "Le panier n’a pas pu être initialisé. Recharge la page et réessaie.", true);
   window.renderCart = () => {
     renderBaseCart();
+    const cart = window.demoCart || [];
+    const count = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+    const subtotalBar = cart.reduce((sum, item) => sum + Math.round(Number(item.price || 0) * 100) * Number(item.qty || 0), 0);
+    const bar = document.getElementById("mousseCartBar");
+    const barLabel = document.getElementById("mousseCartBarLabel");
+    const barTotal = document.getElementById("mousseCartBarTotal");
+    bar?.classList.toggle("hidden", count === 0 || !currentShop);
+    if (barLabel) barLabel.textContent = count ? count + (count > 1 ? " éléments dans le panier" : " élément dans le panier") : "Panier vide";
+    if (barTotal) barTotal.textContent = euroCents(subtotalBar);
     const total = document.getElementById("cartTotal");
     const fulfillment = document.getElementById("fulfilment")?.value;
     if (!total || !currentShop || !window.demoCart.length) return;
@@ -836,6 +832,20 @@
       const minimum = Number(currentShop.delivery_min_cents || 0) / 100;
       if (minimum && subtotal < minimum) status("orderMessage", "Minimum de commande pour la livraison : " + euroCents(currentShop.delivery_min_cents) + ".", true);
     }
+  };
+
+  window.openMousseCheckout = () => {
+    if (!window.demoCart?.length) return status("orderMessage", "Ajoute au moins un produit ou une prestation avant de continuer.", true);
+    document.getElementById("catalogStage")?.classList.add("hidden");
+    document.getElementById("checkoutStage")?.classList.remove("hidden");
+    window.renderCart?.();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  window.backToMousseCatalog = () => {
+    document.getElementById("checkoutStage")?.classList.add("hidden");
+    document.getElementById("catalogStage")?.classList.remove("hidden");
+    window.renderClientCatalog?.();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   window.placeDemoOrder = async () => {
@@ -877,7 +887,15 @@
       fulfillment,
       delivery_address: document.getElementById("deliveryAddress").value.trim(),
       delivery_note: document.getElementById("deliveryNote").value.trim(),
-      customer_note: document.getElementById("customerNote").value.trim(),
+      customer_note: [document.getElementById("customerNote").value.trim(),
+        (currentShop.business_category === "mechanic" || currentShop.shop_template === "services")
+          ? ["Véhicule : " + (document.getElementById("vehicleType")?.value || ""),
+             document.getElementById("vehicleMake")?.value.trim() ? "Marque : " + document.getElementById("vehicleMake").value.trim() : "",
+             document.getElementById("vehicleModel")?.value.trim() ? "Modèle : " + document.getElementById("vehicleModel").value.trim() : "",
+             document.getElementById("vehiclePlate")?.value.trim() ? "Immatriculation : " + document.getElementById("vehiclePlate").value.trim().toUpperCase() : "",
+             document.getElementById("vehicleProblem")?.value.trim() || ""].filter(Boolean).join(" · ") : ""
+      ].filter(Boolean).join("\n"),
+      payment_method: document.getElementById("paymentMethod")?.value || "on_site",
       website: document.getElementById("orderWebsite")?.value || "",
       items: window.demoCart.map(item => ({ product_id: item.id, quantity: item.qty }))
     };
@@ -897,6 +915,9 @@
         status("orderMessage", message, notificationIssue);
         window.demoCart.length = 0;
         window.renderCart();
+        document.getElementById("checkoutStage")?.classList.add("hidden");
+        document.getElementById("catalogStage")?.classList.remove("hidden");
+        window.MOUSSE_SELECTED_MENU_CATEGORY = "";
       } else {
         status("orderMessage", "La commande n’a pas pu être confirmée. Réessaie après vérification du service.", true);
       }
