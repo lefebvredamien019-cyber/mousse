@@ -675,7 +675,7 @@ img{border-radius:14px}
       <div class="field" id="customerEmailField"><label for="customerEmail">Adresse e-mail</label><input id="customerEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr"></div>
       <div class="field hidden" id="customerPhoneField"><label for="customerPhone">Téléphone au format international</label><input id="customerPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+33 6 12 34 56 78"></div>
       <div class="field"><label for="fulfilment">Mode de réception</label><select id="fulfilment" onchange="toggleDelivery()"><option value="pickup">Retrait / rendez-vous sur place</option><option value="delivery">Livraison à domicile</option></select></div>
-      <div id="deliveryFields" class="hidden"><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" autocomplete="street-address" placeholder="N°, rue, code postal, ville"></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
+      <div id="deliveryFields" class="hidden"><div class="field hidden" id="savedDeliveryAddressField"><label for="savedDeliveryAddress">Choisir une adresse déjà vérifiée</label><select id="savedDeliveryAddress"><option value="">Saisir une autre adresse</option></select><small>Les adresses enregistrées dans ton compte ont été recherchées et confirmées sur carte.</small></div><div class="field"><label for="deliveryAddress">Adresse de livraison</label><input id="deliveryAddress" autocomplete="street-address" placeholder="N°, rue, code postal, ville" required></div><div class="field"><label for="deliveryNote">Instructions de livraison</label><textarea id="deliveryNote" placeholder="Digicode, étage…"></textarea></div></div>
       <div class="field"><label for="customerNote">Informations complémentaires (facultatif)</label><textarea id="customerNote" placeholder="Précisions utiles pour le professionnel…"></textarea></div>
       <div class="field"><label for="paymentMethod">Mode de paiement</label><select id="paymentMethod"><option value="on_site">Paiement sur place / au retrait</option><option value="online" disabled>Paiement en ligne — bientôt disponible</option></select><small class="muted">Le paiement en ligne n’est pas activé. Aucun paiement ne sera prélevé par MOUSSE.</small></div>
       <input id="orderWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn" style="width:100%" type="button" onclick="placeDemoOrder()">Envoyer ma commande / demande</button><div id="orderMessage" class="success hidden" role="status" aria-live="polite"></div>
@@ -936,7 +936,7 @@ document.addEventListener('DOMContentLoaded',()=>{renderCart();renderOrders();re
  });
 })();
 </script>
-<script src="assets/mousse-live.js?v=20261027-0002"></script>
+<script src="assets/mousse-live.js?v=20261027-0003"></script>
 <script>
 const REVIEW_DEMO_SEEDS=[
  {id:'seed-1',rating:5,author:'Exemple — Camille',comment:'Accueil agréable et informations faciles à trouver.',status:'approved',demo:true,created:'Exemple visuel'},
@@ -1046,6 +1046,28 @@ async function removeClientAddress(id){
 document.getElementById('clientAddresses')?.addEventListener('click',event=>{const button=event.target.closest('[data-delete-client-address]');if(button)removeClientAddress(button.dataset.deleteClientAddress)});
 ['clientAddressNumber','clientAddressStreet','clientAddressCityPostcode'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{clearTimeout(clientAddressSearchTimer);clientAddressSearchTimer=setTimeout(searchClientAddress,450)}));
 document.getElementById('clientAddressSuggestions')?.addEventListener('click',event=>{const button=event.target.closest('[data-address-result]');if(button)selectClientAddressResult(Number(button.dataset.addressResult))});
+window.loadClientDeliveryAddresses=async function(){
+  const wrap=document.getElementById('savedDeliveryAddressField'),select=document.getElementById('savedDeliveryAddress');
+  if(!wrap||!select)return;
+  try{
+    const user=await clientUser(),client=clientSupabase();
+    const {data,error}=await client.from('customer_addresses').select('id,label,full_address').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(error)throw error;
+    select.innerHTML='<option value="">Saisir une autre adresse</option>'+(data||[]).map(a=>'<option value="'+clientText(a.id)+'">'+clientText(a.label)+' — '+clientText(a.full_address)+'</option>').join('');
+    wrap.classList.toggle('hidden',!(data||[]).length);
+  }catch(_){wrap.classList.add('hidden')}
+};
+document.getElementById('savedDeliveryAddress')?.addEventListener('change',async event=>{
+  const value=event.target.value,field=document.getElementById('deliveryAddress');
+  if(!value){if(field)field.value='';return}
+  try{
+    const user=await clientUser(),client=clientSupabase();
+    const {data,error}=await client.from('customer_addresses').select('full_address').eq('id',value).eq('user_id',user.id).single();
+    if(error||!data)throw error||new Error('Adresse introuvable');
+    if(field)field.value=data.full_address;
+  }catch(_){clientStatus('orderMessage','Impossible de charger cette adresse. Choisis-la à nouveau.',true)}
+});
+
 document.addEventListener('DOMContentLoaded',()=>{renderCustomerReviews();renderClientSpace()});
 
 </script>
