@@ -280,36 +280,132 @@
     }else window.MOUSSE_IS_MERCHANT_AUTHENTICATED=false;
   }
 
+  let featuredShopsCache = [];
+  function rotateFeatured(list, day) {
+    if (!list.length) return [];
+    const start = day % list.length;
+    return list.slice(start).concat(list.slice(0, start));
+  }
   function renderFeaturedShops(shops) {
     const section = document.getElementById("liveFeaturedSection");
     const grid = document.getElementById("liveFeaturedShops");
     if (!section || !grid) return;
-    const published = [...shops].sort((a, b) => String(a.name).localeCompare(String(b.name), "fr"));
-    if (!published.length) {
+    featuredShopsCache = [...shops].sort((a, b) => String(a.name).localeCompare(String(b.name), "fr"));
+    const input = document.getElementById("featuredLocation");
+    try {
+      const savedLocation = localStorage.getItem("mousse-featured-location") || "";
+      if (input && !input.value && savedLocation) input.value = savedLocation;
+    } catch (_) {}
+    const location = String(input?.value || "").trim().toLocaleLowerCase("fr-FR");
+    if (!featuredShopsCache.length) {
       section.hidden = true;
       return;
     }
-    // Rotate the starting point daily so visibility is not permanently tied to alphabetical order.
+    // Location preference is user-entered (city/postcode); it never reads or assumes the visitor's precise location.
+    const matchesLocation = shop => {
+      const address = String(shop.address || "").toLocaleLowerCase("fr-FR");
+      return !!location && address.includes(location);
+    };
+    const localShops = location ? featuredShopsCache.filter(matchesLocation) : [];
+    const otherShops = location ? featuredShopsCache.filter(shop => !matchesLocation(shop)) : featuredShopsCache;
+    // Daily rotation shares exposure fairly inside both groups; non-matching shops remain available in discovery.
     const day = Math.floor(Date.now() / 86400000);
-    const start = day % published.length;
-    const rotated = published.slice(start).concat(published.slice(0, start));
-    const picks = rotated.slice(0, Math.min(3, rotated.length));
+    const rotatedLocal = rotateFeatured(localShops, day);
+    const rotatedOthers = rotateFeatured(otherShops, day);
+    const ordered = location && localShops.length
+      ? rotatedLocal.concat(rotatedOthers)
+      : rotateFeatured(featuredShopsCache, day);
+    const picks = ordered.slice(0, Math.min(3, ordered.length));
+    const status = document.getElementById("featuredLocationStatus");
+    if (status) {
+      status.textContent = location
+        ? (localShops.length
+          ? localShops.length + " vitrine(s) publiée(s) correspondent exactement à « " + String(input.value).trim() + " ». Les autres commerces restent accessibles dans la recherche."
+          : "Aucune adresse de vitrine ne correspond exactement à « " + String(input.value).trim() + " ». Toutes les vitrines restent accessibles dans la recherche.")
+        : "Toutes les vitrines publiées restent accessibles dans la recherche. Sélection gratuite et rotation équitable.";
+    }
     section.hidden = false;
     grid.innerHTML = picks.map(shop =>
-      '<article class="card"><div class="cardhead"><span class="symbol">🏪</span><span class="pill">Vitrine publiée</span></div>' +
+      '<article class="card"><div class="cardhead"><span class="symbol">🏪</span><span class="pill">' +
+      (location && matchesLocation(shop) ? "Secteur choisi" : "Vitrine publiée") + '</span></div>' +
       '<h3>' + escape(shop.name) + '</h3><p>' + escape(shop.address || "Adresse non renseignée") + '</p>' +
-      '<p>' + escape((shop.description || "Découvrez les informations et les produits de ce commerce.").slice(0, 150)) + '</p>' +
+      '<p>' + escape((shop.description || "Informations du commerce à compléter.").slice(0, 150)) + '</p>' +
       '<button class="btn pale" type="button" data-open-shop="' + escape(shop.id) + '">Découvrir la boutique ↗</button></article>'
     ).join("");
     grid.querySelectorAll("[data-open-shop]").forEach(button => button.addEventListener("click", () => {
       const picker = document.getElementById("liveShopSelect");
       if (picker) picker.value = button.dataset.openShop;
-      currentShop = published.find(shop => shop.id === button.dataset.openShop) || null;
+      currentShop = featuredShopsCache.find(shop => shop.id === button.dataset.openShop) || null;
       window.renderClientCatalog();
       window.toggleDelivery();
       window.showView?.("collect");
     }));
   }
+  window.setFeaturedLocation = function () {
+    const input = document.getElementById("featuredLocation");
+    const value = String(input?.value || "").trim().slice(0, 100);
+    if (!value) {
+      const status = document.getElementById("featuredLocationStatus");
+      if (status) status.textContent = "Saisis une ville ou un code postal pour prioriser les vitrines de ce secteur.";
+      return;
+    }
+    try { localStorage.setItem("mousse-featured-location", value); } catch (_) {}
+    renderFeaturedShops(featuredShopsCache);
+  };
+  window.clearFeaturedLocation = function () {
+    const input = document.getElementById("featuredLocation");
+    if (input) input.value = "";
+    try { localStorage.removeItem("mousse-featured-location"); } catch (_) {}
+    renderFeaturedShops(featuredShopsCache);
+  };
+
+  window.renderNearbyShops = async () => {
+    const grid = document.getElementById("nearbyShopGrid");
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!grid) return;
+    grid.innerHTML = '<article class="card"><p>Chargement des commerces publiés…</p></article>';
+    const { data, error } = await publicClient.from("shops")
+      .select("id,name,address,description,delivery_enabled,order_paused")
+      .eq("is_published", true).order("name");
+    if (error) {
+      grid.innerHTML = '<article class="card"><p>Les vitrines sont momentanément indisponibles. Réessaie dans quelques instants.</p></article>';
+      if (statusEl) statusEl.textContent = "Impossible de charger les vitrines publiées.";
+      return;
+    }
+    window.MOUSSE_NEARBY_SHOPS = data || [];
+    window.filterNearbyShops?.();
+  };
+
+  window.filterNearbyShops = () => {
+    const grid = document.getElementById("nearbyShopGrid");
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!grid) return;
+    const shops = window.MOUSSE_NEARBY_SHOPS || [];
+    const query = (document.getElementById("nearbyLocation")?.value || "").trim().toLocaleLowerCase("fr");
+    const filtered = query ? shops.filter(shop => String(shop.address || "").toLocaleLowerCase("fr").includes(query)) : shops;
+    if (statusEl) statusEl.textContent = query
+      ? filtered.length + " vitrine(s) publiée(s) trouvée(s) pour « " + query + " »."
+      : filtered.length + " vitrine(s) MOUSSE publiée(s).";
+    if (!filtered.length) {
+      grid.innerHTML = '<article class="card"><div class="symbol">⌖</div><h3>Aucune vitrine trouvée</h3><p>Essaie une autre ville ou un autre code postal, ou reviens plus tard.</p></article>';
+      return;
+    }
+    grid.innerHTML = filtered.map(shop =>
+      '<article class="card"><div class="cardhead"><span class="symbol">🏪</span><span class="pill">Vitrine MOUSSE</span></div>' +
+      '<h3>' + escape(shop.name) + '</h3><p>' + escape(shop.address || "Adresse non renseignée") + '</p>' +
+      '<p>' + escape((shop.description || "Informations du commerce à compléter.").slice(0, 180)) + '</p>' +
+      (shop.order_paused ? '<p><span class="pill amber">Commandes suspendues</span></p>' : shop.delivery_enabled ? '<p><span class="pill">Livraison proposée</span></p>' : '') +
+      '<button class="btn pale" type="button" data-nearby-shop="' + escape(shop.id) + '">Voir la vitrine et commander ↗</button></article>'
+    ).join("");
+    grid.querySelectorAll("[data-nearby-shop]").forEach(button => button.addEventListener("click", () => {
+      const picker = document.getElementById("liveShopSelect");
+      if (picker) {
+        picker.value = button.dataset.nearbyShop;
+        picker.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      window.showView?.("collect");
+    }));
+  };
 
   async function loadPublicShops(preferredId = null) {
     const picker = document.getElementById("liveShopSelect");
