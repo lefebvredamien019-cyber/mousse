@@ -746,7 +746,7 @@ img{border-radius:14px}
       <div class="field"><label for="merchantEmail">E-mail de contact</label><input id="merchantEmail" type="email" placeholder="contact@ma-boutique.fr"></div><p class="muted">Pour le test Dklm, l’adresse du compte est préremplie après la connexion et recevra les notifications de commande.</p>
       <div class="field"><label for="merchantAddress">Adresse du commerce</label><input id="merchantAddress" placeholder="Rue, code postal, ville"></div>
       <div class="field"><label for="merchantIntro">Présentation</label><textarea id="merchantIntro" placeholder="Présentez votre commerce aux clients"></textarea></div>
-      <div class="field"><label for="merchantLogo">Logo de la boutique</label><input id="merchantLogo" type="file" accept="image/*" onchange="previewMerchantLogo(event)"></div><p class="muted">Le logo sert actuellement à l’aperçu sur cet appareil ; son envoi en ligne reste à configurer.</p><img id="merchantLogoPreview" class="hidden" alt="Aperçu du logo commerçant" style="max-width:130px;max-height:100px;object-fit:contain;border-radius:12px">
+      <div class="field"><label for="merchantLogo">Logo de la boutique</label><input id="merchantLogo" type="file" accept="image/*" onchange="previewMerchantLogo(event)"></div><p class="muted">Le logo est envoyé dans le stockage partagé MOUSSE et réutilisé sur les autres appareils.</p><img id="merchantLogoPreview" class="hidden" alt="Aperçu du logo commerçant" style="max-width:130px;max-height:100px;object-fit:contain;border-radius:12px">
       <div class="field"><label for="merchantColor">Couleur de la boutique</label><input id="merchantColor" type="color" value="#173f32" oninput="renderMerchantPreview()"></div>
       <div class="field"><label><input id="merchantDeliveryEnabled" type="checkbox" style="width:auto"> Je propose la livraison à domicile</label></div>
       <div class="formgrid"><div class="field"><label for="merchantDeliveryFee">Frais de livraison (€)</label><input id="merchantDeliveryFee" type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="merchantDeliveryMin">Minimum de commande livraison (€)</label><input id="merchantDeliveryMin" type="number" min="0" step="0.01" value="0"></div></div>
@@ -761,7 +761,7 @@ img{border-radius:14px}
       <button class="btn" onclick="saveMerchantDemo()">Enregistrer la boutique</button><div id="merchantSaved" class="success hidden"></div>
     </article>
     <article class="card"><h3>Étape 2 · Je vérifie le résultat</h3><div class="previewshop"><div class="previewhead" id="merchantPreviewHead"><img id="merchantPreviewLogo" class="hidden" alt="Logo" style="max-width:64px;max-height:55px;object-fit:contain;margin-bottom:8px"><h3 id="merchantPreviewName">Ma boutique</h3><p id="merchantPreviewIntro">Bienvenue dans notre boutique.</p></div><div class="previewbody"><p id="merchantPreviewAddress">Adresse du commerce à renseigner</p><span class="pill" id="merchantPreviewDelivery">Click & Collect</span></div></div>
-      <div class="notice">Ce profil et le catalogue de démonstration sont stockés dans le navigateur de cet ordinateur, pas dans un compte en ligne.</div>
+      <div class="notice">La fiche et le catalogue sont enregistrés dans MOUSSE. Après connexion au même compte commerçant, retrouve-les sur ton PC, ta tablette ou ton téléphone.</div>
       <button class="btn light" onclick="showView('collect')">Voir le parcours client →</button>
     </article>
   </div>
@@ -970,7 +970,7 @@ document.addEventListener('DOMContentLoaded',()=>{renderCart();renderOrders();re
  });
 })();
 </script>
-<script src="assets/mousse-live.js?v=20261027-0003"></script>
+<script src="assets/mousse-live.js?v=20261027-0004"></script>
 <script>
 const REVIEW_DEMO_SEEDS=[
  {id:'seed-1',rating:5,author:'Exemple — Camille',comment:'Accueil agréable et informations faciles à trouver.',status:'approved',demo:true,created:'Exemple visuel'},

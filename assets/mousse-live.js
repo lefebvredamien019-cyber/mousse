@@ -75,6 +75,11 @@
     if (paused) paused.checked = !!shop.order_paused;
     const published = document.getElementById("merchantPublished");
     if (published) { published.checked = !!shop.is_published; published.disabled = true; }
+    const logoPreview = document.getElementById("merchantLogoPreview");
+    if (logoPreview) {
+      if (shop.logo_url) { logoPreview.src = shop.logo_url; logoPreview.classList.remove("hidden"); }
+      else { logoPreview.removeAttribute("src"); logoPreview.classList.add("hidden"); }
+    }
     window.renderMerchantPreview?.();
   };
 
@@ -594,7 +599,24 @@
     if (![fee, minimum].every(value => Number.isInteger(value) && value >= 0 && value <= 10000000)) {
       return status("merchantSaved", "Vérifie les montants de livraison.", true);
     }
+    let logoUrl = currentMerchant.logo_url || null;
+    const logoFile = document.getElementById("merchantLogo")?.files?.[0] || null;
+    if (logoFile) {
+      const allowedLogoTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (!allowedLogoTypes.includes(logoFile.type) || logoFile.size > 5 * 1024 * 1024) {
+        return status("merchantSaved", "Choisis un logo JPG, PNG, WEBP ou GIF de 5 Mo maximum.", true);
+      }
+      const extension = ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "image/gif":"gif" })[logoFile.type];
+      const logoPath = currentMerchant.id + "/logo-" + (window.crypto?.randomUUID?.() || Date.now()) + "." + extension;
+      status("merchantSaved", "Envoi du logo vers le stockage partagé…");
+      const { data: uploadedLogo, error: logoError } = await client.storage.from("product-images").upload(logoPath, logoFile, {
+        contentType: logoFile.type, upsert: false, cacheControl: "3600"
+      });
+      if (logoError || !uploadedLogo) return status("merchantSaved", "Logo non envoyé. Vérifie les droits du stockage puis réessaie.", true);
+      logoUrl = client.storage.from("product-images").getPublicUrl(uploadedLogo.path).data.publicUrl;
+    }
     const values = {
+      logo_url: logoUrl,
       name: document.getElementById("merchantName").value.trim(),
       email: document.getElementById("merchantEmail").value.trim(),
       address: document.getElementById("merchantAddress").value.trim(),
@@ -634,6 +656,13 @@
       .eq("id", currentMerchant.id).select("*").single();
     if (error) return status("merchantSaved", "Enregistrement impossible. Vérifie les règles de sécurité du commerce.", true);
     currentMerchant = data;
+    const logoInput = document.getElementById("merchantLogo");
+    if (logoInput) logoInput.value = "";
+    const logoPreview = document.getElementById("merchantLogoPreview");
+    if (logoPreview) {
+      if (data.logo_url) { logoPreview.src = data.logo_url; logoPreview.classList.remove("hidden"); }
+      else { logoPreview.removeAttribute("src"); logoPreview.classList.add("hidden"); }
+    }
     window.renderMerchantPreview?.();
     status("merchantSaved", values.is_published
       ? "Commerce enregistré et publié dans le catalogue client."
