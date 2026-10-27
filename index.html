@@ -839,14 +839,16 @@ img{border-radius:14px}
       <div class="field"><label for="clientAddressStreet">Nom de la rue</label><input id="clientAddressStreet" maxlength="160" autocomplete="address-line2" placeholder="Ex. rue Eugène Duthoit" required></div>
       <div class="field"><label for="clientAddressCityPostcode">Ville ou code postal</label><input id="clientAddressCityPostcode" maxlength="100" autocomplete="postal-code" placeholder="Ex. 59200 ou Tourcoing" required></div>
       <div id="clientAddressSuggestions" class="client-address-suggestions" aria-live="polite"></div>
+      <p class="muted">Tu peux choisir une suggestion pour confirmer l’emplacement, ou enregistrer directement l’adresse saisie si la recherche ne trouve pas ta rue.</p>
+      <div class="field"><label for="clientAddressLabel">Nom de l’adresse</label><input id="clientAddressLabel" maxlength="40" placeholder="Maison, travail…" required></div>
+      <button class="btn" type="button" onclick="saveTypedClientAddress()">Enregistrer mon adresse</button>
       <div id="clientAddressMapWrap" class="hidden">
         <p id="clientAddressSelectedLabel" class="success" role="status"></p>
         <iframe id="clientAddressMap" title="Emplacement de l’adresse choisie" loading="lazy" referrerpolicy="no-referrer" class="client-address-map"></iframe>
         <button class="btn light" type="button" id="confirmClientAddress" onclick="confirmClientAddressOnMap()">Confirmer cette adresse sur la carte</button>
       </div>
       <div id="clientAddressSaveFields" class="hidden">
-        <div class="field"><label for="clientAddressLabel">Nom de l’adresse</label><input id="clientAddressLabel" maxlength="40" placeholder="Maison, travail…" required></div>
-        <button class="btn" type="button" onclick="addClientAddress()">Enregistrer cette adresse</button>
+        <button class="btn light" type="button" onclick="addClientAddress()">Enregistrer avec cet emplacement confirmé</button>
       </div>
       <div id="clientAddresses" class="client-list" aria-live="polite"></div>
       <p id="clientAddressStatus" class="success hidden" role="status"></p>
@@ -2115,16 +2117,44 @@ function selectClientAddressResult(index){
   document.getElementById('clientAddressMapWrap').classList.remove('hidden');document.getElementById('clientAddressSaveFields').classList.add('hidden');
 }
 function confirmClientAddressOnMap(){if(!selectedClientAddress)return;confirmedClientAddress=true;document.getElementById('clientAddressSaveFields').classList.remove('hidden');clientStatus('clientAddressStatus','Emplacement confirmé. Donne un nom à cette adresse puis enregistre-la.')}
-async function addClientAddress(){
+function buildTypedClientAddress(){
+  const number=document.getElementById('clientAddressNumber').value.trim();
+  const street=document.getElementById('clientAddressStreet').value.trim();
+  const place=document.getElementById('clientAddressCityPostcode').value.trim();
   const label=document.getElementById('clientAddressLabel').value.trim();
-  if(!selectedClientAddress||!confirmedClientAddress){clientStatus('clientAddressStatus','Choisis une adresse puis confirme son emplacement sur la carte.',true);return}
-  if(label.length<2||label.length>40){clientStatus('clientAddressStatus','Le nom de l’adresse doit contenir entre 2 et 40 caractères.',true);return}
+  if(!number||street.length<2||place.length<2)throw new Error('Renseigne le numéro, la rue et la ville ou le code postal.');
+  if(label.length<2||label.length>40)throw new Error('Donne un nom à cette adresse (2 à 40 caractères).');
+  if(selectedClientAddress&&confirmedClientAddress)return {...selectedClientAddress,label,is_default:false};
+  const postcode=(place.match(/\b\d{5}\b/)||[])[0]||'';
+  const city=place.replace(postcode,'').trim().replace(/^[-,]+|[-,]+$/g,'')||place;
+  const full_address=[number,street,postcode,city].filter(Boolean).join(' ');
+  return {label,house_number:number,street,postal_code:postcode,city,full_address,latitude:null,longitude:null,is_default:false};
+}
+async function persistClientAddress(address){
+  const user=await clientUser(),client=clientSupabase();
+  const {error}=await client.from('customer_addresses').insert({user_id:user.id,...address});
+  if(error)throw error;
+  document.getElementById('clientAddressLabel').value='';
+  document.getElementById('clientAddressNumber').value='';
+  document.getElementById('clientAddressStreet').value='';
+  document.getElementById('clientAddressCityPostcode').value='';
+  document.getElementById('clientAddressSuggestions').innerHTML='';
+  document.getElementById('clientAddressMapWrap').classList.add('hidden');
+  document.getElementById('clientAddressSaveFields').classList.add('hidden');
+  selectedClientAddress=null;confirmedClientAddress=false;
+  clientStatus('clientAddressStatus','Adresse enregistrée sur ton compte et synchronisée. Elle sera disponible sur tes autres appareils après connexion.');
+  await renderClientSpace();
+}
+async function saveTypedClientAddress(){
+  try{const address=buildTypedClientAddress();await persistClientAddress(address)}
+  catch(error){clientStatus('clientAddressStatus',error.message||'L’adresse n’a pas pu être enregistrée.',true)}
+}
+async function addClientAddress(){
   try{
-    const user=await clientUser(),client=clientSupabase();
-    const {error}=await client.from('customer_addresses').insert({user_id:user.id,...selectedClientAddress,label,is_default:false});
-    if(error)throw error;
-    document.getElementById('clientAddressLabel').value='';document.getElementById('clientAddressNumber').value='';document.getElementById('clientAddressStreet').value='';document.getElementById('clientAddressCityPostcode').value='';document.getElementById('clientAddressSuggestions').innerHTML='';document.getElementById('clientAddressMapWrap').classList.add('hidden');document.getElementById('clientAddressSaveFields').classList.add('hidden');selectedClientAddress=null;confirmedClientAddress=false;
-    clientStatus('clientAddressStatus','Adresse enregistrée sur ton compte et synchronisée avec Supabase.');await renderClientSpace();
+    if(!selectedClientAddress||!confirmedClientAddress)throw new Error('Choisis une suggestion et confirme son emplacement, ou utilise « Enregistrer mon adresse ».');
+    const label=document.getElementById('clientAddressLabel').value.trim();
+    if(label.length<2||label.length>40)throw new Error('Donne un nom à cette adresse (2 à 40 caractères).');
+    await persistClientAddress({...selectedClientAddress,label,is_default:false});
   }catch(error){clientStatus('clientAddressStatus',error.message||'L’adresse n’a pas pu être enregistrée.',true)}
 }
 async function removeClientAddress(id){
