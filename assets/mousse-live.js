@@ -1197,3 +1197,22 @@
     await loadPublicShops();
   });
 })();
+
+  window.issuePickupCode = async () => {
+    const orderId = document.getElementById("pickupOrderId")?.value.trim();
+    const statusEl = document.getElementById("pickupCodeStatus");
+    if (!orderId) { if(statusEl) statusEl.textContent = "Saisis l’identifiant de la commande."; return; }
+    if (!window.MOUSSE_IS_MERCHANT_AUTHENTICATED) { if(statusEl) statusEl.textContent = "Connecte-toi à l’espace commerçant avant d’émettre un code."; window.openMerchantLogin?.(); return; }
+    const { data, error } = await publicClient.functions.invoke("pickup-code", { body: { action: "generate", order_id: orderId } });
+    if (statusEl) statusEl.textContent = error ? (error.message || "Impossible d’envoyer le code.") : (data?.message || data?.error || "Le code n’a pas pu être envoyé.");
+  };
+  window.verifyPickupCode = async () => {
+    const orderId = document.getElementById("pickupOrderId")?.value.trim();
+    const code = document.getElementById("pickupCodeInput")?.value.trim();
+    const statusEl = document.getElementById("pickupCodeStatus");
+    if (!orderId || !code) { if(statusEl) statusEl.textContent = "Saisis l’identifiant de la commande et le code reçu par le client."; return; }
+    if (!window.MOUSSE_IS_MERCHANT_AUTHENTICATED) { if(statusEl) statusEl.textContent = "Connecte-toi à l’espace commerçant pour valider le retrait."; window.openMerchantLogin?.(); return; }
+    const { data, error } = await publicClient.functions.invoke("pickup-code", { body: { action: "verify", order_id: orderId, code } });
+    if (statusEl) statusEl.textContent = error ? (error.message || "La vérification a échoué.") : (data?.message || data?.error || "Le retrait n’a pas été validé.");
+    if (data?.collected) document.getElementById("pickupCodeInput").value = "";
+  };
