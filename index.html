@@ -406,10 +406,10 @@ img{border-radius:14px}
 @media(max-width:700px){
  .card,article.card,.panel,.tile,.product-card,.shop-card,.commerce-card{border-radius:16px!important}
 }
-</style>
+ .map-demo{min-height:360px;background:#e8eddf;position:relative}.map-demo #discoverMap{height:360px;width:100%;min-height:360px;z-index:1}.map-credit{position:absolute;bottom:3px;right:7px;z-index:500;background:#fffdf0d9;padding:2px 6px;border-radius:5px;font-size:10px;color:#173f32;margin:0}.map-demo .map-label{z-index:500;pointer-events:none}@media(max-width:760px){.map-demo,.map-demo #discoverMap{min-height:300px;height:300px}} </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2';"></script>
 <script src="assets/mousse-config.js"></script>
-</head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script></head>
 <body>
 <a class="skip-link" href="#main-content">Aller au contenu</a>
 <section id="roleGate" class="role-gate" aria-labelledby="roleGateTitle">
@@ -581,15 +581,15 @@ img{border-radius:14px}
 <section class="view active" id="view-accueil" aria-labelledby="home-title">
   
   <section class="discovery" aria-label="Trouver un commerce">
-    <div class="sectiontitle"><div><div class="eyebrow">À deux pas de vous</div><h2><span id="home-title">Cherche ton commerce</span></h2><p>Recherche des établissements partout en France grâce aux données publiques officielles. Les commerçants pourront ensuite demander à gérer leur fiche.</p></div></div>
-    <div class="search-panel"><label class="searchbox"><span>⌕</span><input id="merchantSearch" type="search" placeholder="Nom du commerce, ville, adresse ou SIRET…" oninput="filterDiscoverShops()"></label><button class="btn" onclick="filterDiscoverShops()">Rechercher ↗</button></div>
+    <div class="sectiontitle"><div><div class="eyebrow">À deux pas de vous</div><h2><span id="home-title">Cherche ton commerce</span></h2><p>Cherche une activité dans une ville ou une adresse. Les résultats cartographiques proviennent d’OpenStreetMap ; les vitrines MOUSSE sont affichées séparément.</p></div></div>
+    <div class="search-panel"><label class="searchbox"><span>⌕</span><input id="merchantSearch" type="search" placeholder="Ex. : CBD Wingles, boulangerie Lens…" oninput="filterDiscoverShops()"></label><button class="btn" onclick="filterDiscoverShops()">Rechercher ↗</button></div>
     <section class="live-featured-section" aria-labelledby="live-featured-title" id="liveFeaturedSection" hidden>
       <div class="sectiontitle"><div><div class="eyebrow">Découverte gratuite</div><h2 id="live-featured-title">Les vitrines MOUSSE à découvrir</h2><p>Une sélection en rotation, sans mise en avant payante. Tu peux donner la priorité à ta ville ou à ton code postal.</p></div><span class="pill">Rotation équitable</span></div>
       <div class="search-panel" style="margin:0 0 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="searchbox" style="flex:1;min-width:220px"><span>📍</span><input id="featuredLocation" type="search" maxlength="100" autocomplete="postal-code" placeholder="Ta ville ou ton code postal" aria-label="Ville ou code postal à privilégier"></label><button class="btn" type="button" onclick="window.setFeaturedLocation()">Prioriser ce secteur</button><button class="btn light" type="button" onclick="window.clearFeaturedLocation()">Tout le secteur</button></div>
       <p id="featuredLocationStatus" class="muted" aria-live="polite" style="font-size:13px;margin:0 0 12px">Toutes les vitrines publiées restent accessibles dans la recherche.</p>
       <div class="grid" id="liveFeaturedShops"></div>
     </section>
-    <div class="discover-layout"><div class="map-demo" aria-label="Carte des commerces"><div class="map-label">🇫🇷 Recherche nationale · données publiques officielles</div><div style="padding:24px;text-align:center"><div style="font-size:48px">📍</div><strong>Les commerces recherchés apparaîtront ici</strong><p>La carte interactive sera activée lors de la prochaine étape.</p></div></div><div class="shop-results" id="discoverResults"></div></div>
+    <div class="discover-layout"><div class="map-demo" aria-label="Carte interactive des commerces"><div class="map-label">🗺️ Carte interactive · OpenStreetMap</div><div id="discoverMap" role="application" aria-label="Carte interactive des commerces recherchés"></div><p class="map-credit">Carte © OpenStreetMap contributors</p></div><div class="shop-results" id="discoverResults" aria-live="polite"></div></div>
     <div class="shop-detail" id="discoverDetail">
       <div class="shop-cover"><span class="pill" id="detailActivity">Commerce local</span><h2 id="detailName">La boutique</h2><p id="detailIntro">Une boutique à découvrir près de chez vous.</p><div class="actions"><button class="btn pale" onclick="showView('collect')">Découvrir les produits ↗</button><button class="btn light" style="color:white;border-color:#b7d2bf" onclick="showView('commerce')">Espace commerçant</button></div></div>
       <div class="shop-profile-grid"><article class="crowd-card"><div class="eyebrow">En ce moment</div><h3 style="margin-bottom:0">Affluence du magasin</h3><div class="crowd-ring" id="crowdRing"><span id="crowdIcon">◉</span></div><div style="text-align:center"><strong id="detailCrowd">Affluence modérée</strong><p class="muted" id="detailWait">Environ 5 à 10 minutes d’attente</p><span class="pill amber">Déclarée par le commerçant</span></div><div class="soft-note">L’affluence affichée est une information de démonstration, pas un comptage automatique.</div></article><article class="crowd-card"><div class="eyebrow">À savoir avant de venir</div><h3>Infos pratiques & messages</h3><div class="message-list" id="detailMessages"></div></article></div>
