@@ -335,6 +335,11 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
 .merchant-tagline{font-weight:700;color:var(--forest);}
 #view-marketing .loyalty-preview{margin-top:18px;}
 #view-marketing .preference-row{margin:8px 0 14px;}
+
+/* Retour de commande : garder le panier intact et le signaler clairement */
+.checkout-return{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px;}
+.checkout-cart-preserved{font-size:13px;color:var(--forest,#246b52);font-weight:650;}
+@media(max-width:560px){.checkout-return{align-items:flex-start;flex-direction:column}.checkout-return .menu-back{width:100%}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2';"></script>
 <script src="assets/mousse-config.js"></script>
@@ -588,7 +593,7 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
     <div id="clientCatalog"><p class="muted">Choisis un commerce pour voir son catalogue.</p></div>
   </div></div>
   <div id="checkoutStage" class="hidden">
-    <button type="button" class="btn light menu-back" onclick="backToMousseCatalog()">← Retour aux catégories</button>
+    <div class="checkout-return"><button type="button" class="btn light menu-back" onclick="backToMousseCatalog()">← Retourner aux produits</button><span class="checkout-cart-preserved" role="status">✓ Ton panier et tes quantités sont conservés</span></div>
     <div class="card"><span class="eyebrow">Dernière étape</span><h2>Récapitulatif de ta demande</h2><p class="muted">Vérifie tes choix avant de transmettre ta commande ou ta demande au professionnel.</p>
       <div class="sectiontitle"><div><h3>Mon panier</h3><p id="cartCount">Aucun article</p></div><strong id="cartTotal">0,00 €</strong></div><div id="cartLines" class="muted">Ton panier est vide.</div>
     </div>
