@@ -399,11 +399,10 @@
     ).join("");
     grid.querySelectorAll("[data-nearby-shop]").forEach(button => button.addEventListener("click", () => {
       const picker = document.getElementById("liveShopSelect");
-      if (picker) picker.value = button.dataset.nearbyShop;
-      const shop = shops.find(item => item.id === button.dataset.nearbyShop);
-      if (shop) currentShop = shop;
-      window.renderClientCatalog?.();
-      window.toggleDelivery?.();
+      if (picker) {
+        picker.value = button.dataset.nearbyShop;
+        picker.dispatchEvent(new Event("change", { bubbles: true }));
+      }
       window.showView?.("collect");
     }));
   };
