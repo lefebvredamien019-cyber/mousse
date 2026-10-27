@@ -875,10 +875,12 @@
     window.renderCart?.();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  // Retour au catalogue sans modifier demoCart : les articles et quantités restent intacts.
   window.backToMousseCatalog = () => {
     document.getElementById("checkoutStage")?.classList.add("hidden");
     document.getElementById("catalogStage")?.classList.remove("hidden");
     window.renderClientCatalog?.();
+    window.renderCart?.();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
