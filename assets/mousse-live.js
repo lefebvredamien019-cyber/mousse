@@ -822,6 +822,7 @@
     if (deliveryOption) deliveryOption.disabled = !currentShop?.delivery_enabled;
     if (deliveryOption?.disabled && select.value === "delivery") select.value = "pickup";
     addressFields?.classList.toggle("hidden", select?.value !== "delivery");
+    if (select?.value === "delivery") window.loadClientDeliveryAddresses?.();
     window.renderCart();
     const fee = document.getElementById("deliveryFeeHint");
     if (fee) {
