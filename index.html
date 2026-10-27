@@ -698,8 +698,28 @@ img{border-radius:14px}
   <div id="mousseCartBar" class="mousse-cart-bar hidden" aria-live="polite"><div><strong id="mousseCartBarLabel">Panier vide</strong><small id="mousseCartBarTotal">0,00 €</small></div><button class="btn" type="button" onclick="openMousseCheckout()">Voir le panier · Finaliser ↗</button></div>
 </section>
 <section class="view" id="view-consignes">
-  <div class="eyebrow">Retrait sans attente</div><h1 class="headline" id="consignes-title">Consignes avec code</h1><p class="sub">L’objectif : permettre aux clients de récupérer leur commande sans encombrer le magasin, à la manière d’un retrait sécurisé par code.</p>
-  <div class="grid two"><article class="card"><div class="symbol">▤</div><h3>Le parcours envisagé</h3><p>1. Le client passe commande.</p><p>2. Le commerçant prépare le colis.</p><p>3. Un code unique est généré par un système sécurisé.</p><p>4. Le client récupère son colis dans une consigne compatible.</p></article><article class="card"><span class="pill amber">Prototype — pas opérationnel</span><h3>Ce qu’il faudra intégrer</h3><p>Un fournisseur de consignes compatibles, une génération de codes sécurisée, une gestion des ouvertures et un suivi des retraits.</p><div class="notice">Aucun code de retrait réel n’est généré par cette démonstration.</div></article></div>
+  <div class="eyebrow">Retrait sécurisé en boutique</div>
+  <h1 class="headline" id="consignes-title">Retrait avec code</h1>
+  <p class="sub">Le commerçant envoie un code à usage unique au client quand sa commande est en préparation ou prête. Au retrait, il vérifie le code et valide la remise du colis.</p>
+  <div class="grid two">
+    <article class="card">
+      <div class="symbol">▤</div><h3>Comment ça fonctionne</h3>
+      <p>1. Le client passe une commande Click & Collect avec son e-mail.</p>
+      <p>2. Le commerçant saisit l’identifiant de la commande et envoie un code sécurisé.</p>
+      <p>3. Le client reçoit un code à 6 chiffres valable 24 heures.</p>
+      <p>4. Le commerçant vérifie le code ; la commande passe à « retirée » une seule fois.</p>
+      <div class="notice">Ce retrait par code est utilisable sans matériel spécial. Il ne déverrouille pas automatiquement une consigne physique.</div>
+    </article>
+    <article class="card">
+      <span class="pill">Retrait par code</span><h3>Outils du commerçant</h3>
+      <p class="muted">Connecte-toi avec le compte du commerçant propriétaire de la commande.</p>
+      <div class="field"><label for="pickupOrderId">Identifiant de la commande</label><input id="pickupOrderId" autocomplete="off" placeholder="UUID de la commande"></div>
+      <div class="actions"><button class="btn" type="button" onclick="issuePickupCode()">Envoyer un code au client</button></div>
+      <div class="field" style="margin-top:18px"><label for="pickupCodeInput">Code à 6 chiffres présenté par le client</label><input id="pickupCodeInput" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+      <button class="btn pale" type="button" onclick="verifyPickupCode()">Vérifier et valider le retrait</button>
+      <div id="pickupCodeStatus" class="notice" role="status" aria-live="polite" style="margin-top:14px">Le code n’est envoyé qu’au client par e-mail. Il n’est jamais affiché dans cet écran.</div>
+    </article>
+  </div>
 </section>
 <section class="view" id="view-commerce">
   <div class="eyebrow">Espace commerçant · mode démo</div><h1 class="headline" id="commerce-title">Ma boutique, en quelques clics</h1><p class="sub">Renseigne les informations essentielles, choisis une couleur, ajoute ton logo : l’aperçu se met à jour simplement.</p>
