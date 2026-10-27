@@ -1860,11 +1860,76 @@ img{border-radius:14px}
 <script>
 
 const discoverShops=[];
-let selectedDiscoverId=null,activeAd=0,discoverRequest=0;
-function filterDiscoverShops(){const q=(document.getElementById('merchantSearch')?.value||'').trim();if(!q){renderDiscoverResults([]);document.getElementById('discoverResults').innerHTML='<div class="card"><strong>Recherche nationale</strong><p>Saisis le nom d’un commerce, une ville, une adresse ou un numéro SIRET pour rechercher dans la base officielle.</p></div>';return}searchNationalBusinesses(q)}
-async function searchNationalBusinesses(q){const el=document.getElementById('discoverResults');const request=++discoverRequest;el.innerHTML='<div class="card"><strong>Recherche en cours…</strong><p>Interrogation de la base publique des établissements français.</p></div>';try{const url='https://recherche-entreprises.api.gouv.fr/search?q='+encodeURIComponent(q)+'&page=1&per_page=25&etat_administratif=A';const response=await fetch(url,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error('API indisponible ('+response.status+')');const data=await response.json();if(request!==discoverRequest)return;const rows=Array.isArray(data.results)?data.results:[];const mapped=[];rows.forEach((x,i)=>{const sites=Array.isArray(x.matching_etablissements)?x.matching_etablissements:[];const all=sites.length?sites:[x.siege].filter(Boolean);all.forEach((site,j)=>{const name=site.nom_complet||site.nom_raison_sociale||x.nom_complet||x.nom_raison_sociale||'Établissement';const addr=[site.adresse,site.code_postal,site.libelle_commune||site.commune].filter(Boolean).join(' · ');mapped.push({id:String(site.siret||x.siren||('result-'+i+'-'+j)),name,activity:site.activite_principale||x.activite_principale||'Activité non précisée',town:site.libelle_commune||site.commune||'',address:addr||'Adresse non disponible',emoji:'🏪',siren:x.siren||'',siret:site.siret||'',crowd:'Non renseignée',wait:'Information non disponible',intro:'Établissement issu des données publiques françaises. Les informations de vitrine seront ajoutées par le commerçant après vérification.',messages:[['🏛️','Source publique','Fiche issue de l’API Recherche d’Entreprises.'],['🔐','Gestion de la fiche','Le propriétaire devra vérifier son droit à gérer cet établissement.']],ads:[['Fiche établissement','Le commerçant pourra ajouter ses informations après validation.']]})})});discoverShops.splice(0,discoverShops.length,...mapped);renderDiscoverResults(mapped);if(mapped.length)selectDiscoverShop(mapped[0].id);else{document.getElementById('discoverDetail').classList.remove('open');el.innerHTML='<div class="card"><strong>Aucun résultat trouvé</strong><p>Essaie un nom plus précis, une adresse ou un numéro SIRET.</p></div>'}}catch(err){if(request!==discoverRequest)return;el.innerHTML='<div class="card"><strong>Recherche indisponible pour le moment</strong><p>'+escapeDemo(err.message||'Erreur réseau')+'. Réessaie dans quelques instants.</p><p class="muted">Source : API Recherche d’Entreprises, service public français.</p></div>'}}
-function renderDiscoverResults(list=discoverShops){const el=document.getElementById('discoverResults');if(!el)return;el.innerHTML=list.length?list.map(s=>'<article class="shop-result '+(s.id===selectedDiscoverId?'selected':'')+'"><span class="shop-emoji">'+s.emoji+'</span><span class="shop-result-copy"><strong>'+escapeDemo(s.name)+'</strong><small>'+escapeDemo(s.activity)+' · '+escapeDemo(s.town)+'</small><small>⌖ '+escapeDemo(s.address)+'</small><small>SIRET : '+escapeDemo(s.siret||'non fourni')+'</small><button class="btn pale" style="margin-top:8px" onclick="selectDiscoverShop(\''+escapeDemo(s.id)+'\')">Voir la fiche</button></span></article>').join(''):'<div class="card"><strong>Recherche nationale</strong><p>Saisis un nom, une ville ou un SIRET pour afficher les résultats officiels.</p></div>'}
-function selectDiscoverShop(id){const shop=discoverShops.find(s=>s.id===id);if(!shop)return;selectedDiscoverId=id;activeAd=0;const detail=document.getElementById('discoverDetail');detail.classList.add('open');document.getElementById('detailName').textContent=shop.name;document.getElementById('detailActivity').textContent=shop.activity;document.getElementById('detailIntro').textContent=shop.intro;document.getElementById('detailCrowd').textContent='Affluence non renseignée';document.getElementById('detailWait').textContent='Le commerçant pourra publier cette information après validation.';document.getElementById('crowdRing').style.background='conic-gradient(#d9bd70 0 10%,#f3edda 10% 100%)';document.getElementById('crowdIcon').textContent='?';document.getElementById('detailMessages').innerHTML=shop.messages.map(x=>'<div class="practical-message"><strong>'+x[0]+' '+escapeDemo(x[1])+'</strong><p>'+escapeDemo(x[2])+'</p></div>').join('')+'<div class="practical-message"><strong>Vous gérez cet établissement ?</strong><p>Demandez à personnaliser sa fiche MOUSSE. Une vérification sera nécessaire avant toute modification publique.</p><button class="btn" onclick="requestClaim(\''+escapeDemo(shop.id)+'\')">Demander la gestion de cette fiche</button></div>';renderDiscoverResults(discoverShops);renderAd(shop)}
+let selectedDiscoverId=null,activeAd=0,discoverRequest=0,discoverMap=null,discoverMarkers=null;
+function initDiscoverMap(){
+  const el=document.getElementById('discoverMap');
+  if(!el||!window.L||discoverMap)return;
+  discoverMap=L.map(el,{scrollWheelZoom:false}).setView([50.493,2.958],12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'}).addTo(discoverMap);
+  discoverMarkers=L.featureGroup().addTo(discoverMap);
+  setTimeout(()=>discoverMap.invalidateSize(),150);
+}
+function filterDiscoverShops(){const q=(document.getElementById('merchantSearch')?.value||'').trim();if(!q){document.getElementById('discoverResults').innerHTML='<div class="card"><strong>Recherche un commerce</strong><p>Saisis une activité et une ville, par exemple « CBD Wingles » ou « boulangerie Lens ».</p></div>';return}searchNearbyBusinesses(q)}
+function termsAndPlace(query){
+ const words=query.trim().split(/\s+/);if(words.length===1)return {terms:'',place:query};
+ const known=/\b(cbd|boulangerie|boulanger|restaurant|pizza|coiffeur|coiffeuse|garage|mécanicien|mecanicien|pharmacie|fleuriste|bar|café|cafe|épicerie|epicerie|boucherie|tabac|pressing|opticien|supermarché|supermarche)\b/i;
+ const match=query.match(known);
+ if(match){const terms=match[0];const place=query.replace(match[0],'').trim();return {terms,place:place||query}}
+ return {terms:'',place:query};
+}
+function buildOverpassFilter(terms){
+ const t=(terms||'').toLocaleLowerCase('fr');
+ if(/cbd|chanvre/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop~"^(hemp|cannabis)$"];nwr(around:RADIUS,LAT,LON)[name~"CBD|chanvre|hemp",i];';
+ if(/boulanger/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=bakery];';
+ if(/restaurant|pizza/.test(t))return 'nwr(around:RADIUS,LAT,LON)[amenity~"^(restaurant|fast_food|cafe)$"];';
+ if(/coiffeur|coiffeuse/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=hairdresser];';
+ if(/garage|mécanicien|mecanicien/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=car_repair];nwr(around:RADIUS,LAT,LON)[craft=car_repair];';
+ if(/pharmacie/.test(t))return 'nwr(around:RADIUS,LAT,LON)[amenity=pharmacy];';
+ if(/fleuriste/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=florist];';
+ if(/boucherie/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=butcher];';
+ if(/épicerie|epicerie/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=convenience];';
+ if(/tabac/.test(t))return 'nwr(around:RADIUS,LAT,LON)[shop=tobacco];';
+ return 'nwr(around:RADIUS,LAT,LON)[shop];nwr(around:RADIUS,LAT,LON)[amenity~"^(restaurant|cafe|pharmacy|bank|post_office|fast_food)$"];';
+}
+async function searchNearbyBusinesses(query){
+ const el=document.getElementById('discoverResults');const request=++discoverRequest;
+ el.innerHTML='<div class="card"><strong>Recherche en cours…</strong><p>Recherche du lieu puis des commerces cartographiés à proximité.</p></div>';
+ try{
+  initDiscoverMap();if(!discoverMap)throw new Error('La carte ne s’est pas chargée. Vérifie la connexion puis actualise la page.');
+  const {terms,place}=termsAndPlace(query);
+  const geoResponse=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&q='+encodeURIComponent(place),{headers:{Accept:'application/json'}});
+  if(!geoResponse.ok)throw new Error('Le service de localisation est temporairement indisponible.');
+  const geos=await geoResponse.json();if(request!==discoverRequest)return;
+  if(!Array.isArray(geos)||!geos.length)throw new Error('Lieu introuvable. Essaie une ville ou un code postal, par exemple « CBD Wingles ».');
+  const lat=Number(geos[0].lat),lon=Number(geos[0].lon);if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('Coordonnées du lieu indisponibles.');
+  discoverMap.setView([lat,lon],13);discoverMarkers.clearLayers();
+  const filter=buildOverpassFilter(terms).replaceAll('RADIUS','6000').replaceAll('LAT',String(lat)).replaceAll('LON',String(lon));
+  const queryOverpass='[out:json][timeout:20];('+filter+');out center tags;';
+  const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+  let data=null,lastError=null;
+  for(const endpoint of endpoints){try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(queryOverpass)});if(!r.ok)throw new Error('Service cartographique indisponible ('+r.status+')');data=await r.json();break}catch(e){lastError=e}}
+  if(!data)throw lastError||new Error('Aucun service cartographique disponible.');
+  if(request!==discoverRequest)return;
+  const elements=Array.isArray(data.elements)?data.elements:[];
+  const mapped=elements.map((item,index)=>{
+   const tags=item.tags||{},center=item.center||item;
+   if(!Number.isFinite(Number(center.lat))||!Number.isFinite(Number(center.lon)))return null;
+   const name=tags.name||tags.brand||tags.operator||'Commerce sans nom renseigné';
+   const address=[tags['addr:housenumber'],tags['addr:street'],tags['addr:postcode'],tags['addr:city']||tags['addr:town']].filter(Boolean).join(' ');
+   const activity=tags.shop||tags.amenity||tags.craft||'commerce';
+   return {id:'osm-'+item.type+'-'+item.id,name,activity,town:tags['addr:city']||tags['addr:town']||geos[0].name,address:address||'Adresse détaillée non renseignée dans OpenStreetMap',lat:Number(center.lat),lon:Number(center.lon),emoji:'🏪',siren:'',siret:'',crowd:'Non renseignée',wait:'Information non disponible',intro:'Commerce cartographié par OpenStreetMap. Les horaires, produits et promotions sont affichés uniquement s’ils sont fournis et vérifiés.',messages:[['🗺️','Source cartographique','Fiche issue des données OpenStreetMap.'],['ℹ️','Informations','Les données peuvent être incomplètes ; contacte le commerce pour confirmer les détails.']],ads:[],isOSM:true}
+  }).filter(Boolean);
+  const unique=[...new Map(mapped.map(item=>[item.id,item])).values()];
+  discoverShops.splice(0,discoverShops.length,...unique);
+  if(discoverMap){discoverMarkers.clearLayers();unique.forEach(shop=>{const marker=L.marker([shop.lat,shop.lon]).bindPopup('<strong>'+escapeDemo(shop.name)+'</strong><br>'+escapeDemo(shop.activity));marker.on('click',()=>selectDiscoverShop(shop.id));marker.addTo(discoverMarkers)});if(unique.length){const bounds=discoverMarkers.getBounds();if(bounds.isValid())discoverMap.fitBounds(bounds.pad(.15),{maxZoom:15})}}
+  renderDiscoverResults(unique);
+  if(unique.length){selectDiscoverShop(unique[0].id);el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  else {document.getElementById('discoverDetail').classList.remove('open');el.innerHTML='<div class="card"><strong>Aucun commerce cartographié pour cette recherche</strong><p>Essaie une activité plus générale ou une ville voisine. OpenStreetMap ne répertorie pas forcément tous les commerces, et un résultat absent ne signifie pas que le commerce n’existe pas.</p></div>'}
+ }catch(err){if(request!==discoverRequest)return;el.innerHTML='<div class="card"><strong>Recherche impossible pour le moment</strong><p>'+escapeDemo(err.message||'Erreur réseau')+'</p><p class="muted">La recherche utilise OpenStreetMap. Réessaie dans quelques instants.</p></div>'}
+}
+function renderDiscoverResults(list=discoverShops){const el=document.getElementById('discoverResults');if(!el)return;el.innerHTML=list.length?list.map(s=>'<article class="shop-result '+(s.id===selectedDiscoverId?'selected':'')+'"><span class="shop-emoji">'+s.emoji+'</span><span class="shop-result-copy"><strong>'+escapeDemo(s.name)+'</strong><small>'+escapeDemo(s.activity)+' · '+escapeDemo(s.town)+'</small><small>⌖ '+escapeDemo(s.address)+'</small><button class="btn pale" style="margin-top:8px" onclick="selectDiscoverShop(\''+escapeDemo(s.id)+'\')">Voir sur la carte</button></span></article>').join(''):'<div class="card"><strong>Aucun commerce trouvé</strong><p>Essaie une autre recherche.</p></div>'}
+function selectDiscoverShop(id){const shop=discoverShops.find(s=>s.id===id);if(!shop)return;selectedDiscoverId=id;activeAd=0;if(discoverMap&&Number.isFinite(shop.lat)&&Number.isFinite(shop.lon))discoverMap.setView([shop.lat,shop.lon],16);const detail=document.getElementById('discoverDetail');detail.classList.add('open');document.getElementById('detailName').textContent=shop.name;document.getElementById('detailActivity').textContent=shop.activity;document.getElementById('detailIntro').textContent=shop.intro;document.getElementById('detailCrowd').textContent='Affluence non renseignée';document.getElementById('detailWait').textContent='Le commerçant pourra publier cette information après validation.';document.getElementById('crowdRing').style.background='conic-gradient(#d9bd70 0 10%,#f3edda 10% 100%)';document.getElementById('crowdIcon').textContent='?';document.getElementById('detailMessages').innerHTML=shop.messages.map(x=>'<div class="practical-message"><strong>'+x[0]+' '+escapeDemo(x[1])+'</strong><p>'+escapeDemo(x[2])+'</p></div>').join('')+'<div class="practical-message"><strong>Vous gérez cet établissement ?</strong><p>Demandez à personnaliser sa fiche MOUSSE. Une vérification sera nécessaire avant toute modification publique.</p><button class="btn" onclick="requestClaim(\''+escapeDemo(shop.id)+'\')">Demander la gestion de cette fiche</button></div>';renderDiscoverResults(discoverShops);if(shop.ads.length)renderAd(shop);else{document.getElementById('detailAds').innerHTML='<div class="card"><strong>Pas de publicité renseignée</strong><p>MOUSSE affichera les promotions lorsqu’un commerçant les aura réellement publiées.</p></div>'}}
+function requestClaim(id){const shop=discoverShops.find(s=>s.id===id);if(!shop)return;alert('La demande de gestion de fiche n’est pas encore connectée à un processus sécurisé. Cette fiche cartographique ne peut pas être revendiquée depuis cette recherche.')}
 function renderAd(shop){const a=shop.ads[activeAd%shop.ads.length];document.getElementById('adSlide').dataset.slide='0';document.getElementById('adKicker').textContent='Fiche commerce';document.getElementById('adTitle').textContent=a[0];document.getElementById('adText').textContent=a[1];document.getElementById('adDots').innerHTML=''}
 function changeAd(step){const shop=discoverShops.find(s=>s.id===selectedDiscoverId);if(!shop)return;activeAd=(activeAd+step+shop.ads.length)%shop.ads.length;renderAd(shop)}
 function goToAd(index){const shop=discoverShops.find(s=>s.id===selectedDiscoverId);if(!shop)return;activeAd=index;renderAd(shop)}
