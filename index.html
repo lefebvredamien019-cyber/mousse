@@ -621,6 +621,18 @@ img{border-radius:14px}
 <article class="card"><h3>🟢 Affluence</h3><p>Mettre à jour le niveau de fréquentation et les temps d’attente.</p><button class="btn" onclick="openMerchantNav('affluence')">Mettre à jour</button></article>
 <article class="card"><h3>🛍️ Commandes reçues</h3><p>Consulter les commandes et suivre leur préparation.</p><button class="btn" onclick="openMerchantNav('orders')">Gérer les commandes</button></article>
 </div><p class="notice">Cet espace est réservé à la gestion professionnelle. La fiche publique reste accessible séparément via « Voir ma fiche publique ».</p></section>
+<section class="view" id="view-nearby" aria-labelledby="nearby-title">
+  <div class="eyebrow">Autour de vous</div>
+  <h1 class="headline" id="nearby-title">Commerces à proximité</h1>
+  <p class="sub">Retrouve les commerces MOUSSE publiés, consulte leurs informations et ouvre leur vitrine. Choisis une ville ou un code postal pour filtrer les adresses disponibles.</p>
+  <div class="search-panel" style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0">
+    <label class="searchbox" style="flex:1;min-width:220px"><span>⌖</span><input id="nearbyLocation" type="search" placeholder="Ville ou code postal" oninput="filterNearbyShops()"></label>
+    <button class="btn light" type="button" onclick="document.getElementById('nearbyLocation').value='';filterNearbyShops()">Tout afficher</button>
+  </div>
+  <p class="soft-note" id="nearbyStatus" role="status">Chargement des vitrines publiées…</p>
+  <div class="grid" id="nearbyShopGrid"></div>
+  <p class="soft-note">Les offres publicitaires ne sont affichées que lorsqu’un commerçant les a réellement publiées. La liste utilise les vitrines publiées dans MOUSSE ; elle ne prétend pas représenter tous les commerces géographiquement proches.</p>
+</section>
 <section class="view" id="view-affluence">
   <div class="eyebrow">Informer les clients</div><h1 class="headline" id="affluence-title">Affluence de votre commerce</h1><p class="sub">Renseignez l’état actuel et les périodes habituelles. Les visiteurs verront une estimation déclarée, pas une mesure automatique de fréquentation.</p>
   <div class="grid two">
