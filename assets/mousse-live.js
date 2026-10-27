@@ -487,6 +487,8 @@
     document.getElementById("merchantAccount")?.classList.remove("hidden");
     document.getElementById("merchantSignOut")?.classList.add("hidden");
     status("merchantAuthStatus", "Tu es déconnecté.");
+    window.leaveMerchantWorkspace?.();
+    window.backToRoleGate?.();
   };
 
   window.saveMerchantDemo = async () => {
