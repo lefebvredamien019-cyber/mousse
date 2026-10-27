@@ -359,6 +359,55 @@
     renderFeaturedShops(featuredShopsCache);
   };
 
+  window.renderNearbyShops = async () => {
+    const grid = document.getElementById("nearbyShopGrid");
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!grid) return;
+    grid.innerHTML = '<article class="card"><p>Chargement des commerces publiés…</p></article>';
+    const { data, error } = await publicClient.from("shops")
+      .select("id,name,address,description,delivery_enabled,order_paused")
+      .eq("is_published", true).order("name");
+    if (error) {
+      grid.innerHTML = '<article class="card"><p>Les vitrines sont momentanément indisponibles. Réessaie dans quelques instants.</p></article>';
+      if (statusEl) statusEl.textContent = "Impossible de charger les vitrines publiées.";
+      return;
+    }
+    window.MOUSSE_NEARBY_SHOPS = data || [];
+    window.filterNearbyShops?.();
+  };
+
+  window.filterNearbyShops = () => {
+    const grid = document.getElementById("nearbyShopGrid");
+    const statusEl = document.getElementById("nearbyStatus");
+    if (!grid) return;
+    const shops = window.MOUSSE_NEARBY_SHOPS || [];
+    const query = (document.getElementById("nearbyLocation")?.value || "").trim().toLocaleLowerCase("fr");
+    const filtered = query ? shops.filter(shop => String(shop.address || "").toLocaleLowerCase("fr").includes(query)) : shops;
+    if (statusEl) statusEl.textContent = query
+      ? filtered.length + " vitrine(s) publiée(s) trouvée(s) pour « " + query + " »."
+      : filtered.length + " vitrine(s) MOUSSE publiée(s).";
+    if (!filtered.length) {
+      grid.innerHTML = '<article class="card"><div class="symbol">⌖</div><h3>Aucune vitrine trouvée</h3><p>Essaie une autre ville ou un autre code postal, ou reviens plus tard.</p></article>';
+      return;
+    }
+    grid.innerHTML = filtered.map(shop =>
+      '<article class="card"><div class="cardhead"><span class="symbol">🏪</span><span class="pill">Vitrine MOUSSE</span></div>' +
+      '<h3>' + escape(shop.name) + '</h3><p>' + escape(shop.address || "Adresse non renseignée") + '</p>' +
+      '<p>' + escape((shop.description || "Informations du commerce à compléter.").slice(0, 180)) + '</p>' +
+      (shop.order_paused ? '<p><span class="pill amber">Commandes suspendues</span></p>' : shop.delivery_enabled ? '<p><span class="pill">Livraison proposée</span></p>' : '') +
+      '<button class="btn pale" type="button" data-nearby-shop="' + escape(shop.id) + '">Voir la vitrine et commander ↗</button></article>'
+    ).join("");
+    grid.querySelectorAll("[data-nearby-shop]").forEach(button => button.addEventListener("click", () => {
+      const picker = document.getElementById("liveShopSelect");
+      if (picker) picker.value = button.dataset.nearbyShop;
+      const shop = shops.find(item => item.id === button.dataset.nearbyShop);
+      if (shop) currentShop = shop;
+      window.renderClientCatalog?.();
+      window.toggleDelivery?.();
+      window.showView?.("collect");
+    }));
+  };
+
   async function loadPublicShops(preferredId = null) {
     const picker = document.getElementById("liveShopSelect");
     const catalog = document.getElementById("clientCatalog");
