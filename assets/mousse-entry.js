@@ -101,6 +101,7 @@
     const shell = document.querySelector(".shell"); if (shell) shell.style.display = "";
     if (typeof window.showView === "function") window.showView("client"); else reveal("view-client");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    window.renderClientSpace?.();
   };
 
   window.backToRoleGate = showGate;
