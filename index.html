@@ -340,6 +340,11 @@ html.role-unselected .client-start,html.role-unselected .merchant-start,html.rol
 .checkout-return{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px;}
 .checkout-cart-preserved{font-size:13px;color:var(--forest,#246b52);font-weight:650;}
 @media(max-width:560px){.checkout-return{align-items:flex-start;flex-direction:column}.checkout-return .menu-back{width:100%}}
+
+.client-address-suggestions{display:grid;gap:8px;margin:10px 0}
+.client-address-result{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer}
+.client-address-result:hover{border-color:var(--gold)}
+.client-address-map{width:100%;height:230px;border:1px solid var(--line);border-radius:14px;margin:8px 0 12px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2';"></script>
 <script src="assets/mousse-config.js"></script>
@@ -876,11 +881,6 @@ img{border-radius:14px}
  .card,article.card,.panel,.tile,.product-card,.shop-card,.commerce-card{border-radius:16px!important}
 }
 
-
-.client-address-suggestions{display:grid;gap:8px;margin:10px 0}
-.client-address-result{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer}
-.client-address-result:hover{border-color:var(--gold)}
-.client-address-map{width:100%;height:230px;border:1px solid var(--line);border-radius:14px;margin:8px 0 12px}
 </style></head><body>'+el.innerHTML+'</body></html>');w.document.close();w.print();w.close();}
 function addToCart(name,price){const item=demoCart.find(x=>x.name===name);if(item)item.qty++;else demoCart.push({name,price,qty:1});renderCart()}
 function renderCart(){const lines=document.getElementById('cartLines');if(!lines)return;const count=demoCart.reduce((s,x)=>s+x.qty,0),total=demoCart.reduce((s,x)=>s+x.price*x.qty,0);document.getElementById('cartCount').textContent=count+' article(s)';document.getElementById('cartTotal').textContent=euro(total);lines.innerHTML=demoCart.length?demoCart.map((x,i)=>'<div class="row"><span>'+escapeDemo(x.name)+' × '+x.qty+'</span><strong>'+euro(x.price*x.qty)+'</strong><button class="btn light" type="button" onclick="removeCart('+i+')" aria-label="Retirer un exemplaire">−</button></div>').join(''):'Votre panier est vide.'}
