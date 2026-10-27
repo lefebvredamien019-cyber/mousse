@@ -357,7 +357,7 @@
     if(!email||!password)return status("clientAuthStatus","Renseigne ton adresse e-mail et ton mot de passe.",true);
     const {error}=await client.auth.signInWithPassword({email,password});
     if(error)return status("clientAuthStatus","Connexion impossible. Vérifie l’adresse et le mot de passe.",true);
-    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Connexion réussie. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
+    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Connexion réussie. Chargement de ton espace client synchronisé."); window.openClientAccount?.();
   };
   window.registerClient = async () => {
     const email=document.getElementById("clientAuthEmail")?.value.trim()||"", password=document.getElementById("clientAuthPassword")?.value||"";
@@ -366,9 +366,9 @@
     const {data,error}=await client.auth.signUp({email,password,options:{data:{account_type:"client"},emailRedirectTo:"https://www.mousse-market.fr/"}});
     if(error)return status("clientAuthStatus","Création du compte impossible. Vérifie les champs et les réglages d’inscription.",true);
     if(!data.session)return status("clientAuthStatus","Compte créé. Confirme l’adresse reçue par e-mail, puis connecte-toi ici.");
-    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Ton espace client de démonstration va s’ouvrir."); window.openClientAccount?.();
+    window.MOUSSE_CLIENT_AUTHENTICATED=true; status("clientAuthStatus","Compte créé et connecté. Chargement de ton espace client synchronisé."); window.openClientAccount?.();
   };
-  // Client password recovery uses Supabase Auth; the profile remains a local-only prototype.
+  // Client password recovery and profile data use Supabase Auth and database.
   window.saveClientNewPassword = async () => {
     const password = document.getElementById("clientNewPassword")?.value || "";
     const confirm = document.getElementById("clientNewPasswordConfirm")?.value || "";
