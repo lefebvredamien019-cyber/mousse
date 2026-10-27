@@ -802,7 +802,70 @@ function renderClientCatalog(){const el=document.getElementById('clientCatalog')
 
 function euro(n){return Number(n).toLocaleString('fr-FR',{style:'currency',currency:'EUR'})}
 function renderReceipt(order){const total=Number(order.total)||0,items=order.items||[];return '<section class="card" id="receipt-'+escapeDemo(order.id)+'"><h3>Ticket de caisse · MOUSSE</h3><p>'+escapeDemo(order.created||'')+'</p><div>'+items.map(i=>'<div class="row"><span>'+escapeDemo(i.name)+' × '+i.qty+'</span><strong>'+euro(i.price*i.qty)+'</strong></div>').join('')+'</div><hr><p>Total <strong>'+euro(total)+'</strong></p><button class="btn light" onclick="printReceipt(\''+escapeDemo(order.id)+'\')">Imprimer le ticket</button></section>'}
-function printReceipt(id){const el=document.getElementById('receipt-'+id);if(!el)return;const w=window.open('','_blank','width=420,height=700');if(!w){alert('Autorise la fenêtre d’impression pour imprimer le ticket.');return}w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Ticket MOUSSE</title><style>body{font:14px Arial;padding:16px}h3{text-align:center}.row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ddd;padding:6px 0}button{display:none}</style></head><body>'+el.innerHTML+'</body></html>');w.document.close();w.print();w.close();}
+function printReceipt(id){const el=document.getElementById('receipt-'+id);if(!el)return;const w=window.open('','_blank','width=420,height=700');if(!w){alert('Autorise la fenêtre d’impression pour imprimer le ticket.');return}w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Ticket MOUSSE</title><style>body{font:14px Arial;padding:16px}h3{text-align:center}.row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ddd;padding:6px 0}button{display:none}
+/* MOUSSE premium forest/gold design system — all client and merchant views */
+:root{
+ --forest:#06251d;--forest2:#0b3328;--cream:#f5e7bc;--paper:#0e2d24;
+ --ink:#f5f3e9;--muted:#b7c8bd;--line:#294b3e;--sage:#183c30;
+ --gold:#dfbf72;--red:#d84f55;--radius:20px;
+ color-scheme:dark;
+}
+html,body{background:#061a15!important;color:#f5f3e9!important}
+body{background:radial-gradient(ellipse at 75% 0%,#10392b 0%,#061a15 58%)!important;color:#f5f3e9!important}
+body,main,section,header,footer,nav,article,aside,div{scrollbar-color:#426756 #061a15}
+a{color:#e4c879}
+p,.muted,.subtle,.helper,.hint,.description,small{color:#b7c8bd}
+.card,article.card,.panel,.tile,.product-card,.shop-card,.commerce-card,.dashboard-card,
+#clientStart,#merchantStart,#merchantSetup,#merchantWorkspace,.workspace,.surface,
+.modal-content,.auth-card,.checkout-panel,.catalog-panel,.order-card,.review-card,
+#view-overview,#view-orders,#view-catalog,#view-store,#view-affluence,#view-loyalty,
+#view-settings,#view-public-store{
+ background:linear-gradient(145deg,rgba(17,49,39,.98),rgba(9,34,27,.98))!important;
+ color:#f5f3e9!important;border:1px solid #294b3e!important;border-radius:20px!important;
+ box-shadow:0 12px 30px rgba(0,0,0,.14);
+}
+button,.btn,.button,input[type=submit]{
+ border-radius:999px!important;font-weight:650;transition:transform .16s ease,filter .16s ease;
+}
+.btn.primary,.btn.gold,.btn:not(.light):not(.secondary):not(.danger),
+button.primary,button[type=submit],input[type=submit]{
+ background:linear-gradient(135deg,#f0d58f,#d5b15d)!important;color:#12271d!important;
+ border:1px solid #e5c574!important;
+}
+.btn.light,.btn.secondary,button.light,button.secondary{
+ background:#173b2e!important;color:#f5e7bc!important;border:1px solid #426653!important;
+}
+button:hover,.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+input,select,textarea{
+ background:#091f19!important;color:#f5f3e9!important;border:1px solid #426052!important;border-radius:12px!important;
+}
+input::placeholder,textarea::placeholder{color:#94aa9b!important}
+label,.field-label,legend{color:#e9dfc2!important}
+hr,.divider{border-color:#294b3e!important}
+nav a,.nav-link,.tab,.merchant-nav a,.client-nav a{
+ color:#f5f3e9!important;border-radius:13px!important;
+}
+nav a.active,.nav-link.active,.tab.active,.merchant-nav a.active,.client-nav a.active,
+[aria-current=page]{
+ background:rgba(223,191,114,.17)!important;color:#f0d58f!important;border-color:#b89546!important;
+}
+.badge,.pill,.tag,.status-badge{
+ border-radius:999px!important;
+}
+.notice,.notice-info,.notice-success{
+ background:rgba(223,191,114,.13)!important;color:#f3dfaa!important;border:1px solid #735f32!important;
+}
+.notice-error{background:rgba(216,79,85,.13)!important;color:#ffd6d6!important;border-color:#9d4246!important}
+table{color:#f5f3e9!important;border-color:#294b3e!important}
+th{color:#f0d58f!important;background:#12372b!important}
+td{border-color:#294b3e!important}
+img{border-radius:14px}
+:focus-visible{outline:2px solid #e5c574!important;outline-offset:3px}
+@media(max-width:700px){
+ .card,article.card,.panel,.tile,.product-card,.shop-card,.commerce-card{border-radius:16px!important}
+}
+
+</style></head><body>'+el.innerHTML+'</body></html>');w.document.close();w.print();w.close();}
 function addToCart(name,price){const item=demoCart.find(x=>x.name===name);if(item)item.qty++;else demoCart.push({name,price,qty:1});renderCart()}
 function renderCart(){const lines=document.getElementById('cartLines');if(!lines)return;const count=demoCart.reduce((s,x)=>s+x.qty,0),total=demoCart.reduce((s,x)=>s+x.price*x.qty,0);document.getElementById('cartCount').textContent=count+' article(s)';document.getElementById('cartTotal').textContent=euro(total);lines.innerHTML=demoCart.length?demoCart.map((x,i)=>'<div class="row"><span>'+escapeDemo(x.name)+' × '+x.qty+'</span><strong>'+euro(x.price*x.qty)+'</strong><button class="btn light" type="button" onclick="removeCart('+i+')" aria-label="Retirer un exemplaire">−</button></div>').join(''):'Votre panier est vide.'}
 function removeCart(i){if(demoCart[i]){demoCart[i].qty--;if(demoCart[i].qty<=0)demoCart.splice(i,1);renderCart()}}
