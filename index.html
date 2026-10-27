@@ -1032,7 +1032,7 @@ async function addClientAddress(){
   if(label.length<2||label.length>40){clientStatus('clientAddressStatus','Le nom de l’adresse doit contenir entre 2 et 40 caractères.',true);return}
   try{
     const user=await clientUser(),client=clientSupabase();
-    const {error}=await client.from('customer_addresses').insert({user_id:user.id,label,...selectedClientAddress,is_default:false});
+    const {error}=await client.from('customer_addresses').insert({user_id:user.id,...selectedClientAddress,label,is_default:false});
     if(error)throw error;
     document.getElementById('clientAddressLabel').value='';document.getElementById('clientAddressNumber').value='';document.getElementById('clientAddressStreet').value='';document.getElementById('clientAddressCityPostcode').value='';document.getElementById('clientAddressSuggestions').innerHTML='';document.getElementById('clientAddressMapWrap').classList.add('hidden');document.getElementById('clientAddressSaveFields').classList.add('hidden');selectedClientAddress=null;confirmedClientAddress=false;
     clientStatus('clientAddressStatus','Adresse enregistrée sur ton compte et synchronisée avec Supabase.');await renderClientSpace();
