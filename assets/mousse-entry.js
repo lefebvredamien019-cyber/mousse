@@ -13,7 +13,20 @@
     if (node) node.hidden = true;
   };
 
+  function setMerchantNavigation(active) {
+    const clientNav = byId("clientNav");
+    const merchantNav = byId("merchantNav");
+    const clientTagline = byId("clientTagline");
+    const merchantTagline = byId("merchantTagline");
+    if (clientNav) clientNav.hidden = !!active;
+    if (merchantNav) merchantNav.hidden = !active;
+    if (clientTagline) clientTagline.hidden = !!active;
+    if (merchantTagline) merchantTagline.hidden = !active;
+    document.documentElement.classList.toggle("merchant-workspace-active", !!active);
+  }
+
   function showGate() {
+    setMerchantNavigation(false);
     document.documentElement.classList.add("role-unselected");
     reveal("roleGate");
     conceal("clientStart");
@@ -28,6 +41,7 @@
 
   window.enterMousse = function (role) {
     if (role !== "merchant" && role !== "client") return;
+    if (role === "client") setMerchantNavigation(false);
     conceal("roleGate");
     document.documentElement.classList.remove("role-unselected");
 
@@ -148,12 +162,16 @@
   };
 
   window.enterMerchantWorkspace = function () {
+    setMerchantNavigation(true);
     conceal("roleGate");conceal("clientStart");conceal("clientAuthPanel");conceal("merchantStart");conceal("merchantLoginGate");conceal("merchantSetup");
     document.documentElement.classList.remove("role-unselected");const shell=document.querySelector(".shell");if(shell)shell.style.display="";
     if(typeof window.showView==="function")window.showView("merchantDashboard");window.scrollTo({top:0,behavior:"smooth"});
   };
 
+  window.leaveMerchantWorkspace = function () { setMerchantNavigation(false); };
+
   window.openMerchantSetup = function () {
+    setMerchantNavigation(false);
     conceal("merchantLoginGate");
     conceal("clientStart");
     conceal("merchantStart");
