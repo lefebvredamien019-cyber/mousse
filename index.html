@@ -935,15 +935,16 @@ async function searchNearbyBusinesses(query){
   if(typeof window.getPublishedShopsForDiscovery==='function'){
    try{
     const published=await window.getPublishedShopsForDiscovery();
-    const normalize=value=>String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('fr');
+    const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
     const placeKey=normalize(place);
     const termKey=normalize(terms);
     const candidates=(Array.isArray(published)?published:[]).filter(shop=>{
      const address=normalize(shop.address);
      const identity=normalize([shop.name,shop.business_category,shop.description].join(' '));
      return (!placeKey||address.includes(placeKey))&&(!termKey||identity.includes(termKey));
-    }).slice(0,10);
-    for(const shop of candidates){
+    }).slice(0,5);
+    for(const [candidateIndex,shop] of candidates.entries()){
+     if(candidateIndex>0)await new Promise(resolve=>setTimeout(resolve,1100));
      let shopLat=NaN,shopLon=NaN;
      if(shop.address){
       try{
