@@ -412,6 +412,17 @@
     }));
   };
 
+  window.getPublishedShopsForDiscovery = async () => {
+    const { data, error } = await publicClient.from("shops")
+      .select("id,name,address,description,business_category,is_published")
+      .eq("is_published", true).order("name");
+    if (error) {
+      console.warn("MOUSSE: impossible de charger les vitrines publiées pour la recherche cartographique.", error);
+      return [];
+    }
+    return data || [];
+  };
+
   async function loadPublicShops(preferredId = null) {
     const picker = document.getElementById("liveShopSelect");
     const catalog = document.getElementById("clientCatalog");
