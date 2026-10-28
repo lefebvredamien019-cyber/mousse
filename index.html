@@ -595,7 +595,7 @@ img{border-radius:14px}
       <div class="shop-profile-grid"><article class="crowd-card"><div class="eyebrow">En ce moment</div><h3 style="margin-bottom:0">Affluence du magasin</h3><div class="crowd-ring" id="crowdRing"><span id="crowdIcon">◉</span></div><div style="text-align:center"><strong id="detailCrowd">Affluence modérée</strong><p class="muted" id="detailWait">Environ 5 à 10 minutes d’attente</p><span class="pill amber">Déclarée par le commerçant</span></div><div class="soft-note">L’affluence affichée est une information de démonstration, pas un comptage automatique.</div></article><article class="crowd-card"><div class="eyebrow">À savoir avant de venir</div><h3>Infos pratiques & messages</h3><div class="message-list" id="detailMessages"></div></article></div>
       <div class="ad-section"><div class="sectiontitle"><div><div class="eyebrow">À découvrir en boutique</div><h2>Les nouveautés & actualités</h2><p>Des visuels qui bougent, à faire défiler comme une vitrine vivante.</p></div><span class="pill">Vitrine animée</span></div><div class="ad-carousel"><button class="ad-arrow" aria-label="Publicité précédente" onclick="changeAd(-1)">‹</button><div class="ad-slide" id="adSlide" data-slide="0"><div class="ad-content"><span class="pill" id="adKicker">À la une</span><h3 id="adTitle">Les nouveautés du moment</h3><p id="adText">Découvrez la sélection mise en avant par votre commerçant.</p><button class="btn pale" onclick="showView('collect')">Voir la boutique ↗</button></div></div><button class="ad-arrow" aria-label="Publicité suivante" onclick="changeAd(1)">›</button></div><div class="ad-dots" id="adDots"></div><p class="soft-note">Visuels animés de démonstration. Les vrais contenus publicitaires seront ajoutés par chaque commerçant.</p></div>
     </div>
-    <p class="soft-note">Les résultats viennent de l’API publique officielle de recherche des entreprises françaises. Cette base répertorie des établissements déclarés, mais ne garantit pas que chaque résultat soit une boutique ouverte au public. Les demandes de gestion de fiche sont enregistrées ici en démonstration et nécessiteront un compte sécurisé côté serveur avant mise en production.</p>
+    <p class="soft-note">Les résultats combinent les vitrines MOUSSE publiées et les commerces cartographiés par OpenStreetMap. Seules les vitrines publiées apparaissent comme commerces MOUSSE ; les données cartographiques externes peuvent être incomplètes.</p>
     <details class="about-mousse"><summary>En savoir plus sur MOUSSE</summary><div><h3>Le commerce local, plus simple</h3><p>MOUSSE aide à trouver un commerçant, consulter ses informations pratiques, voir les nouveautés et découvrir ses produits. Les commerçants pourront personnaliser leur vitrine et partager leurs actualités.</p></div></details>
   </section>
   <div class="grid">
@@ -930,11 +930,42 @@ async function searchNearbyBusinesses(query){
    return {id:'osm-'+item.type+'-'+item.id,name,activity,town:tags['addr:city']||tags['addr:town']||geos[0].name,address:address||'Adresse détaillée non renseignée dans OpenStreetMap',lat:Number(center.lat),lon:Number(center.lon),emoji:'🏪',siren:'',siret:'',crowd:'Non renseignée',wait:'Information non disponible',intro:'Commerce cartographié par OpenStreetMap. Les horaires, produits et promotions sont affichés uniquement s’ils sont fournis et vérifiés.',messages:[['🗺️','Source cartographique','Fiche issue des données OpenStreetMap.'],['ℹ️','Informations','Les données peuvent être incomplètes ; contacte le commerce pour confirmer les détails.']],ads:[],isOSM:true}
   }).filter(Boolean);
   const unique=[...new Map(mapped.map(item=>[item.id,item])).values()];
-  discoverShops.splice(0,discoverShops.length,...unique);
-  if(discoverMap){discoverMarkers.clearLayers();unique.forEach(shop=>{const marker=L.marker([shop.lat,shop.lon]).bindPopup('<strong>'+escapeDemo(shop.name)+'</strong><br>'+escapeDemo(shop.activity));marker.on('click',()=>selectDiscoverShop(shop.id));marker.addTo(discoverMarkers)});if(unique.length){const bounds=discoverMarkers.getBounds();if(bounds.isValid())discoverMap.fitBounds(bounds.pad(.15),{maxZoom:15})}}
-  renderDiscoverResults(unique);
-  if(unique.length){selectDiscoverShop(unique[0].id);el.scrollIntoView({behavior:'smooth',block:'nearest'})}
-  else {document.getElementById('discoverDetail').classList.remove('open');el.innerHTML='<div class="card"><strong>Aucun commerce cartographié pour cette recherche</strong><p>Essaie une activité plus générale ou une ville voisine. OpenStreetMap ne répertorie pas forcément tous les commerces, et un résultat absent ne signifie pas que le commerce n’existe pas.</p></div>'}
+  // Ajouter aussi les vitrines MOUSSE publiées, indépendamment des commerces cartographiés sur OpenStreetMap.
+  let registered=[];
+  if(typeof window.getPublishedShopsForDiscovery==='function'){
+   try{
+    const published=await window.getPublishedShopsForDiscovery();
+    const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
+    const placeKey=normalize(place);
+    const termKey=normalize(terms);
+    const candidates=(Array.isArray(published)?published:[]).filter(shop=>{
+     const address=normalize(shop.address);
+     const identity=normalize([shop.name,shop.business_category,shop.description].join(' '));
+     return (!placeKey||address.includes(placeKey))&&(!termKey||identity.includes(termKey));
+    }).slice(0,5);
+    for(const [candidateIndex,shop] of candidates.entries()){
+     if(candidateIndex>0)await new Promise(resolve=>setTimeout(resolve,1100));
+     let shopLat=NaN,shopLon=NaN;
+     if(shop.address){
+      try{
+       const response=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(shop.address+', France'),{headers:{Accept:'application/json'}});
+       if(response.ok){
+        const results=await response.json();
+        if(Array.isArray(results)&&results.length){shopLat=Number(results[0].lat);shopLon=Number(results[0].lon)}
+       }
+      }catch(_){}
+     }
+     if(request!==discoverRequest)return;
+     registered.push({id:'mousse-'+shop.id,name:shop.name||'Commerce MOUSSE',activity:shop.business_category||terms||'Commerce MOUSSE',town:place,address:shop.address||'Adresse non renseignée',lat:shopLat,lon:shopLon,emoji:'🟢',siren:'',siret:'',crowd:'Non renseignée',wait:'Information non disponible',intro:shop.description||'Vitrine officiellement publiée sur MOUSSE.',messages:[['🟢','Commerce MOUSSE','Cette vitrine est publiée sur MOUSSE.'],['ℹ️','Informations','Contacte le commerce pour confirmer les horaires et la disponibilité.']],ads:[],isMousse:true});
+    }
+   }catch(error){console.warn('MOUSSE: ajout des vitrines publiées à la recherche impossible.',error)}
+  }
+  const all=[...new Map([...registered,...unique].map(item=>[item.id,item])).values()];
+  discoverShops.splice(0,discoverShops.length,...all);
+  if(discoverMap){discoverMarkers.clearLayers();all.forEach(shop=>{if(!Number.isFinite(shop.lat)||!Number.isFinite(shop.lon))return;const marker=L.marker([shop.lat,shop.lon]).bindPopup('<strong>'+escapeDemo(shop.name)+'</strong><br>'+escapeDemo(shop.isMousse?'Vitrine MOUSSE':shop.activity));marker.on('click',()=>selectDiscoverShop(shop.id));marker.addTo(discoverMarkers)});if(discoverMarkers.getLayers().length){const bounds=discoverMarkers.getBounds();if(bounds.isValid())discoverMap.fitBounds(bounds.pad(.15),{maxZoom:15})}}
+  renderDiscoverResults(all);
+  if(all.length){selectDiscoverShop(all[0].id);el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  else {document.getElementById('discoverDetail').classList.remove('open');el.innerHTML='<div class="card"><strong>Aucun commerce trouvé pour cette recherche</strong><p>Essaie une autre activité ou une ville voisine. Les vitrines MOUSSE publiées et les commerces OpenStreetMap sont recherchés séparément ; un commerce non publié ou absent des données cartographiques ne sera pas affiché.</p></div>'}
  }catch(err){if(request!==discoverRequest)return;el.innerHTML='<div class="card"><strong>Recherche impossible pour le moment</strong><p>'+escapeDemo(err.message||'Erreur réseau')+'</p><p class="muted">La recherche utilise OpenStreetMap. Réessaie dans quelques instants.</p></div>'}
 }
 function renderDiscoverResults(list=discoverShops){const el=document.getElementById('discoverResults');if(!el)return;el.innerHTML=list.length?list.map(s=>'<article class="shop-result '+(s.id===selectedDiscoverId?'selected':'')+'"><span class="shop-emoji">'+s.emoji+'</span><span class="shop-result-copy"><strong>'+escapeDemo(s.name)+'</strong><small>'+escapeDemo(s.activity)+' · '+escapeDemo(s.town)+'</small><small>⌖ '+escapeDemo(s.address)+'</small><button class="btn pale" style="margin-top:8px" onclick="selectDiscoverShop(\''+escapeDemo(s.id)+'\')">Voir sur la carte</button></span></article>').join(''):'<div class="card"><strong>Aucun commerce trouvé</strong><p>Essaie une autre recherche.</p></div>'}
