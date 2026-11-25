@@ -114,3 +114,17 @@ drop trigger if exists on_auth_user_created_create_shop on auth.users;
 create trigger on_auth_user_created_create_shop
   after insert on auth.users
   for each row execute procedure public.create_shop_for_new_user();
+
+-- Codes SMS temporaires pour la vérification du téléphone avant commande.
+-- Table privée : seuls les appels serveur avec service_role peuvent y accéder.
+create table if not exists public.customer_phone_otps (
+  phone_hash text primary key,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  attempts integer not null default 0 check (attempts >= 0 and attempts <= 5),
+  last_sent_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+alter table public.customer_phone_otps enable row level security;
+revoke all on table public.customer_phone_otps from anon, authenticated;
+grant all on table public.customer_phone_otps to service_role;
