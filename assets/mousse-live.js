@@ -941,15 +941,67 @@
     window.renderCart();
   };
 
+  const customerPhoneProofKey = (phone) => "mousse-customer-phone-proof:" + phone;
+  const getCustomerPhoneProof = (phone) => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(customerPhoneProofKey(phone)) || "null");
+      return saved?.proof && Date.parse(saved.expires_at) > Date.now() ? saved.proof : null;
+    } catch (_) { return null; }
+  };
+  window.refreshCustomerPhoneVerification = () => {
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
+    const verified = !!getCustomerPhoneProof(phone);
+    const state = document.getElementById("customerPhoneVerificationStatus");
+    const codePanel = document.getElementById("customerPhoneCodePanel");
+    const sendButton = document.getElementById("sendCustomerPhoneCode");
+    if (state) state.textContent = verified ? "Numéro vérifié. Tu n’auras pas à refaire cette vérification sur cet appareil avant son expiration." : "Vérification obligatoire avant l’envoi de la première commande.";
+    if (codePanel && verified) codePanel.classList.add("hidden");
+    if (sendButton) sendButton.textContent = verified ? "Numéro déjà vérifié" : "Recevoir mon code SMS";
+    if (sendButton) sendButton.disabled = verified;
+    return verified;
+  };
+  window.sendCustomerPhoneCode = async () => {
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
+    if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne ton numéro au format international, par exemple +33612345678.", true);
+    if (getCustomerPhoneProof(phone)) return window.refreshCustomerPhoneVerification();
+    const button = document.getElementById("sendCustomerPhoneCode");
+    if (button) button.disabled = true;
+    const { data, error } = await publicClient.functions.invoke("customer-phone-verify", { body: { action: "send", phone } });
+    if (button) button.disabled = false;
+    if (error || !data?.sent) return status("orderMessage", data?.error || "Le SMS n’a pas pu être envoyé. Vérifie le numéro puis réessaie.", true);
+    document.getElementById("customerPhoneCodePanel")?.classList.remove("hidden");
+    status("orderMessage", "Code SMS envoyé. Il est valable 10 minutes. Vérifie aussi que le numéro est correct.", false);
+  };
+  window.verifyCustomerPhoneCode = async () => {
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
+    const code = (document.getElementById("customerPhoneCode")?.value || "").trim();
+    if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne un numéro au format international.", true);
+    if (!/^\\d{6}$/.test(code)) return status("orderMessage", "Saisis le code à 6 chiffres reçu par SMS.", true);
+    const button = document.getElementById("verifyCustomerPhoneCode");
+    if (button) button.disabled = true;
+    const { data, error } = await publicClient.functions.invoke("customer-phone-verify", { body: { action: "verify", phone, code } });
+    if (button) button.disabled = false;
+    if (error || !data?.verified || !data?.proof) return status("orderMessage", data?.error || "Code incorrect ou expiré. Réessaie.", true);
+    try { localStorage.setItem(customerPhoneProofKey(phone), JSON.stringify({ proof: data.proof, expires_at: data.expires_at })); } catch (_) {}
+    document.getElementById("customerPhoneCode").value = "";
+    window.refreshCustomerPhoneVerification();
+    status("orderMessage", "Numéro vérifié. Tu peux maintenant envoyer ta commande.", false);
+  };
   window.toggleNotificationChannel = () => {
     const channel = document.querySelector('input[name="customerNotification"]:checked')?.value || "email";
     const email = document.getElementById("customerEmail");
     const phone = document.getElementById("customerPhone");
     document.getElementById("customerEmailField")?.classList.toggle("hidden", channel !== "email");
-    document.getElementById("customerPhoneField")?.classList.toggle("hidden", channel !== "sms");
+    document.getElementById("customerPhoneField")?.classList.remove("hidden");
     if (email) email.required = channel === "email";
-    if (phone) phone.required = channel === "sms";
+    if (phone) phone.required = true;
+    window.refreshCustomerPhoneVerification();
   };
+  document.getElementById("customerPhone")?.addEventListener("input", () => {
+    document.getElementById("customerPhoneCodePanel")?.classList.add("hidden");
+    window.refreshCustomerPhoneVerification();
+  });
+  window.refreshCustomerPhoneVerification();
 
   window.toggleDelivery = () => {
     const select = document.getElementById("fulfilment");
@@ -1051,11 +1103,18 @@
       }
     }
     if (!name || !window.demoCart?.length) return status("orderMessage", "Renseigne ton nom et ajoute au moins un article.", true);
+    if (!/^\\+[1-9]\\d{7,14}$/.test(customerPhone)) return status("orderMessage", "Renseigne ton numéro au format international.", true);
+    const customerPhoneProof = getCustomerPhoneProof(customerPhone);
+    if (!customerPhoneProof) {
+      window.refreshCustomerPhoneVerification();
+      return status("orderMessage", "Vérifie ton numéro par SMS avant d’envoyer ta commande. Ton panier est conservé.", true);
+    }
     const body = {
       shop_id: currentShop.id,
       customer_name: name,
       customer_email: notificationChannel === "email" ? email : null,
-      customer_phone: notificationChannel === "sms" ? customerPhone : null,
+      customer_phone: customerPhone,
+      customer_phone_proof: customerPhoneProof,
       notification_channel: notificationChannel,
       fulfillment,
       delivery_address: document.getElementById("deliveryAddress").value.trim(),
