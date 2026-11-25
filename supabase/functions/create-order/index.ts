@@ -1,5 +1,4 @@
-const allowedOrigins = (Deno.env.get("APP_ORIGINS") ?? "https://www.mousse-market.fr,https://lefebvredamien019-cyber.github.io")
-  .split(",").map((value) => value.trim()).filter(Boolean);
+const allowedOrigins = ["https://www.mousse-market.fr"];
 
 const cors = (origin) => ({
   "Access-Control-Allow-Origin": origin,
@@ -21,6 +20,24 @@ const clip = (value, limit) =>
 const sha256 = async (value) => {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+const decodeBase64Url = (value) => {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(normalized + "=".repeat((4 - normalized.length % 4) % 4)), c => c.charCodeAt(0));
+};
+const validPhoneProof = async (proof, phone, secret) => {
+  if (typeof proof !== "string" || proof.length > 1200) return false;
+  const parts = proof.split(".");
+  if (parts.length !== 2) return false;
+  try {
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+    const payloadBytes = decodeBase64Url(parts[0]);
+    const payload = JSON.parse(new TextDecoder().decode(payloadBytes));
+    const signature = decodeBase64Url(parts[1]);
+    return payload?.purpose === "mousse-order-phone" && payload?.phone === phone &&
+      Number.isInteger(payload?.exp) && payload.exp > Math.floor(Date.now() / 1000) &&
+      await crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(parts[0]));
+  } catch { return false; }
 };
 
 const escapeHtml = (value) =>
@@ -62,6 +79,7 @@ Deno.serve(async (request) => {
   const customerName = clip(body?.customer_name, 120);
   const customerEmail = clip(body?.customer_email, 254);
   const customerPhone = clip(body?.customer_phone, 20);
+  const customerPhoneProof = body?.customer_phone_proof;
   const notificationChannel = body?.notification_channel;
   const fulfillment = body?.fulfillment;
   const deliveryAddress = clip(body?.delivery_address, 300);
@@ -70,11 +88,16 @@ Deno.serve(async (request) => {
   const items = body?.items;
 
   if (!/^[0-9a-f-]{36}$/i.test(shopId) || customerName.length < 2 ||
+      !/^\+[1-9]\d{7,14}$/.test(customerPhone) ||
       !Array.isArray(items) || items.length < 1 || items.length > 50 ||
       !["pickup", "delivery"].includes(fulfillment) ||
       (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) ||
       (fulfillment === "delivery" && deliveryAddress.length < 5)) {
     return json(400, { error: "Please check the order details" }, origin);
+  }
+
+  if (!await validPhoneProof(customerPhoneProof, customerPhone, serviceKey)) {
+    return json(403, { error: "A verified phone number is required before placing an order" }, origin);
   }
 
   const clientIp = request.headers.get("cf-connecting-ip") ??
@@ -111,7 +134,7 @@ Deno.serve(async (request) => {
       p_shop_id: shopId,
       p_customer_name: customerName,
       p_customer_email: notificationChannel === "email" ? customerEmail : null,
-      p_customer_phone: notificationChannel === "sms" ? customerPhone : null,
+      p_customer_phone: customerPhone,
       p_notification_channel: notificationChannel,
       p_fulfillment: fulfillment,
       p_delivery_address: fulfillment === "delivery" ? deliveryAddress : null,
