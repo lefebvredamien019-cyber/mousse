@@ -44,6 +44,17 @@ Deno.serve(async (request: Request) => {
   };
 
   if (body.action === "send") {
+    const clientIp = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    if (!clientIp) return json(400, { error: "Unable to validate this request" }, origin);
+    const bucket = await digest("mousse-sms:" + clientIp + ":" + service);
+    const rate = await fetch(url + "/rest/v1/rpc/consume_order_rate_limit", {
+      method: "POST",
+      headers: { apikey: service, Authorization: "Bearer " + service, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_bucket: bucket, p_limit: 5, p_window_seconds: 900 }),
+    });
+    const allowed = await rate.json().catch(() => false);
+    if (!rate.ok) return json(503, { error: "Verification service unavailable" }, origin);
+    if (allowed !== true) return json(429, { error: "Too many SMS requests. Try again later." }, origin);
     const current = await read();
     if (!current.response.ok) return json(503, { error: "Verification service unavailable" }, origin);
     if (current.row?.last_sent_at && Date.now() - Date.parse(current.row.last_sent_at) < 60_000) {
