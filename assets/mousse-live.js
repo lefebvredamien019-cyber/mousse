@@ -949,7 +949,7 @@
     } catch (_) { return null; }
   };
   window.refreshCustomerPhoneVerification = () => {
-    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\s().-]/g, "");
     const verified = !!getCustomerPhoneProof(phone);
     const state = document.getElementById("customerPhoneVerificationStatus");
     const codePanel = document.getElementById("customerPhoneCodePanel");
@@ -961,8 +961,8 @@
     return verified;
   };
   window.sendCustomerPhoneCode = async () => {
-    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
-    if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne ton numéro au format international, par exemple +33612345678.", true);
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\s().-]/g, "");
+    if (!/^\+[1-9]\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne ton numéro au format international, par exemple +33612345678.", true);
     if (getCustomerPhoneProof(phone)) return window.refreshCustomerPhoneVerification();
     const button = document.getElementById("sendCustomerPhoneCode");
     if (button) button.disabled = true;
@@ -973,10 +973,10 @@
     status("orderMessage", "Code SMS envoyé. Il est valable 10 minutes. Vérifie aussi que le numéro est correct.", false);
   };
   window.verifyCustomerPhoneCode = async () => {
-    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
+    const phone = (document.getElementById("customerPhone")?.value || "").replace(/[\s().-]/g, "");
     const code = (document.getElementById("customerPhoneCode")?.value || "").trim();
-    if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne un numéro au format international.", true);
-    if (!/^\\d{6}$/.test(code)) return status("orderMessage", "Saisis le code à 6 chiffres reçu par SMS.", true);
+    if (!/^\+[1-9]\d{7,14}$/.test(phone)) return status("orderMessage", "Renseigne un numéro au format international.", true);
+    if (!/^\d{6}$/.test(code)) return status("orderMessage", "Saisis le code à 6 chiffres reçu par SMS.", true);
     const button = document.getElementById("verifyCustomerPhoneCode");
     if (button) button.disabled = true;
     const { data, error } = await publicClient.functions.invoke("customer-phone-verify", { body: { action: "verify", phone, code } });
