@@ -1078,7 +1078,7 @@
     const email = document.getElementById("customerEmail").value.trim();
     const fulfillment = document.getElementById("fulfilment").value;
     const notificationChannel = document.querySelector('input[name="customerNotification"]:checked')?.value || "email";
-    const customerPhone = document.getElementById("customerPhone")?.value.trim() || "";
+    const customerPhone = (document.getElementById("customerPhone")?.value || "").replace(/[\\s().-]/g, "");
     if (notificationChannel === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return status("orderMessage", "Renseigne une adresse e-mail valide pour recevoir le suivi.", true);
     }
