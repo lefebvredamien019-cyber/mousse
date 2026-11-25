@@ -4,3 +4,6 @@ verify_jwt = false
 
 [functions.notify-order-status]
 verify_jwt = true
+
+[functions.customer-phone-verify]
+verify_jwt = false
